@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>test</title>
@@ -5,6 +6,7 @@
 		<meta charset="utf-8">  
   
 		<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/css/ztree/zTreeStyle.css" type="text/css">
 
 		<script src="/scripts/jquery/jquery-3.1.1.min.js"></script>
 		<script src="/scripts/bootstrap/bootstrap.min.js"></script>
@@ -15,8 +17,16 @@
 		<script src="/scripts/amazon/cognito/aws-cognito-sdk.min.js"></script>
 		<script src="/scripts/amazon/cognito/amazon-cognito-identity.min.js"></script>
 		<script src="/scripts/amazon/aws-sdk.js"></script>
+		<script src="/scripts/ztree/jquery.ztree.core.js"></script>
+		<script src="/scripts/ztree/jquery.ztree.excheck.js"></script>
+		<script src="/scripts/ztree/jquery.ztree.exedit.js"></script>
 
 		<script src="/scripts/main.js"></script>
+		
+		<style type="text/css">
+			.ztree li span.button.add {margin-left:2px; margin-right: -1px; background-position:-144px 0; vertical-align:top; *vertical-align:middle}
+		</style>
+		
 	</head>
  	<body>
 		<div class="container"> 
@@ -38,6 +48,15 @@
 					Что-то пошло не так. <a href="/index.html">Вернуться</a>
 				</div>				
 			</div>
+ 			
+ 			<div class="row">
+				<div class="col-md-4">
+					<ul id="abTree" class="ztree"></ul>
+				</div>
+				<div class="col-md-8">
+					Document: <span id="selectedDoc"></span>
+				</div>
+ 			</div>
  			
 		</div>
 	</body>
