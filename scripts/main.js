@@ -1,4 +1,5 @@
 AWSCognito.config.region = 'us-west-2';
+AWS.config.region = 'us-west-2';
 
 var poolData = {
     UserPoolId : 'us-west-2_eb7axoHmO',
@@ -35,12 +36,12 @@ var settings = {
 		beforeDrag: beforeDrag,
 		beforeDrop: beforeDrop,
 		beforeEditName: beforeEditName,
+		beforeRename: beforeRename,
+		beforeRemove: beforeRemove,
 		onClick: onClick,
 		// For testing!
-		onDrop: function (event, treeId, treeNodes, targetNode, moveType, isCopy) {
-			console.log(targetNode);
-			console.log(moveType);
-		}
+		onDrop: onDrop,
+		onNodeCreated: onNodeCreated
 	}
 };
 
@@ -56,7 +57,9 @@ function beforeDrag(id, nodes) {
 	return ok;
 }
 
-function beforeDrop (id, nodes, targetNode, moveType) {
+// It always moves files on drop.
+// TODO: copying, handle situation when there is already folder with this name.
+function beforeDrop (treeId, treeNodes, targetNode, moveType) {
 	// We can't drop item out the tree
 	if (targetNode === null) {
 		return false;
@@ -67,6 +70,18 @@ function beforeDrop (id, nodes, targetNode, moveType) {
 	if (targetNode.head && moveType != "inner") {
 		return  false;
 	}
+	
+	// S3 starts here
+	treeNodes.map( function(n) {
+		var newPrefix;
+		if (moveType != "inner") {
+			newPrefix = buildPrefixPath(targetNode) + "/" + n.name;
+		} else {
+			newPrefix = buildPath(targetNode) + "/" + n.name;
+		}
+		moveTreeS3(n, newPrefix);
+	});
+	
 	return true;
 }
 
@@ -115,26 +130,249 @@ function removeHoverDom(treeId, treeNode) {
 	$("#addBtn_"+treeNode.tId).unbind().remove();
 };
 
+/*function buildPath(treeNode) {
+	var path = treeNode.s3path ? treeNode.s3path : treeNode.name
+	var n = treeNode.getParentNode();
+	
+	while(n !== null) {
+		path = (n.s3path ? n.s3path : n.name) + "/" + path;
+		n = n.getParentNode();
+	}
+	
+	return path;
+};*/
+
+function buildPath(treeNode) {
+	var parents = treeNode.getPath();
+	var path = "";
+	
+	parents.map( function(n, i, arr) {
+		path += n.s3path ? n.s3path : n.name;
+		path += i < arr.length-1 ? "/" : "";
+	});
+	
+	return path;
+}
+
+function buildPrefixPath(treeNode) {
+	var parents = treeNode.getPath();
+	var path = "";
+	
+	parents.slice(0, parents.length-1).map( function(n, i, arr) {
+		path += n.s3path ? n.s3path : n.name;
+		path += i < arr.length-1 ? "/" : "";
+	});
+	
+	return path;
+}
+
+function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
+	
+};
+
+// TODO: fix overwriting if object with this name already exists.
+function onNodeCreated(event, treeId, treeNode) {
+	var params = {
+		Body: "",
+		Bucket: "ab-doc-storage",
+		Key: buildPath(treeNode)
+	};
+	s3.putObject(params, function(err, data) {
+		if (err) {
+			console.log(err);
+		}
+	});
+};
+
+function beforeRemove(treeId, treeNode) {
+	removeTreeS3(treeNode);
+	return true;
+};
+
+function beforeRename(treeId, treeNode, newName, isCancel) {
+	if(isCancel) {
+		return true;
+	}
+	
+	// Get array of neighbours
+	var prevs = [];
+	var p = treeNode.getPreNode();
+	//console.log('starting p loop...');
+	while(p !== null) {
+		prevs.push(p);
+		p = p.getPreNode();
+		//console.log('p loop');
+	}
+	
+	var nexts = [];
+	var n = treeNode.getNextNode();
+	//console.log('starting n loop...');
+	while(n !== null) {
+		nexts.push(n);
+		n = n.getNextNode();
+		//console.log('n loop');
+	}
+	
+	neighbours = prevs.concat(nexts);
+	
+	// Refuse if one of the neighbours have same name.
+	var ok = true;
+	neighbours.map( function(n) {
+		if (n.name === newName) {
+			ok = false;
+		}
+	});
+	
+	//console.log(ok);
+	
+	if (ok) {
+		// Moving files seems to be the only way to rename them. :-( 
+		moveTreeS3(treeNode, buildPrefixPath(treeNode) + "/" + newName);
+	}
+	
+	return ok;
+}
+
+function removeTreeS3(treeNode) {
+	var params = {
+		Bucket: "ab-doc-storage",
+		Key: buildPath(treeNode)
+	};
+	//console.log(treeNode.getPath());
+	s3.deleteObject(params, function(err, data) {
+		if (err) {
+			console.log(err);
+		}
+	});
+	
+	if(treeNode.isParent) {
+		treeNode.children.map(removeTreeS3);
+	}
+}
+
+function moveTreeS3(treeNode, newPrefix) {
+	// If trying to move to the same location.
+	if (buildPath(treeNode) === newPrefix) {
+		return;
+	}
+	//console.log(buildPath(treeNode), newPrefix);
+	
+	var files = [];
+	var oldPrefix = buildPath(treeNode);
+	var params = {
+		Bucket: "ab-doc-storage",
+		Prefix: oldPrefix,
+		MaxKeys: 1000
+	};
+	
+	// Ugly recursion!!!!!!!!
+	// TODO: rewrite it all!!!!!!!!
+	function f(err, data) {
+		if (err) {
+			console.log(err);
+			return;
+		}
+		// Data must be undefined when calling this function directly
+		// It starts objects loading from S3
+		// Then this function is only used as a callback in s3.listObjects
+		if (!data) {
+			s3.listObjects(params, f);
+			return;
+		}
+		
+		files = files.concat(data.Contents);
+		if (data.isTruncated) {
+			params.Marker = data.NextMarker;
+			s3.listObjects(params, f);
+		} else {
+			g();
+		}
+	};
+	// g is called inside f, when list of files is loaded from S3.
+	function g() {
+		// Copy each file to new location and remove old.
+		files.map( function(f) {
+			var oldKey = f.Key;
+			var newKey = newPrefix + f.Key.slice(oldPrefix.length);
+			var copyParams = {
+				Bucket: "ab-doc-storage",
+				CopySource: "/ab-doc-storage/" + oldKey,
+				Key: newKey
+			};
+			//console.log(newKey);
+			s3.copyObject(copyParams, function(err, data) {
+				if (err) {
+					console.log(err);
+				}
+				var deleteParams = {
+					Bucket: "ab-doc-storage",
+					Key: oldKey
+				};
+				s3.deleteObject(deleteParams, function(err, data) {
+					if (err) {
+						console.log(err);
+					}
+				});	
+			});	
+		});	
+	};
+	f(undefined, undefined);
+}
+
 // zTree /\
 
+var s3;
 
 $(document).ready( function() {
     var cognitoUser = userPool.getCurrentUser();
-    
-    if(!cognitoUser) {
-		$('#alertError').show();
-		return;
-	}
-	
-	console.log(cognitoUser);
-	$('#username').text(cognitoUser.username);
-	
+    		
 	$('#linkSignOut').click( function() {
 		cognitoUser.signOut();
 		return true;	
 	});	
 	
-	$.fn.zTree.init($("#abTree"), settings, []);
-	// Adding head node (username)
-	$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: 0, name: cognitoUser.username, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
+	$('#username').text(cognitoUser.username);
+    
+    if(!cognitoUser) {
+		$('#alertError').show();
+		return;
+	}
+	cognitoUser.getSession( function(err, session) {
+		if(err) {
+			$('#alertError').show();
+			return;			
+		} 
+
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
+			Logins : {
+				'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
+			}
+		});
+		
+		AWS.config.credentials.refresh( function(err) {
+			if (err) {
+				console.log(err);
+				return;
+			}
+			
+			AWS.config.credentials.get( function() {
+				var accessKeyId = AWS.config.credentials.accessKeyId;
+				var secretAccessKey = AWS.config.credentials.secretAccessKey;
+				var sessionToken = AWS.config.credentials.sessionToken;
+				
+				s3 = new AWS.S3({
+					apiVersion: '2006-03-01',
+					accessKeyId: accessKeyId,
+					secretAccessKey: secretAccessKey,
+					sessionToken: sessionToken,
+					region: "eu-west-1"
+				});
+				
+				$.fn.zTree.init($("#abTree"), settings, []);
+				// Adding head node (username)
+				$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: 0, name: cognitoUser.username, s3path: AWS.config.credentials.identityId, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
+			});
+		});
+	});
 });
