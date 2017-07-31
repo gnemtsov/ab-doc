@@ -495,64 +495,79 @@ function loadTree(prefix, username, tree) {
 var s3;
 
 $(document).ready( function() {
-    var cognitoUser = userPool.getCurrentUser();
-    		
-	$('#linkSignOut').click( function() {
-		cognitoUser.signOut();
-		return true;	
-	});	
-	
-	$('#username').text(cognitoUser.username);
-    
-    if(!cognitoUser) {
-		$('#alertError').show();
-		return;
-	}
-	cognitoUser.getSession( function(err, session) {
-		if(err) {
-			$('#alertError').show();
-			return;			
-		} 
-
-		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
-			Logins : {
-				'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
-			}
+	initTranslator( function() {
+		$('#selectLang').change( function(event) {
+			translator.setLang($("#selectLang option:selected").val());
+			translatePage();
 		});
+		$('#selectLang').val(translator.getLang());
+		translatePage();
 		
-		AWS.config.credentials.refresh( function(err) {
-			if (err) {
+		var cognitoUser = userPool.getCurrentUser();
+				
+		$('#linkSignOut').click( function() {
+			cognitoUser.signOut();
+			return true;	
+		});	
+		$('#linkReturn').click( function() {
+			cognitoUser.signOut();
+			return true;	
+		});	
+				
+		$('#username').text(cognitoUser.username);
+		
+		if(!cognitoUser) {
+			$('#alertError').show();
+			return;
+		}
+		cognitoUser.getSession( function(err, session) {
+			if(err) {
+				$('#alertError').show();
 				console.log(err);
-				return;
-			}
+				return;			
+			} 
+
+			AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+				IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
+				Logins : {
+					'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
+				}
+			});
 			
-			AWS.config.credentials.get( function() {
-				var accessKeyId = AWS.config.credentials.accessKeyId;
-				var secretAccessKey = AWS.config.credentials.secretAccessKey;
-				var sessionToken = AWS.config.credentials.sessionToken;
+			AWS.config.credentials.refresh( function(err) {
+				if (err) {
+					$('#alertError').show();
+					console.log(err);
+					return;
+				}
 				
-				s3 = new AWS.S3({
-					apiVersion: '2006-03-01',
-					accessKeyId: accessKeyId,
-					secretAccessKey: secretAccessKey,
-					sessionToken: sessionToken,
-					region: "eu-west-1"
-				});
-				
-				//$.fn.zTree.init($("#abTree"), settings, []);
-				
-				$.fn.zTree.init($("#abTree"), settings, []);
-				loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"));
-				
-				// Adding head node (username)
-				//$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: undefined, name: cognitoUser.username, s3path: AWS.config.credentials.identityId, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
-			
-				/*withS3Files(AWS.config.credentials.identityId + "/", function(files) {
-					files.map( function(f) {
-						console.log(f.Key);
+				AWS.config.credentials.get( function() {
+					var accessKeyId = AWS.config.credentials.accessKeyId;
+					var secretAccessKey = AWS.config.credentials.secretAccessKey;
+					var sessionToken = AWS.config.credentials.sessionToken;
+					
+					s3 = new AWS.S3({
+						apiVersion: '2006-03-01',
+						accessKeyId: accessKeyId,
+						secretAccessKey: secretAccessKey,
+						sessionToken: sessionToken,
+						region: "eu-west-1"
 					});
-				});*/
+					
+					//$.fn.zTree.init($("#abTree"), settings, []);
+					
+					$.fn.zTree.init($("#abTree"), settings, []);
+					loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"));
+					
+					// Adding head node (username)
+					//$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: undefined, name: cognitoUser.username, s3path: AWS.config.credentials.identityId, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
+				
+					/*withS3Files(AWS.config.credentials.identityId + "/", function(files) {
+						files.map( function(f) {
+							console.log(f.Key);
+						});
+					});*/
+				});
 			});
 		});
 	});

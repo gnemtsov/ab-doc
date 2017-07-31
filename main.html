@@ -21,6 +21,9 @@
 		<script src="/scripts/ztree/jquery.ztree.excheck.js"></script>
 		<script src="/scripts/ztree/jquery.ztree.exedit.js"></script>
 
+		<script src="/scripts/translator.js"></script>
+		<script src="/scripts/init-translator.js"></script>
+		<script src="/scripts/translate-main.js"></script>
 		<script src="/scripts/main.js"></script>
 		
 		<style type="text/css">
@@ -35,17 +38,23 @@
 				<a class="navbar-brand" href="#">Test-app</a>
 				<ul class="nav navbar-nav float-xs-right">
 					<li class="nav-item">
+						<select class="form-control" id="selectLang">
+							<option value="ru">Русский</option>
+							<option value="en">English</option>
+						</select>
+					</li>
+					<li class="nav-item">
 						<a class="nav-link" href="#" id="username">Name</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" id="linkSignOut" href="/index.html">Выход</a>
+						<a class="nav-link" id="linkSignOut" href="/index.html">*</a>
 					</li>
 				</ul>
 			</nav>
 			
 			<div class="row">
 				<div class="alert alert-danger collapse" role="alert" id="alertError">
-					Что-то пошло не так. <a href="/index.html">Вернуться</a>
+					<span id="spanSomethingWentWrong">*</span><a href="/index.html" id="linkReturn">*</a>
 				</div>				
 			</div>
  			
@@ -54,7 +63,7 @@
 					<ul id="abTree" class="ztree"></ul>
 				</div>
 				<div class="col-md-8">
-					Document: <span id="selectedDoc"></span>
+					<span id="spanDocument">*</span>: <span id="selectedDoc"></span>
 				</div>
  			</div>
  			

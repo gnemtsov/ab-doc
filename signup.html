@@ -16,61 +16,75 @@
 		<script src="/scripts/amazon/cognito/amazon-cognito-identity.min.js"></script>
 		<script src="/scripts/amazon/aws-sdk.js"></script>
 
+		<script src="/scripts/translator.js"></script>
+		<script src="/scripts/init-translator.js"></script>
+		<script src="/scripts/translate-signup.js"></script>
 		<script src="/scripts/signup.js"></script>
 
 	</head>
 	<body>
 		<div class="container"> 
+			<nav class="navbar navbar-light bg-faded">
+				<a class="navbar-brand" href="#">Test-app</a>
+				<ul class="nav navbar-nav float-xs-right">
+					<li class="nav-item">
+						<select class="form-control" id="selectLang">
+							<option value="ru">Русский</option>
+							<option value="en">English</option>
+						</select>
+					</li>
+				</ul>
+			</nav>
  			<div class="row">
  				<div style="margin-top: 100px;"></div>
 				<div class="col-md-8 offset-md-2">
 					<form>
 						<fieldset>
-							<legend>Регистрация</legend>
+							<legend id="legend">*</legend>
 							<div class="form-group row">
 								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongRepeat">
-									Пароли не совпали.
+									*
 								</div>							
 							</div>
 							<div class="form-group row">
 								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertBadPassword">
-									Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.
+									*
 								</div>							
 							</div>
 							<div class="form-group row">
 								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertUserExists">
-									Пользователь с таким именем уже существует.
+									*
 								</div>							
 							</div>
 							<div class="form-group row">
-								<label for="inputEmail" class="col-md-2 col-form-label">Почта</label>
+								<label for="inputEmail" class="col-md-2 col-form-label" id="labelInputEmail">*</label>
 								<div class="col-md-10">
-									<input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Ваш email">
+									<input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="*">
 								</div>
 							</div>
 							<div class="form-group row">
-								<label for="inputPassword" class="col-md-2 col-form-label">Пароль</label>
+								<label for="inputPassword" class="col-md-2 col-form-label" id="labelInputPassword">*</label>
 								<div class="col-md-10">
-									<input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" placeholder="Ваш пароль">
+									<input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" placeholder="*">
 								</div>
 							</div>
 							<div class="form-group row">
 								<div class="col-md-10 offset-md-2">
-									<input type="password" class="form-control" id="inputPassword2" aria-describedby="passwordHelp" placeholder="Повторите пароль">
+									<input type="password" class="form-control" id="inputPassword2" aria-describedby="passwordHelp" placeholder="*">
 								</div>
 							</div>
 							<div class="form-group row collapse" id="divConfirmation">
 								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongCode">
-									Неверный код подтверждения.
+									*
 								</div>	
-								<label for="inputCode" class="col-md-2 col-form-label">Код подтверждения</label>
+								<label for="inputCode" class="col-md-2 col-form-label" id="labelInputCode">*</label>
 								<div class="col-md-10">
-									<input type="text" class="form-control" id="inputCode" placeholder="Ваш код подтверждения">
+									<input type="text" class="form-control" id="inputCode" placeholder="*">
 								</div>						
 							</div>
 							<div class="form-group row">
 								<div class="col-md-3 offset-md-2">
-									<button type="submit" class="btn btn-primary" id="buttonSignUp">Создать учётную запись</button>
+									<button type="submit" class="btn btn-primary" id="buttonSignUp">*</button>
 								</div>
 							</div>
 						</fieldset>
