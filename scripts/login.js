@@ -8,20 +8,29 @@ var poolData = {
 var userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
 $(document).ready( function() {
-	$('#buttonLogin').click( function() {
-		$('.alert').hide();
-		login($('#inputEmail').val(), $('#inputPassword').val(), $('#inputCode').val());
-		return false;	
+	initTranslator( function() {
+		$('#selectLang').change( function(event) {
+			translator.setLang($("#selectLang option:selected").val());
+			translatePage();
+		});
+		$('#selectLang').val(translator.getLang());
+		translatePage();
+		
+		$('#buttonLogin').click( function() {
+			$('.alert').hide();
+			login($('#inputEmail').val(), $('#inputPassword').val(), $('#inputCode').val());
+			return false;	
+		});
+		
+		var cognitoUser = userPool.getCurrentUser();
+		if(cognitoUser)
+			window.location = '/main.html';
 	});
-	
-    var cognitoUser = userPool.getCurrentUser();
-	if(cognitoUser)
-		window.location = '/main.html';
 });
 
 function login(email, password, confirmationCode) {
-	console.log('Email: ' + email);
-	console.log('Password: ' + password);	
+	//console.log('Email: ' + email);
+	//console.log('Password: ' + password);	
 	
 	AWSCognito.config.region = 'us-west-2';	
 	

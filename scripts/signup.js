@@ -7,14 +7,21 @@ var poolData = {
 
 var userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
-$(document).ready(function() {
-	$('#buttonSignUp').click(
-		function() {
+$(document).ready( function() {
+	initTranslator( function() {
+		$('#selectLang').change( function(event) {
+			translator.setLang($("#selectLang option:selected").val());
+			translatePage();
+		});
+		$('#selectLang').val(translator.getLang());
+		translatePage();
+		
+		$('#buttonSignUp').click( function() {
 			$('.alert').hide();
 			signUp($('#inputEmail').val(), $('#inputPassword').val(), $('#inputPassword2').val(), $('#inputCode').val());
 			return false;			
-		}    	
-	)
+		});
+	});
 });
 
 function signUp(userEmail, userPassword, userPassword2, confirmationCode) {

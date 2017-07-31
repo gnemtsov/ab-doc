@@ -1,0 +1,92 @@
+{
+	"loginPage": {
+		"ru": "Вход",
+		"en": "Login page"
+	},
+	"email": {
+		"ru": "Почта",
+		"en": "Email"
+	},
+	"yourEmail": {
+		"ru": "Ваш email",
+		"en": "Your email"		
+	},
+	"password": {
+		"ru": "Пароль",
+		"en": "Password"
+	},
+	"yourPassword": {
+		"ru": "Ваш пароль",
+		"en": "Your password"		
+	},
+	"confirmationCode": {
+		"ru": "Код подтверждения",
+		"en": "Confirmation code"
+	},
+	"yourConfirmationCode": {
+		"ru": "Ваш код подтверждения",
+		"en": "Your confirmation code"
+	},
+	"alertUserDoesntExist": {
+		"ru": "Пользователь с таким именем не зарегистрирован.",
+		"en": "Username is not registered."
+	},
+	"alertWrongPassword": {
+		"ru": "Неправильное имя пользователя или пароль.",
+		"en": "Wrong username or password."
+	},
+	"alertWrongCode": {
+		"ru": "Неверный код подтверждения.",
+		"en": "Wrong confirmation code."
+	},
+	"enter": {
+		"ru": "Войти",
+		"en": "Sign in"
+	},
+	"signUp": {
+		"ru": "Нет учётной записи?",
+		"en": "Sign up"
+	},
+	
+	"registration": {
+		"ru": "Регистрация",
+		"en": "Registration"
+	},
+	"alertWrongRepeat": {
+		"ru": "Пароли не совпали.",
+		"en": "Passwords didn't match."
+	},	
+	"alertBadPassword": {
+		"ru": "Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
+		"en": "Minimum password length is 8 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
+	},
+	"alertUserExists": {
+		"ru": "Пользователь с таким именем уже существует.",
+		"en": "This username is already taken."
+	},
+	"repeatPassword": {
+		"ru": "Повторите пароль",
+		"en": "Repeat password"
+	},
+	"signUp2": {
+		"ru": "Создать учётную запись",
+		"en": "Sign up"
+	},
+	
+	"exit": {
+		"ru": "Выход",
+		"en": "Exit"
+	},
+	"somethingWentWrong": {
+		"ru": "Что-то пошло не так.",
+		"en": "Somenthing went wrong."
+	},
+	"return": {
+		"ru": "Вернуться",
+		"en": "Return"
+	},
+	"document": {
+		"ru": "Документ",
+		"en": "Document"
+	}
+}
