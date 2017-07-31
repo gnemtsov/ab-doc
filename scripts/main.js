@@ -40,8 +40,8 @@ var settings = {
 		beforeRemove: beforeRemove,
 		onClick: onClick,
 		// For testing!
-		onDrop: onDrop,
-		onNodeCreated: onNodeCreated
+		onDrop: onDrop
+		//onNodeCreated: onNodeCreated
 	}
 };
 
@@ -58,7 +58,6 @@ function beforeDrag(id, nodes) {
 }
 
 // It always moves files on drop.
-// TODO: copying, handle situation when there is already folder with this name.
 function beforeDrop (treeId, treeNodes, targetNode, moveType) {
 	// We can't drop item out the tree
 	if (targetNode === null) {
@@ -71,30 +70,167 @@ function beforeDrop (treeId, treeNodes, targetNode, moveType) {
 		return  false;
 	}
 	
+	tree = $.fn.zTree.getZTreeObj(treeId);
+	
 	// S3 starts here
 	treeNodes.map( function(n) {
 		var newPrefix;
+		var oldPrefix = buildPath(n);
 		if (moveType != "inner") {
 			newPrefix = buildPrefixPath(targetNode) + "/" + n.name;
 		} else {
 			newPrefix = buildPath(targetNode) + "/" + n.name;
 		}
-		moveTreeS3(n, newPrefix);
+		
+		// If item with this name already exists in a target node, rename it.
+		function filter(n) {
+			return buildPath(n) === newPrefixTmp;
+		}
+		var newPrefixTmp = newPrefix;
+		if(tree.getNodesByFilter(filter, true)) {
+			var i = 1;
+			var ok = false;
+			while(!ok) {
+				newPrefixTmp = newPrefix + "(" + i + ")";
+				ok = !tree.getNodesByFilter(filter, true);
+				i++;
+			}
+			var a = newPrefixTmp.split("/");
+			n.name = a[a.length - 1];
+			tree.updateNode(n);
+		}
+		moveTreeS3(tree, oldPrefix, newPrefixTmp);
 	});
 	
 	return true;
 }
 
-function beforeEditName(id, node) {
+function beforeEditName(treeId, treeNode) {
 	// Do not allow editing name of the head (username)
-	if (node.head === true) {
+	if (treeNode.head === true) {
 		return false;
 	}
 	return true;
 }
 
-function onClick(event, id, node, clickFlag) {
-	$('#selectedDoc')[0].innerHTML = node.name;
+/* Returns node which lies under the current node.
+ * 
+ *  1       || next
+ *  |       \/
+ *  |-2
+ *  |-3
+ *  | |
+ *  | |-4
+ *  | |-5
+ *  | |-6
+ *  |
+ *  |-7
+ *  |-8
+ *    |
+ *    |-9
+ *      |
+ *      |-10
+ * 
+ */
+function nextNode(treeNode) {
+	if (treeNode.isParent) {
+		return treeNode.children[0];
+	}
+	var n = treeNode;
+	for(;;) {
+		var nn = n.getNextNode();
+		if(nn) {
+			return nn;
+		}
+		var pn = n.getParentNode();
+		if(pn) {
+			n = pn;
+		} else {
+			return null;
+		}
+	}
+}
+
+/*function preNode(treeNode) {
+	var pre = treeNode.getPreNode();
+	if (pre) {
+		if (pre.isParent) {
+			return pre.children[pre.children.length - 1];
+		}
+		return pre;
+	}
+	var pn = treeNode.getParentNode();
+	if(pn) {
+		return pn.getPreNode();
+	}
+	return null;
+}*/
+
+function onClick(event, treeId, treeNode, clickFlag) {
+	$('#selectedDoc')[0].innerHTML = treeNode.name;
+	
+	// shift - select
+	tree = $.fn.zTree.getZTreeObj(treeId);
+	if((event.originalEvent.shiftKey) && (tree.lastClicked)) {
+		function pathToIndexes(path) {
+			var indexes = [];
+			path.map( function(p) {
+				indexes.push(p.getIndex());
+			});
+			return indexes;
+		}
+
+		function compareIndexes(a, b) {
+			for(var i = 0;;i++) {
+				if(a[i] < b[i]) {
+					return -1;
+				}
+				if(a[i] > b[i]) {
+					return 1;
+				}
+				// a is over, b is not over
+				if((a.length == i+1) && (b.length >= i+1)) {
+					return -1;
+				}
+				// b is over, a is not over
+				if((b.length == i+1) && (a.length >= i+1)) {
+					return 1;
+				}
+				// a is over, b is over
+				if((a.length == i+1) && (b.length == i+1)) {
+					return 0;
+				}
+				//a is not over, b is not over -> next iteration
+			}
+		}
+		
+		var r = compareIndexes(
+			pathToIndexes(treeNode.getPath()),
+			pathToIndexes(tree.lastClicked.getPath())
+		);
+		
+		var start;
+		var finish;
+		if (r != 0) {
+			if (r < 0) {
+				start = treeNode;
+				finish = tree.lastClicked;
+			} else {
+				finish = treeNode;
+				start = tree.lastClicked;				
+			}
+			
+			var n = start;
+			while(n != finish) {
+				console.log(n);
+				tree.selectNode(n, true, true);
+				n = nextNode(n);
+			}
+			tree.selectNode(finish, true, true);
+		}
+	}
+	// my!
+	tree.lastClicked = treeNode;
 }
 
 function showRemoveBtn(id, node) {
@@ -105,7 +241,12 @@ function showRenameBtn(id, node) {
 	return !node.head;
 }
 
-var newCount = 0;
+var lastId = -1;
+function newId() {
+	lastId++;
+	return lastId;
+}
+
 function addHoverDom(treeId, treeNode) {
 	var sObj = $("#" + treeNode.tId + "_span");
 	if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) {
@@ -120,8 +261,24 @@ function addHoverDom(treeId, treeNode) {
 	var btn = $("#addBtn_"+treeNode.tId);
 	if (btn) btn.bind("click", function() {
 		var zTree = $.fn.zTree.getZTreeObj("abTree");
-		newCount++;
-		zTree.addNodes(treeNode, {id:newCount, pId:treeNode.id, name:"new item " + newCount});
+		var id = newId();
+		var name; 
+		var path; 
+		var ok = false;
+		var i = 1;
+		while(!ok) {
+			name = "new item " + i;
+			path = buildPath(treeNode) + "/" + name;
+			function filter(n) {
+				return buildPath(n) === path;
+			}
+			if(!zTree.getNodesByFilter(filter, true)) {
+				ok = true;
+			}
+			i++;
+		}
+		zTree.addNodes(treeNode, {id: id, name:name});
+		createObjectS3(path, "");
 		return false;
 	});
 };
@@ -129,18 +286,6 @@ function addHoverDom(treeId, treeNode) {
 function removeHoverDom(treeId, treeNode) {
 	$("#addBtn_"+treeNode.tId).unbind().remove();
 };
-
-/*function buildPath(treeNode) {
-	var path = treeNode.s3path ? treeNode.s3path : treeNode.name
-	var n = treeNode.getParentNode();
-	
-	while(n !== null) {
-		path = (n.s3path ? n.s3path : n.name) + "/" + path;
-		n = n.getParentNode();
-	}
-	
-	return path;
-};*/
 
 function buildPath(treeNode) {
 	var parents = treeNode.getPath();
@@ -170,18 +315,8 @@ function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
 	
 };
 
-// TODO: fix overwriting if object with this name already exists.
 function onNodeCreated(event, treeId, treeNode) {
-	var params = {
-		Body: "",
-		Bucket: "ab-doc-storage",
-		Key: buildPath(treeNode)
-	};
-	s3.putObject(params, function(err, data) {
-		if (err) {
-			console.log(err);
-		}
-	});
+
 };
 
 function beforeRemove(treeId, treeNode) {
@@ -227,11 +362,25 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 	
 	if (ok) {
 		// Moving files seems to be the only way to rename them. :-( 
-		moveTreeS3(treeNode, buildPrefixPath(treeNode) + "/" + newName);
+		moveTreeS3($.fn.zTree.getZTreeObj(treeId), buildPath(treeNode), buildPrefixPath(treeNode) + "/" + newName);
 	}
 	
 	return ok;
 }
+
+// TODO: fix overwriting if object with this name already exists.
+function createObjectS3(path, body) {
+	var params = {
+		Body: body,
+		Bucket: "ab-doc-storage",
+		Key: path
+	};
+	s3.putObject(params, function(err, data) {
+		if (err) {
+			console.log(err);
+		}
+	});
+};
 
 function removeTreeS3(treeNode) {
 	var params = {
@@ -250,18 +399,48 @@ function removeTreeS3(treeNode) {
 	}
 }
 
-function moveTreeS3(treeNode, newPrefix) {
+function moveTreeS3(tree, oldPrefix, newPrefix) {
 	// If trying to move to the same location.
-	if (buildPath(treeNode) === newPrefix) {
+	if (oldPrefix === newPrefix) {
 		return;
 	}
-	//console.log(buildPath(treeNode), newPrefix);
-	
+
+	withS3Files(oldPrefix, function(files) {
+		// Copy each file to new location and remove old.
+		files.map( function(f) {
+			var oldKey = f.Key;
+			var newKey = newPrefix + f.Key.slice(oldPrefix.length);
+			var copyParams = {
+				Bucket: "ab-doc-storage",
+				CopySource: "/ab-doc-storage/" + oldKey,
+				Key: newKey
+			};
+			
+			//console.log(newKey);
+			s3.copyObject(copyParams, function(err, data) {
+				if (err) {
+					console.log(err);
+				}
+				var deleteParams = {
+					Bucket: "ab-doc-storage",
+					Key: oldKey
+				};
+				s3.deleteObject(deleteParams, function(err, data) {
+					if (err) {
+						console.log(err);
+					}
+				});	
+			});	
+		});
+	});
+}
+
+// Loads list of files with specified prefix and passes it to callback
+function withS3Files(prefix, callback) {
 	var files = [];
-	var oldPrefix = buildPath(treeNode);
 	var params = {
 		Bucket: "ab-doc-storage",
-		Prefix: oldPrefix,
+		Prefix: prefix,
 		MaxKeys: 1000
 	};
 	
@@ -285,38 +464,30 @@ function moveTreeS3(treeNode, newPrefix) {
 			params.Marker = data.NextMarker;
 			s3.listObjects(params, f);
 		} else {
-			g();
+			callback(files);
 		}
 	};
-	// g is called inside f, when list of files is loaded from S3.
-	function g() {
-		// Copy each file to new location and remove old.
+	f(undefined, undefined);	
+}
+
+// prefix should not end with "/"
+function loadTree(prefix, username, tree) {
+	withS3Files(prefix+"/", function(files) {
+		var head = {id: newId(), name: username, s3path: prefix, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"};
+		tree.addNodes(null, head, true);
 		files.map( function(f) {
-			var oldKey = f.Key;
-			var newKey = newPrefix + f.Key.slice(oldPrefix.length);
-			var copyParams = {
-				Bucket: "ab-doc-storage",
-				CopySource: "/ab-doc-storage/" + oldKey,
-				Key: newKey
+			var pathArray = f.Key.split("/");
+			var node = {
+				id: newId(),
+				name: pathArray[pathArray.length - 1]
 			};
-			//console.log(newKey);
-			s3.copyObject(copyParams, function(err, data) {
-				if (err) {
-					console.log(err);
-				}
-				var deleteParams = {
-					Bucket: "ab-doc-storage",
-					Key: oldKey
-				};
-				s3.deleteObject(deleteParams, function(err, data) {
-					if (err) {
-						console.log(err);
-					}
-				});	
-			});	
-		});	
-	};
-	f(undefined, undefined);
+			function filter(n) {
+				return buildPath(n) === pathArray.slice(0, pathArray.length - 1).join("/");
+			}
+			var parent = tree.getNodesByFilter(filter, true);
+			tree.addNodes(parent, node, true);
+		});
+	});
 }
 
 // zTree /\
@@ -369,9 +540,19 @@ $(document).ready( function() {
 					region: "eu-west-1"
 				});
 				
+				//$.fn.zTree.init($("#abTree"), settings, []);
+				
 				$.fn.zTree.init($("#abTree"), settings, []);
+				loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"));
+				
 				// Adding head node (username)
-				$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: 0, name: cognitoUser.username, s3path: AWS.config.credentials.identityId, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
+				//$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: undefined, name: cognitoUser.username, s3path: AWS.config.credentials.identityId, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
+			
+				/*withS3Files(AWS.config.credentials.identityId + "/", function(files) {
+					files.map( function(f) {
+						console.log(f.Key);
+					});
+				});*/
 			});
 		});
 	});
