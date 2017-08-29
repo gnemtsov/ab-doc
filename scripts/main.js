@@ -99,7 +99,7 @@ function beforeDrop (treeId, treeNodes, targetNode, moveType) {
 			n.name = a[a.length - 1];
 			tree.updateNode(n);
 		}
-		moveTreeS3(tree, oldPrefix, newPrefixTmp);
+		moveTreeS3(tree, oldPrefix, newPrefixTmp, onError);
 	});
 	
 	return true;
@@ -110,6 +110,15 @@ function beforeEditName(treeId, treeNode) {
 	if (treeNode.head === true) {
 		return false;
 	}
+	
+	var zTree = $.fn.zTree.getZTreeObj(treeId);
+	// Select text in node, which name we are going to edit.
+	var inputId = treeNode.tId + "_input";
+	// Input is not created yet, so we set timeout.
+	setTimeout( function() {
+		$('#' + inputId).select();
+	}, 20);
+	
 	return true;
 }
 
@@ -169,8 +178,11 @@ function nextNode(treeNode) {
 function onClick(event, treeId, treeNode, clickFlag) {
 	$('#selectedDoc')[0].innerHTML = treeNode.name;
 	
-	// shift - select
+	// expand the node
 	tree = $.fn.zTree.getZTreeObj(treeId);
+	tree.expandNode(treeNode, true, false, true, true);
+	
+	// shift - select
 	if((event.originalEvent.shiftKey) && (tree.lastClicked)) {
 		function pathToIndexes(path) {
 			var indexes = [];
@@ -278,7 +290,7 @@ function addHoverDom(treeId, treeNode) {
 			i++;
 		}
 		zTree.addNodes(treeNode, {id: id, name:name});
-		createObjectS3(path, "");
+		createObjectS3(path, "", onError);
 		return false;
 	});
 };
@@ -320,8 +332,18 @@ function onNodeCreated(event, treeId, treeNode) {
 };
 
 function beforeRemove(treeId, treeNode) {
-	removeTreeS3(treeNode);
-	return true;
+	var tree = $.fn.zTree.getZTreeObj(treeId);
+	$('#buttonDelete').click( function() {
+		removeTreeS3(treeNode, onError);
+		tree.removeNode(treeNode, false);
+	});
+	var message = "Документ <b>" + treeNode.name + "</b> будет удалён, продолжить?";
+	if (treeNode.isParent) {
+		message += " Также будут удалены все вложенные документы и папки."
+	}
+	$("#pDeleteMessage").html(message);
+	$("#modalDelete").modal("show");
+	return false;
 };
 
 function beforeRename(treeId, treeNode, newName, isCancel) {
@@ -350,7 +372,7 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 	
 	neighbours = prevs.concat(nexts);
 	
-	// Refuse if one of the neighbours have same name.
+	// Refuse if one of the neighbours have the same name.
 	var ok = true;
 	neighbours.map( function(n) {
 		if (n.name === newName) {
@@ -362,14 +384,14 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 	
 	if (ok) {
 		// Moving files seems to be the only way to rename them. :-( 
-		moveTreeS3($.fn.zTree.getZTreeObj(treeId), buildPath(treeNode), buildPrefixPath(treeNode) + "/" + newName);
+		moveTreeS3($.fn.zTree.getZTreeObj(treeId), buildPath(treeNode), buildPrefixPath(treeNode) + "/" + newName, onError);
 	}
 	
 	return ok;
 }
 
 // TODO: fix overwriting if object with this name already exists.
-function createObjectS3(path, body) {
+function createObjectS3(path, body, errCallback) {
 	var params = {
 		Body: body,
 		Bucket: "ab-doc-storage",
@@ -377,12 +399,12 @@ function createObjectS3(path, body) {
 	};
 	s3.putObject(params, function(err, data) {
 		if (err) {
-			console.log(err);
+			errCallback(err);
 		}
 	});
 };
 
-function removeTreeS3(treeNode) {
+function removeTreeS3(treeNode, errCallback) {
 	var params = {
 		Bucket: "ab-doc-storage",
 		Key: buildPath(treeNode)
@@ -390,7 +412,7 @@ function removeTreeS3(treeNode) {
 	//console.log(treeNode.getPath());
 	s3.deleteObject(params, function(err, data) {
 		if (err) {
-			console.log(err);
+			errCallback(err);
 		}
 	});
 	
@@ -399,7 +421,7 @@ function removeTreeS3(treeNode) {
 	}
 }
 
-function moveTreeS3(tree, oldPrefix, newPrefix) {
+function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
 	// If trying to move to the same location.
 	if (oldPrefix === newPrefix) {
 		return;
@@ -419,7 +441,7 @@ function moveTreeS3(tree, oldPrefix, newPrefix) {
 			//console.log(newKey);
 			s3.copyObject(copyParams, function(err, data) {
 				if (err) {
-					console.log(err);
+					errCallback(err);
 				}
 				var deleteParams = {
 					Bucket: "ab-doc-storage",
@@ -427,16 +449,16 @@ function moveTreeS3(tree, oldPrefix, newPrefix) {
 				};
 				s3.deleteObject(deleteParams, function(err, data) {
 					if (err) {
-						console.log(err);
+						errCallback(err);
 					}
 				});	
 			});	
 		});
-	});
+	}, errCallback);
 }
 
 // Loads list of files with specified prefix and passes it to callback
-function withS3Files(prefix, callback) {
+function withS3Files(prefix, callback, errCallback) {
 	var files = [];
 	var params = {
 		Bucket: "ab-doc-storage",
@@ -448,7 +470,7 @@ function withS3Files(prefix, callback) {
 	// TODO: rewrite it all!!!!!!!!
 	function f(err, data) {
 		if (err) {
-			console.log(err);
+			errCallback(err);
 			return;
 		}
 		// Data must be undefined when calling this function directly
@@ -471,7 +493,7 @@ function withS3Files(prefix, callback) {
 }
 
 // prefix should not end with "/"
-function loadTree(prefix, username, tree) {
+function loadTree(prefix, username, tree, callback, errCallback) {
 	withS3Files(prefix+"/", function(files) {
 		var head = {id: newId(), name: username, s3path: prefix, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"};
 		tree.addNodes(null, head, true);
@@ -487,15 +509,31 @@ function loadTree(prefix, username, tree) {
 			var parent = tree.getNodesByFilter(filter, true);
 			tree.addNodes(parent, node, true);
 		});
-	});
+		
+		callback();
+	}, errCallback);
 }
 
 // zTree /\
 
+function onError(err) {
+	if (err) {
+		console.log(err);
+	}
+	$('.preloader-container').hide();
+	$('#alertError').show();
+	return;
+}
+
 var s3;
 
 $(document).ready( function() {
+	$('.app-container').hide();
+	
 	initTranslator( function() {
+		$('#splitter').bsSplitter();
+		//$('.draggable').draggable({cancel: ".draggable *"});
+		
 		$('#selectLang').change( function(event) {
 			translator.setLang($("#selectLang option:selected").val());
 			translatePage();
@@ -504,6 +542,10 @@ $(document).ready( function() {
 		translatePage();
 		
 		var cognitoUser = userPool.getCurrentUser();
+		if(!cognitoUser) {
+			onError();
+			return;
+		}
 				
 		$('#linkSignOut').click( function() {
 			cognitoUser.signOut();
@@ -512,18 +554,13 @@ $(document).ready( function() {
 		$('#linkReturn').click( function() {
 			cognitoUser.signOut();
 			return true;	
-		});	
-				
+		});
+		
 		$('#username').text(cognitoUser.username);
 		
-		if(!cognitoUser) {
-			$('#alertError').show();
-			return;
-		}
 		cognitoUser.getSession( function(err, session) {
 			if(err) {
-				$('#alertError').show();
-				console.log(err);
+				onError(err);
 				return;			
 			} 
 
@@ -536,8 +573,7 @@ $(document).ready( function() {
 			
 			AWS.config.credentials.refresh( function(err) {
 				if (err) {
-					$('#alertError').show();
-					console.log(err);
+					onError(err);
 					return;
 				}
 				
@@ -554,19 +590,11 @@ $(document).ready( function() {
 						region: "eu-west-1"
 					});
 					
-					//$.fn.zTree.init($("#abTree"), settings, []);
-					
 					$.fn.zTree.init($("#abTree"), settings, []);
-					loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"));
-					
-					// Adding head node (username)
-					//$.fn.zTree.getZTreeObj("abTree").addNodes(null, {id: 1, pId: undefined, name: cognitoUser.username, s3path: AWS.config.credentials.identityId, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"});
-				
-					/*withS3Files(AWS.config.credentials.identityId + "/", function(files) {
-						files.map( function(f) {
-							console.log(f.Key);
-						});
-					});*/
+					loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
+						$('.app-container').show();
+						$('.preloader-container').hide();					
+					});
 				});
 			});
 		});

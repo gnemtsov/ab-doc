@@ -6,9 +6,11 @@
 		<meta charset="utf-8">  
   
 		<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
-		<link rel="stylesheet" href="/css/ztree/zTreeStyle.css" type="text/css">
+		<link rel="stylesheet" type="text/css" href="/css/ztree/zTreeStyle.css">
+		<link rel="stylesheet" type="text/css" href="/css/bsSplitter/styles.css">
 
 		<script src="/scripts/jquery/jquery-3.1.1.min.js"></script>
+		<script src="/scripts/jquery/ui/1.12.1/jquery-ui.js"></script>
 		<script src="/scripts/bootstrap/bootstrap.min.js"></script>
 		<script src="/scripts/jsbn/jsbn.js"></script>
 		<script src="/scripts/jsbn/jsbn2.js"></script>
@@ -17,9 +19,12 @@
 		<script src="/scripts/amazon/cognito/aws-cognito-sdk.min.js"></script>
 		<script src="/scripts/amazon/cognito/amazon-cognito-identity.min.js"></script>
 		<script src="/scripts/amazon/aws-sdk.js"></script>
+		
 		<script src="/scripts/ztree/jquery.ztree.core.js"></script>
 		<script src="/scripts/ztree/jquery.ztree.excheck.js"></script>
 		<script src="/scripts/ztree/jquery.ztree.exedit.js"></script>
+
+		<script src="/scripts/bsSplitter/jquery.bsSplitter.js"></script>
 
 		<script src="/scripts/translator.js"></script>
 		<script src="/scripts/init-translator.js"></script>
@@ -27,7 +32,43 @@
 		<script src="/scripts/main.js"></script>
 		
 		<style type="text/css">
-			.ztree li span.button.add {margin-left:2px; margin-right: -1px; background-position:-144px 0; vertical-align:top; *vertical-align:middle}
+			.ztree li span.button.add {
+				margin-left:2px;
+				margin-right: -1px;
+				background-position:-144px 0;
+				vertical-align:top;
+				*vertical-align:middle;
+			}
+			
+			.ztree-div {
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		</style>
+		
+		<style type="text/css">
+			.preloader {
+			  display: inline-block;
+			  overflow: hidden;
+			  height: 1.3em;
+			  margin-top: -0.3em;
+			  line-height: 1.5em;
+			  vertical-align: text-bottom;
+			  font-size: 48px;
+			}
+
+			.preloader::after {
+			  display: inline-table;
+			  white-space: pre;
+			  text-align: left;
+			}
+
+			.preloader::after {
+			  content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\A⠧\A⠇\A⠏";
+			  animation: spin 2s steps(10) infinite;
+			}
+			
+			@keyframes spin  { to { transform: translateY( -15.0em); } }
 		</style>
 		
 	</head>
@@ -51,19 +92,51 @@
 					</li>
 				</ul>
 			</nav>
-			
+
 			<div class="row">
-				<div class="alert alert-danger collapse" role="alert" id="alertError">
-					<span id="spanSomethingWentWrong">*</span><a href="/index.html" id="linkReturn">*</a>
-				</div>				
+				<div class="offset-md-4 col-md-4">
+					<div class="alert alert-danger collapse" role="alert" id="alertError">
+						<span id="spanSomethingWentWrong">*</span><a href="/index.html" id="linkReturn">*</a>
+					</div>
+				</div>		
+			</div>
+
+			<div class="row preloader-container">
+				<div class="offset-md-4 col-md-4">
+					<span class="preloader"></span>
+				</div>
 			</div>
  			
- 			<div class="row">
-				<div class="col-md-4">
-					<ul id="abTree" class="ztree"></ul>
+ 			<div class="row bs-splitter-parent app-container">
+				<div class="col-md-4 split-left ztree-div">
+					<div class="draggable">
+						<ul id="abTree" class="ztree"></ul>
+					</div>
+					<div id="splitter" class="bs-splitter">
+						<span class="bs-splitter__handle">. . . <span class="sr-only">Resize Columns</span></span>
+					</div>
 				</div>
-				<div class="col-md-8">
+				<div class="col-md-8 split-right">
 					<span id="spanDocument">*</span>: <span id="selectedDoc"></span>
+				</div>
+ 			</div>
+ 			
+ 			<!-- Modal -->
+ 			
+ 			<div id="modalDelete" class="modal fade" role="dialog">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Удаление</h4>
+						</div>
+						<div class="modal-body">
+							<p id="pDeleteMessage">Удалить?</p>
+						</div>
+						<div class="modal-footer">
+							<button id = "buttonDelete" type="button" class="btn btn-primary" data-dismiss="modal">Ок</button>
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+						</div>
+					</div>
 				</div>
  			</div>
  			
