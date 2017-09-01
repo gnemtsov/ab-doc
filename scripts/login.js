@@ -107,6 +107,9 @@ var userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poo
 $(document).ready( function() {
 	// Translation
 	var lang = localStorage.getItem('ab-doc.translator.lang');
+	if (!lang) {
+		lang = "ru";
+	}
 	$('[data-translate]').each( function(i, el) {
 		var dt = $(el).attr('data-translate'),
 			at = $(el).attr('attr-translate');
