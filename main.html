@@ -26,9 +26,6 @@
 
 		<script src="/scripts/bsSplitter/jquery.bsSplitter.js"></script>
 
-		<script src="/scripts/translator.js"></script>
-		<script src="/scripts/init-translator.js"></script>
-		<script src="/scripts/translate-main.js"></script>
 		<script src="/scripts/main.js"></script>
 		
 		<style type="text/css">
@@ -88,7 +85,7 @@
 						<a class="nav-link" href="#" id="username">Name</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" id="linkSignOut" href="/index.html">*</a>
+						<a class="nav-link" id="linkSignOut" href="/index.html" data-translate="exit"></a>
 					</li>
 				</ul>
 			</nav>
@@ -96,7 +93,8 @@
 			<div class="row">
 				<div class="offset-md-4 col-md-4">
 					<div class="alert alert-danger collapse" role="alert" id="alertError">
-						<span id="spanSomethingWentWrong">*</span><a href="/index.html" id="linkReturn">*</a>
+						<span id="spanSomethingWentWrong" data-translate="somethingWentWrong"></span>
+						<a href="/index.html" id="linkReturn" data-translate="return"></a>
 					</div>
 				</div>		
 			</div>
@@ -117,7 +115,7 @@
 					</div>
 				</div>
 				<div class="col-md-8 split-right">
-					<span id="spanDocument">*</span>: <span id="selectedDoc"></span>
+					<span id="spanDocument" data-translate="document"></span>: <span id="selectedDoc"></span>
 				</div>
  			</div>
  			
