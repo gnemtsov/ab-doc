@@ -1,3 +1,100 @@
+// Data for translation
+
+var _translatorData = {
+	"loginPage": {
+		"ru": "Вход",
+		"en": "Login page"
+	},
+	"email": {
+		"ru": "Почта",
+		"en": "Email"
+	},
+	"yourEmail": {
+		"ru": "Ваш email",
+		"en": "Your email"		
+	},
+	"password": {
+		"ru": "Пароль",
+		"en": "Password"
+	},
+	"yourPassword": {
+		"ru": "Ваш пароль",
+		"en": "Your password"		
+	},
+	"confirmationCode": {
+		"ru": "Код подтверждения",
+		"en": "Confirmation code"
+	},
+	"yourConfirmationCode": {
+		"ru": "Ваш код подтверждения",
+		"en": "Your confirmation code"
+	},
+	"alertUserDoesntExist": {
+		"ru": "Пользователь с таким именем не зарегистрирован.",
+		"en": "Username is not registered."
+	},
+	"alertWrongPassword": {
+		"ru": "Неправильное имя пользователя или пароль.",
+		"en": "Wrong username or password."
+	},
+	"alertWrongCode": {
+		"ru": "Неверный код подтверждения.",
+		"en": "Wrong confirmation code."
+	},
+	"enter": {
+		"ru": "Войти",
+		"en": "Sign in"
+	},
+	"signUp": {
+		"ru": "Нет учётной записи?",
+		"en": "Sign up"
+	},
+	
+	"registration": {
+		"ru": "Регистрация",
+		"en": "Registration"
+	},
+	"alertWrongRepeat": {
+		"ru": "Пароли не совпали.",
+		"en": "Passwords didn't match."
+	},	
+	"alertBadPassword": {
+		"ru": "Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
+		"en": "Minimum password length is 8 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
+	},
+	"alertUserExists": {
+		"ru": "Пользователь с таким именем уже существует.",
+		"en": "This username is already taken."
+	},
+	"repeatPassword": {
+		"ru": "Повторите пароль",
+		"en": "Repeat password"
+	},
+	"signUp2": {
+		"ru": "Создать учётную запись",
+		"en": "Sign up"
+	},
+	
+	"exit": {
+		"ru": "Выход",
+		"en": "Exit"
+	},
+	"somethingWentWrong": {
+		"ru": "Что-то пошло не так.",
+		"en": "Somenthing went wrong."
+	},
+	"return": {
+		"ru": "Вернуться",
+		"en": "Return"
+	},
+	"document": {
+		"ru": "Документ",
+		"en": "Document"
+	}
+}
+
+// ====================
+
 AWSCognito.config.region = 'us-west-2';
 AWS.config.region = 'us-west-2';
 
@@ -528,73 +625,84 @@ function onError(err) {
 var s3;
 
 $(document).ready( function() {
-	$('.app-container').hide();
-	
-	initTranslator( function() {
-		$('#splitter').bsSplitter();
-		//$('.draggable').draggable({cancel: ".draggable *"});
+	// Translation
+	var lang = localStorage.getItem('ab-doc.translator.lang');
+	$('[data-translate]').each( function(i, el) {
+		var dt = $(el).attr('data-translate'),
+			at = $(el).attr('attr-translate');
 		
-		$('#selectLang').change( function(event) {
-			translator.setLang($("#selectLang option:selected").val());
-			translatePage();
-		});
-		$('#selectLang').val(translator.getLang());
-		translatePage();
-		
-		var cognitoUser = userPool.getCurrentUser();
-		if(!cognitoUser) {
-			onError();
-			return;
+		if (at) {
+			$(el).attr(at, _translatorData[dt][lang]);
+		} else {
+			$(el).html(_translatorData[dt][lang]);
 		}
-				
-		$('#linkSignOut').click( function() {
-			cognitoUser.signOut();
-			return true;	
-		});	
-		$('#linkReturn').click( function() {
-			cognitoUser.signOut();
-			return true;	
+	});
+	// ========
+	
+	$('#selectLang').change( function(event) {
+		localStorage.setItem('ab-doc.translator.lang', $('#selectLang option:selected').val());
+		location.reload();
+	});
+	$('#selectLang').val(lang);
+	
+	$('.app-container').hide();
+
+	$('#splitter').bsSplitter();
+	//$('.draggable').draggable({cancel: ".draggable *"});
+	
+	var cognitoUser = userPool.getCurrentUser();
+	if(!cognitoUser) {
+		onError();
+		return;
+	}
+			
+	$('#linkSignOut').click( function() {
+		cognitoUser.signOut();
+		return true;	
+	});	
+	$('#linkReturn').click( function() {
+		cognitoUser.signOut();
+		return true;	
+	});
+	
+	$('#username').text(cognitoUser.username);
+	
+	cognitoUser.getSession( function(err, session) {
+		if(err) {
+			onError(err);
+			return;			
+		} 
+
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
+			Logins : {
+				'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
+			}
 		});
 		
-		$('#username').text(cognitoUser.username);
-		
-		cognitoUser.getSession( function(err, session) {
-			if(err) {
+		AWS.config.credentials.refresh( function(err) {
+			if (err) {
 				onError(err);
-				return;			
-			} 
-
-			AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-				IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
-				Logins : {
-					'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
-				}
-			});
+				return;
+			}
 			
-			AWS.config.credentials.refresh( function(err) {
-				if (err) {
-					onError(err);
-					return;
-				}
+			AWS.config.credentials.get( function() {
+				var accessKeyId = AWS.config.credentials.accessKeyId;
+				var secretAccessKey = AWS.config.credentials.secretAccessKey;
+				var sessionToken = AWS.config.credentials.sessionToken;
 				
-				AWS.config.credentials.get( function() {
-					var accessKeyId = AWS.config.credentials.accessKeyId;
-					var secretAccessKey = AWS.config.credentials.secretAccessKey;
-					var sessionToken = AWS.config.credentials.sessionToken;
-					
-					s3 = new AWS.S3({
-						apiVersion: '2006-03-01',
-						accessKeyId: accessKeyId,
-						secretAccessKey: secretAccessKey,
-						sessionToken: sessionToken,
-						region: "eu-west-1"
-					});
-					
-					$.fn.zTree.init($("#abTree"), settings, []);
-					loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
-						$('.app-container').show();
-						$('.preloader-container').hide();					
-					});
+				s3 = new AWS.S3({
+					apiVersion: '2006-03-01',
+					accessKeyId: accessKeyId,
+					secretAccessKey: secretAccessKey,
+					sessionToken: sessionToken,
+					region: "eu-west-1"
+				});
+				
+				$.fn.zTree.init($("#abTree"), settings, []);
+				loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
+					$('.app-container').show();
+					$('.preloader-container').hide();					
 				});
 			});
 		});

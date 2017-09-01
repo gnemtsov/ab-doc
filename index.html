@@ -16,9 +16,6 @@
 		<script src="/scripts/amazon/cognito/amazon-cognito-identity.min.js"></script>
 		<script src="/scripts/amazon/aws-sdk.js"></script>
 
-		<script src="/scripts/translator.js"></script>
-		<script src="/scripts/init-translator.js"></script>
-		<script src="/scripts/translate-login.js"></script>
 		<script src="/scripts/login.js"></script>
 	</head>
  	<body>
@@ -40,44 +37,41 @@
 				<div class="col-md-8 offset-md-2">
 					<form>
 						<fieldset>
-							<legend id="legend">*</legend>
+							<legend id="legend" data-translate="loginPage"></legend>
 							<div class="form-group row">
-								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertUserDoesntExist">
-									*
+								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertUserDoesntExist" data-translate="alertUserDoesntExist">
 								</div>							
 							</div>
 							<div class="form-group row">
-								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongPassword">
-									*
+								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongPassword" data-translate="alertWrongPassword">
 								</div>							
 							</div>
 							<div class="form-group row">
-								<label for="inputEmail" class="col-md-2 col-form-label" id="labelInputEmail">*</label>
+								<label for="inputEmail" class="col-md-2 col-form-label" id="labelInputEmail" data-translate="email"></label>
 								<div class="col-md-10">
-									<input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="*">
+									<input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" data-translate="yourEmail" attr-translate="placeholder">
 								</div>
 							</div>
 							<div class="form-group row">
-								<label for="inputPassword" class="col-md-2 col-form-label" id="labelInputPassword">*</label>
+								<label for="inputPassword" class="col-md-2 col-form-label" id="labelInputPassword" data-translate="password"></label>
 								<div class="col-md-10">
-									<input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" placeholder="*">
+									<input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" data-translate="yourPassword" attr-translate="placeholder">
 								</div>
 							</div>
 							<div class="form-group row collapse" id="divConfirmation">
-								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongCode">
-									*
+								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongCode" data-translate="alertWrongCode">
 								</div>	
-								<label for="inputCode" class="col-md-2 col-form-label" id="labelInputCode">*</label>
+								<label for="inputCode" class="col-md-2 col-form-label" id="labelInputCode" data-translate="confirmationCode"></label>
 								<div class="col-md-10">
-									<input type="text" class="form-control" id="inputCode" placeholder="*">
+									<input type="text" class="form-control" id="inputCode" data-translate="yourConfirmationCode" attr-translate="placeholder">
 								</div>						
 							</div>
 							<div class="form-group row">
 								<div class="col-md-2 offset-md-2">
-									<button type="submit" class="btn btn-primary" id="buttonLogin">*</button>
+									<button type="submit" class="btn btn-primary" id="buttonLogin" data-translate="enter"></button>
 								</div>
 								<div class="col-md-4 offset-md-4">
-									<a href="/signup.html" id="linkSignup">*</a>
+									<a href="/signup.html" id="linkSignup" data-translate="signUp"></a>
 								</div>
 							</div>
 						</fieldset>
