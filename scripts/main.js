@@ -705,7 +705,13 @@ $(document).ready( function() {
 				$.fn.zTree.init($("#abTree"), settings, []);
 				loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
 					$('.app-container').show();
-					$('.preloader-container').hide();					
+					$('.preloader-container').hide();
+					
+					try {
+						initQuill('#editor');
+					} catch(err) {
+						onError(err);
+					}
 				});
 			});
 		});
