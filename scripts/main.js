@@ -340,6 +340,12 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	}
 	// my!
 	tree.lastClicked = treeNode;
+	
+	try {
+		initQuill('#editor', buildPath(treeNode));
+	} catch(err) {
+		onError(err);
+	}
 }
 
 function showRemoveBtn(id, node) {
@@ -494,8 +500,20 @@ function createObjectS3(path, body, errCallback) {
 		Bucket: "ab-doc-storage",
 		Key: path
 	};
-	s3.putObject(params, function(err, data) {
-		if (err) {
+	return s3.putObject(params, function(err, data) {
+		if (err && (errCallback instanceof Function)) {
+			errCallback(err);
+		}
+	});
+};
+
+function createObjectS3Params(params, errCallback) {
+	params.Bucket = "ab-doc-storage";
+	
+	console.log(params);
+	
+	return s3.putObject(params, function(err, data) {
+		if (err && (errCallback instanceof Function)) {
 			errCallback(err);
 		}
 	});
@@ -623,6 +641,8 @@ function onError(err) {
 }
 
 var s3;
+var USERID;
+var AWS_CDN_ENDPOINT;
 
 $(document).ready( function() {
 	// Translation
@@ -702,16 +722,23 @@ $(document).ready( function() {
 					region: "eu-west-1"
 				});
 				
+				// Used in my.tmp.js
+				USERID = AWS.config.credentials.identityId;
+				AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
+				/*s3.getBucketLocation({Bucket: "ab-doc-storage"}).promise()
+					.then(
+						function(data) {
+							AWS_CDN_ENDPOINT = "https://s3-" + data.LocationConstraint + ".amazonaws.com/ab-doc-storage/";
+						},
+						function(err) {
+							onError(err);
+						}
+					)*/
+				
 				$.fn.zTree.init($("#abTree"), settings, []);
-				loadTree(AWS.config.credentials.identityId, cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
+				loadTree(AWS.config.credentials.identityId + "/trees", cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
 					$('.app-container').show();
 					$('.preloader-container').hide();
-					
-					try {
-						initQuill('#editor');
-					} catch(err) {
-						onError(err);
-					}
 				});
 			});
 		});

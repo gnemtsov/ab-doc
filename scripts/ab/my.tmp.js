@@ -1,14 +1,45 @@
-//s3 file uploader
-function s3Uploader(params) {
+//из буфера обмена вставляется файл?
+function isFilePaste(event) {
+    return event &&
+        event.clipboardData &&
+        event.clipboardData.items &&
+        $.inArray('Files', event.clipboardData.types) > -1;
+}
 
-    var form = new FormData();
+//s3 file uploader
+function s3Uploader(params, onprogress) {
+	console.log(params);
+	
+	var request = createObjectS3Params(params);
+	request.httpUploadProgress = function (progress, response) {
+		var progressPercents = progress.loaded * 100.0 / progress.total;
+		
+		if (onprogress instanceof Function) {
+			onprogress.call(this, Math.round(progress));
+		}		
+	};
+
+	var reqPromise = request.promise();
+
+	return new Promise( function (resolve, reject) {
+		reqPromise.then(
+			function (data) {
+				resolve(params.Key);
+			},
+			function (err) {
+				reject(err);
+			}
+		);
+	});
+
+    /*var form = new FormData();
     form.append('AWSAccessKeyId', AWS_ACCESS_KEY);
     form.append('acl', 'public-read');
     form.append('key', params.key);
     form.append('Content-Type', params.content_type);
     form.append('Content-Disposition', "attachment; filename*=UTF-8''" + encodeRFC5987ValueChars(params.content_disposition));
-    form.append('policy', params.policy);
-    form.append('signature', params.signature);
+    //form.append('policy', params.policy);
+    //form.append('signature', params.signature);
     form.append('file', params.file);
 
     var request = new XMLHttpRequest();
@@ -48,10 +79,17 @@ function s3Uploader(params) {
     request.open('POST', AWS_S3_ENDPOINT, true);
     request.send(form);
 
-    return promise;
+    return promise;*/
 }
 
 // from core.js
+function GetGUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 function encodeRFC5987ValueChars(str) {
     return encodeURIComponent(str).
         // Замечание: хотя RFC3986 резервирует "!", RFC5987 это не делает, так что нам не нужно избегать этого
@@ -62,7 +100,7 @@ function encodeRFC5987ValueChars(str) {
 }
 
 // Create editor
-function initQuill(id) {
+function initQuill(id, docKey) {
 	/*var $updated = $('#tm_updated_' + tm_id),
         $content = $(id),
         $files = $('#m_files_' + tm_id),
@@ -86,37 +124,85 @@ function initQuill(id) {
     $content.data("editor", editor);
 
     editor.on('text-change', function () {
-
-        //$updated.addClass('pending');
         $content.attr("modified", 1);
-
-        //если это первое сообщение обновляем заголовок задачи
-        if (Number($content.attr('starter_message')) === 1) {
-            var title = editor.getText(0, 41);
-            var nl_pos = title.indexOf('\n');
-            if (nl_pos > 0) {
-                title = title.substring(0, nl_pos);
-            }
-            if (title.length > 40) {
-                title = title.substring(0, 40) + '..';
-            }
-            //устанавливаем название
-            $('#t_title').text(title);
-            document.title = '#' + $('#t_id').text() + "  " + title;
-        }
-
-        //если изменилась высота содержимого обновляем sticky_kit
-        // убрать всё со sticky
-        /*if ($content.height() != $content.attr("data-height")) {
-            $content.attr("data-height", $content.height());
-            UpdateStickyBlocks(1, $('#tm_wrap_' + tm_id).find('.message-meta').get(0));
-            $(document.body).trigger("sticky_kit:recalc");
-        }*/
-
-        try{
-            window.abtasks_event.description = { 'tm_id': $content.attr("tm_id") };
-            socket.emit('typing', window.abtasks_event);
-        }catch(error){}
-
     });
+    
+    //обработчики событий в редакторе
+    $(editor.root).bind({
+        //вставка изображения из буфера обмена
+        paste: function (e) {
+            if (isFilePaste(e.originalEvent)) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var item = e.originalEvent.clipboardData.items[0];
+                var blob = item.getAsFile();
+				console.log('paste', item);
+                if (item.kind === "file" && item.type === "image/png" && blob !== null) {
+
+                    //$updated.addClass('pending');
+                    $content.attr('waiting', Number($content.attr('waiting')) + 1);
+                    paste_index = editor.getSelection(true).index;
+                    editor.insertEmbed(paste_index, 'image', 'img/ajax-loader.gif', 'silent');
+
+                    //загружаем картинку в S3
+                    var guid = GetGUID();
+                    var key = USERID + '/files/embedded/' + guid + '.png';
+                    var params = {
+                        Body: blob,
+                        ContentType: "image/png",
+                        ContentDisposition: guid + '.png',
+                        Key: key
+                        //ACL: 'public-read'
+                        //policy: $('#tm_wrap_' + tm_id + '>.content-wrap>.s3-policy').text(),
+                        //signature: $('#tm_wrap_' + tm_id + '>.content-wrap>.s3-signature').text()
+                    };
+
+					var onprogress = function(p) {
+						console.log(p, '%');
+					}
+
+                    s3Uploader(params, onprogress).then(
+                        function (key) {
+							console.log(key);
+                            var delta = { ops: [] };
+                            if(paste_index){
+                                delta.ops.push({ "retain": paste_index });
+                            }
+                            delta.ops.push( { "delete": 1 } );
+                            delta.ops.push( { "insert": { "image": AWS_CDN_ENDPOINT + key } } );
+                            editor.updateContents(delta, 'silent');
+
+                            $(editor.root).find("img[src$='" + AWS_CDN_ENDPOINT + key + "']").one('load', function () {
+                                $content.attr('waiting', Number($content.attr('waiting')) - 1);
+                                delta.ops = [];
+                                if(paste_index){
+                                    delta.ops.push({ "retain": paste_index });
+                                }
+                                delta.ops.push( { "retain": 1, attributes: { width: this.naturalWidth, height: this.naturalHeight } } );
+                                editor.updateContents(delta, 'user');
+                            });
+
+                        },
+                        function (error) { console.log(params, error); }
+                    );
+
+                }
+
+            }
+
+        }
+	})
 }
+
+
+
+//document.ready
+$(function () {
+	//saving.. messages content every 3 seconds
+    setInterval(function () {
+        $('#editor').each(function (index, element) {
+            $(element).attr('modified', 0);
+        });
+    }, 3000);
+});
