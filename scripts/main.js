@@ -342,7 +342,7 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	tree.lastClicked = treeNode;
 	
 	try {
-		initQuill('#editor', buildPath(treeNode));
+		initQuill('#document', buildPath(treeNode));
 	} catch(err) {
 		onError(err);
 	}
@@ -510,14 +510,28 @@ function createObjectS3(path, body, errCallback) {
 function createObjectS3Params(params, errCallback) {
 	params.Bucket = "ab-doc-storage";
 	
-	console.log(params);
-	
 	return s3.putObject(params, function(err, data) {
 		if (err && (errCallback instanceof Function)) {
 			errCallback(err);
 		}
 	});
 };
+
+function getObjectS3(path) {
+	var params = {
+		Bucket: "ab-doc-storage",
+		Key: path
+	};
+	return s3.getObject(params)
+}
+
+function getObjectS3Params(params) {
+	params.Bucket = "ab-doc-storage";
+	
+	console.log(params);
+	
+	return s3.getObject(params)
+}
 
 function removeTreeS3(treeNode, errCallback) {
 	var params = {
