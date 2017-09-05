@@ -656,7 +656,7 @@ function onError(err) {
 
 var s3;
 var USERID;
-var AWS_CDN_ENDPOINT;
+var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
 
 $(document).ready( function() {
 	// Translation
@@ -738,7 +738,6 @@ $(document).ready( function() {
 				
 				// Used in my.tmp.js
 				USERID = AWS.config.credentials.identityId;
-				AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
 				/*s3.getBucketLocation({Bucket: "ab-doc-storage"}).promise()
 					.then(
 						function(data) {
