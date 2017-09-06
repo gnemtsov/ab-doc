@@ -524,7 +524,7 @@ function CaretBeforeElement(element) {
     var selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-}
+} 
 
 //
 var copyToClipboard = (function () {

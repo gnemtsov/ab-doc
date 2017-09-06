@@ -90,6 +90,11 @@ var _translatorData = {
 	"document": {
 		"ru": "Документ",
 		"en": "Document"
+	},
+	
+	"saving": {
+		"ru": "сохранение...",
+		"en": "saving..."
 	}
 }
 
@@ -517,20 +522,28 @@ function createObjectS3Params(params, errCallback) {
 	});
 };
 
-function getObjectS3(path) {
+function getObjectS3(path, errCallback) {
 	var params = {
 		Bucket: "ab-doc-storage",
 		Key: path
 	};
-	return s3.getObject(params)
+	return s3.getObject(params, function(err, data) {
+		if (err && (errCallback instanceof Function)) {
+			errCallback(err);
+		}		
+	});
 }
 
-function getObjectS3Params(params) {
+function getObjectS3Params(params, errCallback) {
 	params.Bucket = "ab-doc-storage";
 	
 	console.log(params);
 	
-	return s3.getObject(params)
+	return s3.getObject(params, function(err, data) {
+		if (err && (errCallback instanceof Function)) {
+			errCallback(err);
+		}		
+	});
 }
 
 function removeTreeS3(treeNode, errCallback) {
@@ -540,7 +553,7 @@ function removeTreeS3(treeNode, errCallback) {
 	};
 	//console.log(treeNode.getPath());
 	s3.deleteObject(params, function(err, data) {
-		if (err) {
+		if (err && (errCallback instanceof Function)) {
 			errCallback(err);
 		}
 	});
@@ -569,7 +582,7 @@ function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
 			
 			//console.log(newKey);
 			s3.copyObject(copyParams, function(err, data) {
-				if (err) {
+				if (err && (errCallback instanceof Function)) {
 					errCallback(err);
 				}
 				var deleteParams = {
@@ -577,7 +590,7 @@ function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
 					Key: oldKey
 				};
 				s3.deleteObject(deleteParams, function(err, data) {
-					if (err) {
+					if (err && (errCallback instanceof Function)) {
 						errCallback(err);
 					}
 				});	
@@ -598,7 +611,7 @@ function withS3Files(prefix, callback, errCallback) {
 	// Ugly recursion!!!!!!!!
 	// TODO: rewrite it all!!!!!!!!
 	function f(err, data) {
-		if (err) {
+		if (err && (errCallback instanceof Function)) {
 			errCallback(err);
 			return;
 		}
@@ -647,7 +660,7 @@ function loadTree(prefix, username, tree, callback, errCallback) {
 
 function onError(err) {
 	if (err) {
-		console.log(err);
+		console.log("Error!", err);
 	}
 	$('.preloader-container').hide();
 	$('#alertError').show();
@@ -657,21 +670,22 @@ function onError(err) {
 var s3;
 var USERID;
 var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
+var LANG;
 
 $(document).ready( function() {
 	// Translation
-	var lang = localStorage.getItem('ab-doc.translator.lang');
-	if (!lang) {
-		lang = "ru";
+	LANG = localStorage.getItem('ab-doc.translator.lang');
+	if (!LANG) {
+		LANG = "ru";
 	}
 	$('[data-translate]').each( function(i, el) {
 		var dt = $(el).attr('data-translate'),
 			at = $(el).attr('attr-translate');
 		
 		if (at) {
-			$(el).attr(at, _translatorData[dt][lang]);
+			$(el).attr(at, _translatorData[dt][LANG]);
 		} else {
-			$(el).html(_translatorData[dt][lang]);
+			$(el).html(_translatorData[dt][LANG]);
 		}
 	});
 	// ========
@@ -680,7 +694,7 @@ $(document).ready( function() {
 		localStorage.setItem('ab-doc.translator.lang', $('#selectLang option:selected').val());
 		location.reload();
 	});
-	$('#selectLang').val(lang);
+	$('#selectLang').val(LANG);
 	
 	$('.app-container').hide();
 

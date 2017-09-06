@@ -13,6 +13,10 @@ function isFilePaste(event) {
 function s3Uploader(params, onprogress) {
 	//console.log(params);
 	
+	if (params.ContentDisposition) {
+		params.ContentDisposition = "attachment; filename*=UTF-8''" + encodeRFC5987ValueChars(params.ContentDisposition);
+	}
+	
 	var request = createObjectS3Params(params);
 	request.on('httpUploadProgress', function (progress, response) {
 		var progressPercents = progress.loaded * 100.0/ progress.total;
@@ -92,18 +96,21 @@ function initQuill(id, docKey) {
 	}
 	
 	// remove old editor
-	$('#editor').remove();
-	$('#files').remove();
-	$('#dropzone').remove();
+	$('#editor-wrap').remove();
+	
 	// create new
 	$(id).append( // TODO: add translation
-		'<div id="editor"></div>\
-		<div id="files" class="files"></div>\
-		<div id="dropzone" class="filedrag">\
-			<span class="glyphicon glyphicon-trash" aria-label="Del"></span>\
-			<div class="drop-files-here">\
-				Приложите вложения сюда, рисунки можно помещать сразу в текст.\
-				<input id="clip" name="clip" multiple="multiple" type="file>\
+		'<div id="editor-wrap" class="content-wrap">\
+			<div class="updated">\
+				<span id="updated">test</span>\
+			</div>\
+			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
+			<ul id="files" class="files"></ul>\
+			<div id="dropzone" class="filedrag">\
+				<div class="drop-files-here">\
+					Приложите вложения сюда, рисунки можно помещать сразу в текст.\
+					<input id="clip" name="clip" multiple="multiple" type="file>\
+				</div>\
 			</div>\
 		</div>'
 	);
@@ -130,6 +137,51 @@ function initQuill(id, docKey) {
 			var editor = new Quill('#editor', editor_options);
 			$content.data('editor', editor);
 			$content.attr('s3key', docKey);
+
+			//лупа для больших изображений
+			function backgroundReposition(e, image){
+				var X = e.offsetX ? e.offsetX : e.pageX - image.offsetLeft,
+					Y = e.offsetY ? e.offsetY : e.pageY - image.offsetTop;
+				image.style['background-position-x'] = Math.round((X / image.width)*100) + '%';
+				image.style['background-position-y'] = Math.round((Y / image.height)*100) + '%';        
+			}
+			$content.on('mouseup', 'img', function (e) {
+				var $img = $(this);
+				console.log('Test');
+				console.log(e.which === 1, $img.attr('width') > $content.width(), $content.attr('modified') === '0', $content.attr('waiting') === '0');
+				if(e.which === 1 && $img.attr('width') > $content.width() && $content.attr('modified') === '0' && $content.attr('waiting') === '0'){
+					if($img.attr('src').indexOf('data:image/svg+xml;base64') === -1){
+						if($content.attr('editable') === '1') {
+							$content.data('editor').disable();
+						}
+						var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + this.width + '" height="' + this.height + '"/>';
+						$img.css('background-image', 'url('+ $img.attr('src') +')');
+						$img.css('cursor', 'crosshair');
+						image_zooming_id = $img.attr('src').split('/').pop().split('.')[0];
+						$img.attr('id', image_zooming_id);
+						$img.attr('src', 'data:image/svg+xml;base64,'+btoa(svg));
+						backgroundReposition(e, this);
+					}else{
+						$img.trigger('mouseout');
+					}
+				}  
+			});
+			$content.on('mousemove', 'img', function (e) {
+				if(this.getAttribute('src').indexOf('data:image/svg+xml;base64') !== -1){
+					backgroundReposition(e, this);
+				}
+			});
+			$content.on('mouseout', 'img', function (e) {
+				var $img = $(this);
+				if($img.attr('src').indexOf('data:image/svg+xml;base64') !== -1){
+					image_zooming_id = '';
+					$img.attr( 'src', $img.css('background-image').replace(/url\(("|')(.+)("|')\)/gi, '$2') );
+					$img.removeAttr('id').removeAttr('style');
+					if($content.attr('editable') === '1') {
+						$content.data('editor').enable();
+					}
+				}
+			});
 
 			editor.on('text-change', function () {
 				$content.attr("modified", 1);
@@ -160,8 +212,8 @@ function initQuill(id, docKey) {
 								Body: blob,
 								ContentType: "image/png",
 								ContentDisposition: guid + '.png',
-								Key: key
-								//ACL: 'public-read'
+								Key: key,
+								ACL: 'public-read'
 							};
 
 							var onprogress = function(p) {
@@ -257,8 +309,8 @@ function initQuill(id, docKey) {
 											Body: blob,
 											ContentType: _f.type,
 											ContentDisposition: _f.name,
-											Key: key
-											//ACL: 'public-read'
+											Key: key,
+											ACL: 'public-read'
 										};
 										
 										s3Uploader(params).then(
@@ -396,9 +448,6 @@ function initQuill(id, docKey) {
 					var uploaders = new Array();
 					$.each(files, function (i, file) {
 
-						var guid = GetGUID(),
-							key = USERID + '/files/' + guid;
-
 						var fname = '<td class="file-name">' + file.name + '</td>',
 							fsize = '<td class="file-size">(' + GetSize(file['size']) + ')</td>',
 							progress = '<td class="file-progress"><div class="progress"><div class="progress-bar" style="width: 0%;"></div></div></td>',
@@ -419,75 +468,71 @@ function initQuill(id, docKey) {
 							fr.readAsArrayBuffer(file);
 						});
 						
-						// Исправить. Сделать, как с картинками.
-						readFilePromise.then(
-							function(blob) {
-								var params = {
-									Body: blob,
-									ContentType: 'application/octet-stream',
-									ContentDisposition: file.name,
-									Key: key
-									//ACL: 'public-read'
-								};
-								
-								console.log(params);
-
-								var uploader = s3Uploader(params, function (percents) {
-									console.log(percents);
-									$li.find('.progress-bar').css('width', percents + '%');
-								});
-								uploaders.push(
-									uploader.then(
-										function (key) {
-											if (key === 'abort') {
-												return Promise.resolve("abort");
-											}
-
-											$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
-											$li.find('span.abort').removeClass('abort').addClass('remove');
-											//$updated.html(tfu_js['saving']);
-
-											return updateMessageFiles(tm_id).done(function (data) {
-
-												if (data.error){
-													ShowAlert('danger', data.error in tfu_js ? tfu_js[data.error] : data.error);
-												} else {
-													task = data;
-													UpdateTaskUI(task);
-
-													$li.find('td.file-progress').html('&nbsp;');
-													$updated.fadeOut('slow', function () {
-														if ($content.attr('modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-															$(this).removeClass('pending');
-														}
-														$(this).text(task.t_updated).fadeIn('fast');
-													});
-
-													try{
-														window.abtasks_event.description = { 'tm_id': tm_id, 'tm_updated': task.t_updated };
-														socket.emit('saved', window.abtasks_event);
-													}catch(error){}
-												}                
-
-											});
-
+						//нужен promise, который вернёт key.
+						var uploader = new Promise ( function(resolve, reject) {
+							readFilePromise.then(
+								function(blob) {
+									var guid = GetGUID(),
+										key = USERID + '/files/' + guid;	
+																
+									var params = {
+										Body: blob,
+										ContentType: 'application/octet-stream',
+										ContentDisposition: file.name,
+										Key: key,
+										ACL: 'public-read'
+									};
+									
+									s3Uploader(params, function (percents) {
+										$li.find('.progress-bar').css('width', percents + '%');
+									}).then(
+										function(key) {
+											resolve(key);
 										},
-										function (Error) { console.log(Error); }
-									)
-								);
+										function(err) {
+											reject(err);
+										}
+									);
+								},
+								function(err) {
+									reject(err);
+								}
+							);
+						});
+						
+						uploaders.push(
+							uploader.then(
+								function (key) {
+									if (key === 'abort') {
+										return Promise.resolve("abort");
+									}
 
-								$li.find('span.abort').on('click', function () {
-									uploader.abort();
-									$(this).closest('li').fadeOut('slow', function () {
-										$(this).remove();
+									$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
+									$li.find('span.abort').removeClass('abort').addClass('remove');
+									//$updated.html(tfu_js['saving']);
+
+									// Тут было updateMessageFiles для записи в БД
+									// Мы не решили в БД буем хранить или в json-файле. 
+									// Пока будет простообновление UI
+
+									$li.find('td.file-progress').html('&nbsp;');
+									$updated.fadeOut('slow', function () {
+										if ($content.attr('modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+											$(this).removeClass('pending');
+										}
+										$(this).text(task.t_updated).fadeIn('fast');
 									});
-								});
-							},
-							function(err) {
-								// TODO
-							}
+								},
+								function (Error) { console.log(Error); }
+							)
 						);
-
+						
+						$li.find('span.abort').on('click', function () {
+							uploader.abort();
+							$(this).closest('li').fadeOut('slow', function () {
+								$(this).remove();
+							});
+						});
 					});
 
 					Promise.all(uploaders).then(
@@ -513,79 +558,19 @@ function initQuill(id, docKey) {
 				$a.replaceWith($a.text());
 				$(this).replaceWith('<img src="img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
-				$updated.html(tfu_js['saving']).addClass('pending');
+				//$updated.html(tfu_js['saving']).addClass('pending');
 
-				$.when(
-					updateMessageFiles(tm_id),
-					$.ajax({
-						method: 'POST',
-						url: 'ajax_delete_file.php',
-						data: { href: href },
-						dataType: 'json'
-					})            
-				).done(function (data1, data2) {
+				$li.fadeOut('slow', function () {
+					$(this).remove();
+				});
+				$files.attr('waiting', Number($files.attr('waiting')) - 1);
 
-					if (data1[0].error){
-						ShowAlert('danger', data1[0].error in tfu_js ? tfu_js[data1[0].error] : data1[0].error);
-					} else {
-						task = data1[0];
-						UpdateTaskUI(task);
-
-						$li.fadeOut('slow', function () {
-							$(this).remove();
-						});
-						$files.attr('waiting', Number($files.attr('waiting')) - 1);
-
-						$updated.fadeOut('slow', function () {
-							if ($content.attr('modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-								$(this).removeClass('pending');
-							}
-							$(this).text(task.t_updated).fadeIn('fast');
-						});
-
-						try{
-							window.abtasks_event.description = { 'tm_id': tm_id, 'tm_updated': task.t_updated };
-							socket.emit('saved', window.abtasks_event);
-						}catch(error){}
-					}                
-
-					if (data2[0].error){
-						ShowAlert('danger', data2[0].error in tfu_js ? tfu_js[data2[0].error] : data2[0].error);
+				$updated.fadeOut('slow', function () {
+					if ($content.attr('modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+						$(this).removeClass('pending');
 					}
-
 				});
 			});
-
-			//удаление сообщений - не нужно
-			/*$drop_zone.on('click', 'span.glyphicon-trash', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				$(this).replaceWith(HTML_yesno);
-			});
-			$drop_zone.on('click', 'a.confirm-no', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				var HTML_trash = '<span class="glyphicon glyphicon-trash" aria-label="Del"></span>';
-				$(this).closest('span').replaceWith(HTML_trash);
-			});
-			$drop_zone.on('click', 'a.confirm-yes', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				$(this).closest('span').replaceWith('<img src="img/ajax-loader.gif">');
-				$.post("ajax_delete_message.php", { t_id: $('#t_id').text(), tm_id: tm_id })
-					.done(function (data) {
-						if (data == 'success') {
-							$('#tm_wrap_' + tm_id).fadeOut('slow', function () {
-								$(this).remove();
-							});
-							
-							try{
-								window.abtasks_event.description = { 'tm_id': tm_id };
-								socket.emit('deleted', window.abtasks_event);
-							}catch(error){}
-						}
-					});
-			});*/
 		});
 }
 
@@ -649,11 +634,28 @@ $(function () {
 	//saving.. messages content every 3 seconds
 	setInterval(function () {
 		$('#editor[modified="1"]').each(function (index, element) {
-			var $editor = $('#editor');
+			var $editor = $('#editor'),
+				$updated = $('#updated'),
+				$files = $('#files');
 			
+			$updated.html(_translatorData['saving'][LANG]);
 			$(element).attr('modified', 0);
 			
-			saveDocument('#editor');
+			saveDocument('#editor').then(
+				function (ok) {
+				    $updated.fadeOut('slow', function () {
+						if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+							$(this).removeClass('pending');
+						}
+						
+						var updatedTime = "yesterday"; // TODO
+						$(this).text(updatedTime).fadeIn('fast');
+					});
+				},
+				function (err) {
+					onError(err);
+				}
+			);
 		});
 	}, 3000);
 });
