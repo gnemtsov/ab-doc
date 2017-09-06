@@ -90,6 +90,11 @@ var _translatorData = {
 	"document": {
 		"ru": "Документ",
 		"en": "Document"
+	},
+	
+	"saving": {
+		"ru": "сохранение...",
+		"en": "saving..."
 	}
 }
 
