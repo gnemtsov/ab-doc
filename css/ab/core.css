@@ -307,7 +307,7 @@ span[data-direct_action="1"]{
   }
   
 /* самоисчезающие сообщения */
-#alerts-container{
+/*#alerts-container{
   position: fixed;
   top: 50px;
   width:100%;
@@ -319,7 +319,7 @@ span[data-direct_action="1"]{
   padding: 3px 10px 3px 10px;
   display:table;
   margin: 2px auto;
-}
+}*/
 
 /*
 --------------------------------------------------

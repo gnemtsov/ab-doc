@@ -102,10 +102,10 @@ function initQuill(id, docKey) {
 	$(id).append( // TODO: add translation
 		'<div id="editor-wrap" class="content-wrap">\
 			<div class="updated">\
-				<span id="updated">test</span>\
+				<span id="updated"></span>\
 			</div>\
 			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
-			<ul id="files" class="files"></ul>\
+			<ul id="files" class="files" waiting="0"></ul>\
 			<div id="dropzone" class="filedrag">\
 				<div class="drop-files-here">\
 					Приложите вложения сюда, рисунки можно помещать сразу в текст.\
@@ -116,18 +116,21 @@ function initQuill(id, docKey) {
 	);
 	
 	loadDocument(docKey, '#editor')
-		.then(function() {
+		.then(function(data) {
 			var $content = $('#editor'),
 				$drop_zone = $('#dropzone'),
 				$clip = $drop_zone.find('#clip'),
-				$files = $('#files');
+				$files = $('#files'),
+				$updated = $('#updated');
+				
+			$updated.html('Loaded'); // TODO: load updated time from data
 			
 			//редактор Quill from https://quilljs.com
 			var toolbar_options = [
 				'bold', 'italic', 'underline', 'strike', { 'size': [] }, { 'color': [] }, { 'background': [] }, 'blockquote', 'code-block', 'link', { 'list': 'ordered' }, { 'list': 'bullet' }, 'clean'
 			];
 			var editor_options = {
-				placeholder: 'type_your_text', // make translation
+				placeholder: _translatorData['typeYourText'][LANG],
 				theme: 'bubble',
 				modules: {
 					toolbar: toolbar_options
@@ -185,6 +188,7 @@ function initQuill(id, docKey) {
 
 			editor.on('text-change', function () {
 				$content.attr("modified", 1);
+				$updated.addClass('pending');
 			});
 			
 			//обработчики событий в редакторе
@@ -200,7 +204,7 @@ function initQuill(id, docKey) {
 						console.log('paste', item);
 						if (item.kind === "file" && item.type === "image/png" && blob !== null) {
 
-							//$updated.addClass('pending');
+							$updated.addClass('pending');
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							paste_index = editor.getSelection(true).index;
 							editor.insertEmbed(paste_index, 'image', 'img/ajax-loader.gif', 'silent');
@@ -281,7 +285,7 @@ function initQuill(id, docKey) {
 								continue;
 							}
 
-							//$updated.addClass('pending');
+							$updated.addClass('pending');
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 							
@@ -457,7 +461,7 @@ function initQuill(id, docKey) {
 
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);
-						//$updated.addClass('pending');
+						$updated.addClass('pending');
 
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
@@ -484,7 +488,10 @@ function initQuill(id, docKey) {
 									};
 									
 									s3Uploader(params, function (percents) {
-										$li.find('.progress-bar').css('width', percents + '%');
+										var oldPercents = parseInt($li.find('.progress-bar').css('width'), 10)
+										if (percents > oldPercents) {
+											$li.find('.progress-bar').css('width', percents + '%');
+										}
 									}).then(
 										function(key) {
 											resolve(key);
@@ -509,7 +516,7 @@ function initQuill(id, docKey) {
 
 									$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
 									$li.find('span.abort').removeClass('abort').addClass('remove');
-									//$updated.html(tfu_js['saving']);
+									$updated.html(_translatorData['saving'][LANG]);
 
 									// Тут было updateMessageFiles для записи в БД
 									// Мы не решили в БД буем хранить или в json-файле. 
@@ -520,7 +527,7 @@ function initQuill(id, docKey) {
 										if ($content.attr('modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
 											$(this).removeClass('pending');
 										}
-										$(this).text(task.t_updated).fadeIn('fast');
+										$(this).text("Update time").fadeIn('fast'); //TODO
 									});
 								},
 								function (Error) { console.log(Error); }
@@ -558,7 +565,7 @@ function initQuill(id, docKey) {
 				$a.replaceWith($a.text());
 				$(this).replaceWith('<img src="img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
-				//$updated.html(tfu_js['saving']).addClass('pending');
+				$updated.html(_translatorData['saving'][LANG]).addClass('pending');
 
 				$li.fadeOut('slow', function () {
 					$(this).remove();
@@ -644,6 +651,7 @@ $(function () {
 			saveDocument('#editor').then(
 				function (ok) {
 				    $updated.fadeOut('slow', function () {
+						console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
 						if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
 							$(this).removeClass('pending');
 						}

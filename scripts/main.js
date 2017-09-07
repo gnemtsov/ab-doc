@@ -95,6 +95,10 @@ var _translatorData = {
 	"saving": {
 		"ru": "сохранение...",
 		"en": "saving..."
+	},
+	"typeYourText": {
+		"ru": "ваш текст...",
+		"en": "type your text..."
 	}
 }
 
