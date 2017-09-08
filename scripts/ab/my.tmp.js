@@ -62,11 +62,14 @@ function loadDocument(path, id) {
 	
 	return s3Downloader(params).then(
 		function(data) {
-			console.log(data.Body);
 			$(id).html(new TextDecoder('utf-8').decode(data.Body));
 		},
 		function(err) {
-			console.log(err);
+			if (err.name === 'NoSuchKey') {
+				$(id).html('');
+			} else {
+				onError(err);
+			}
 		}
 	);
 }
@@ -578,6 +581,9 @@ function initQuill(id, docKey) {
 					}
 				});
 			});
+		},
+		function (err) {
+			throw err;
 		});
 }
 
