@@ -473,8 +473,22 @@ $(document).ready( function() {
 					if (TREE_MODIFIED) {
 						var zTree = $.fn.zTree.getZTreeObj("abTree");
 						var nodes = zTree.getNodesByParam('id', 'top')[0].children;
-						var abTree = toABTree(nodes ? nodes : []);
-						console.log(abTree);
+						var abTree;
+						if (nodes) {
+							var f = function(n) {
+								var abNode = {
+									id : n.id,
+									name : n.name,
+									children : n.children ? n.children.map(f) : []
+								};
+								
+								return abNode;
+							};
+							
+							abTree = nodes.map(f);
+						} else {
+							abTree = [];
+						}
 						
 						$updated.html(_translatorData['saving'][LANG]);
 						saveABTree(abTree, treeKey).then(
@@ -560,28 +574,6 @@ function saveABTree(abTree, key) {
 		Key: key
 	};
 	return s3.putObject(params).promise();
-}
-
-//----------------------------------------------------
-//----------- zNodes <=> ABTree conversion -----------
-//----------------------------------------------------
-
-// Converts zNodes to ABTree
-// Returns (ABTree JSON) or (null) if zNodes have a wrong structure 
-function toABTree(zNodes) {	
-	var f = function(n) {
-		var abNode = {
-			id : n.id,
-			name : n.name,
-			children : n.children ? n.children.map(f) : []
-		};
-		
-		return abNode;
-	};
-	
-	abTree = zNodes.map(f);
-	
-	return abTree;
 }
 
 //---------------------------------------
