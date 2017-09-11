@@ -122,9 +122,6 @@ function initQuill(id, guid) {
 	// create new
 	$(id).append( // TODO: add translation
 		'<div id="editor-wrap" class="content-wrap">\
-			<div class="updated">\
-				<span id="updated"></span>\
-			</div>\
 			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
 			<ul id="files" class="files" waiting="0"></ul>\
 			<div id="dropzone" class="filedrag">\
