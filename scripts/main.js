@@ -328,6 +328,7 @@ var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
 var STORAGE_BUCKET = "ab-doc-storage";
 var LANG;
 var TREE_MODIFIED = false;
+var TREE_FILENAME = "tree.json";
 
 $(document).ready( function() {
 	// Translation
@@ -424,14 +425,14 @@ $(document).ready( function() {
 					)*/
 				
 				// Trying to load the tree
-				var treeKey = USERID + '/trees/TEST';
+				var treeKey = USERID + '/' + TREE_FILENAME;
 				loadABTree(treeKey).then(
 					function(abTree) {
 						return Promise.resolve(abTree);
 					},
 					function(err) {
 						if (err.name == 'NoSuchKey') {
-							return Promise.resolve(newABTree('Test'));
+							return Promise.resolve([]);
 						} else {
 							return Promise.reject(err);
 						}
@@ -439,7 +440,15 @@ $(document).ready( function() {
 				).then(
 					function(abTree) {
 						console.log(abTree);
-						var zNodes = toZNodes(abTree);
+						var zNodes = [{
+							id: 'top',
+							head: true,
+							icon: "/css/ztree/img/diy/1_open.png",
+							name: "",
+							children: abTree,
+							open: false
+						}];
+						
 						$.fn.zTree.init($("#abTree"), settings, zNodes);
 						$('.app-container').show();
 						$('.preloader-container').hide();					
@@ -453,7 +462,8 @@ $(document).ready( function() {
 					if (TREE_MODIFIED) {
 						console.log('Saved changes');
 						var zTree = $.fn.zTree.getZTreeObj("abTree");
-						var abTree = toABTree(zTree.getNodes());
+						var nodes = zTree.getNodesByParam('id', 'top')[0].children;
+						var abTree = toABTree(nodes ? nodes : []);
 						console.log(abTree);
 						saveABTree(abTree, treeKey);
 						TREE_MODIFIED = false;
@@ -472,15 +482,6 @@ $(document).ready( function() {
 //------------------------------------------------
 //----------- ABTree-related functions -----------
 //------------------------------------------------
-
-// Creates empty ABTree JSON with a given title
-// Returns ABTree JSON
-function newABTree(title) {
-	return {
-		title: title,
-		nodes: []
-	};
-}
 
 // Loads JSON with a specified key (String) from STORAGE_BUCKET
 // Returns a Promise (ABTree JSON)
@@ -521,62 +522,20 @@ function saveABTree(abTree, key) {
 //----------- zNodes <=> ABTree conversion -----------
 //----------------------------------------------------
 
-// Converts ABTree JSON to zNodes
-// Returns zNodes
-function toZNodes(abTree) {
-	var zNodes = [{
-		id: 'top',
-		head: true,
-		icon: "/css/ztree/img/diy/1_open.png",
-		pId: 0,
-		name: abTree.title,
-		children: abTree.nodes,
-		open: false
-	}];
-	
-	// Recursively iterates through zNodes and sets s3path as id
-	var f = function(nodes) {
-		nodes.forEach( function(n, i, arr) {
-			if (n.guid) {
-				arr[i].id = n.guid;
-			}
-			
-			if (n.children) {
-				f(n.children);
-			}
-		});
-	}
-	
-	f(zNodes[0].children);
-	
-	return zNodes;
-}
-
 // Converts zNodes to ABTree
 // Returns (ABTree JSON) or (null) if zNodes have a wrong structure 
-function toABTree(zNodes) {
-	var top = zNodes.find( function(node) {
-		return node.id === 'top';
-	});
-	
-	if (!top) {
-		return null;
-	}
-	
+function toABTree(zNodes) {	
 	var f = function(n) {
 		var abNode = {
-			guid : n.guid,
+			id : n.id,
 			name : n.name,
-			files : n.files,
-			modified : n.modified,
 			children : n.children ? n.children.map(f) : []
 		};
 		
 		return abNode;
 	};
 	
-	var abTree = {title: top.name};
-	abTree.nodes = top.children.map(f);
+	abTree = zNodes.map(f);
 	
 	return abTree;
 }
@@ -844,7 +803,7 @@ function addHoverDom(treeId, treeNode) {
 			}
 			i++;
 		}
-		zTree.addNodes(treeNode, {id: id, name:name, modified: Date.now(), guid: GetGUID(), files: []});
+		zTree.addNodes(treeNode, {id: GetGUID(), name: name, files: []});
 		//createObjectS3(path, "", onError);
 		return false;
 	});
