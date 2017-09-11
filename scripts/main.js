@@ -254,7 +254,7 @@ function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
 	}, errCallback);
 }
 
-// Loads list of files with specified prefix and passes it to callback
+// Loads list of files with specified prefix and passes each one to callback
 function withS3Files(prefix, callback, errCallback) {
 	var files = [];
 	var params = {
@@ -283,7 +283,7 @@ function withS3Files(prefix, callback, errCallback) {
 			params.Marker = data.NextMarker;
 			s3.listObjects(params, f);
 		} else {
-			callback(files);
+			files.forEach(callback);
 		}
 	};
 	f(undefined, undefined);	
@@ -751,7 +751,7 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	try {
 		if (!treeNode.head) {
 			$('#selectedDoc')[0].innerHTML = treeNode.name;
-			initQuill('#document', USERID + '/documents/' + treeNode.guid);
+			initQuill('#document', treeNode.id);
 		}
 	} catch(err) {
 		onError(err);
