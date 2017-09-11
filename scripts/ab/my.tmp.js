@@ -685,33 +685,3 @@ function encodeRFC5987ValueChars(str) {
 		replace(/%(?:7C|60|5E)/g, unescape);
 }
 
-//document.ready
-$(function () {
-	//saving.. messages content every 3 seconds
-	setInterval(function () {
-		$('#editor[modified="1"]').each(function (index, element) {
-			var $editor = $('#editor'),
-				$updated = $('#updated'),
-				$files = $('#files');
-			
-			$updated.html(_translatorData['saving'][LANG]);
-			$(element).attr('modified', 0);
-			
-			saveDocument('#editor').then(
-				function (ok) {
-				    $updated.fadeOut('slow', function () {
-						console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
-						if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-							$(this).removeClass('pending');
-						}
-						
-						$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
-					});
-				},
-				function (err) {
-					onError(err);
-				}
-			);
-		});
-	}, 3000);
-});

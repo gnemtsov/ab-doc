@@ -337,6 +337,7 @@ var STORAGE_BUCKET = "ab-doc-storage";
 var LANG;
 var TREE_MODIFIED = false;
 var TREE_FILENAME = "tree.json";
+var $updated;
 
 $(document).ready( function() {
 	// Translation
@@ -466,16 +467,51 @@ $(document).ready( function() {
 					}
 				);
 				
+				$updated = $('#updated');
+				
 				setInterval(function () {
 					if (TREE_MODIFIED) {
-						console.log('Saved changes');
 						var zTree = $.fn.zTree.getZTreeObj("abTree");
 						var nodes = zTree.getNodesByParam('id', 'top')[0].children;
 						var abTree = toABTree(nodes ? nodes : []);
 						console.log(abTree);
-						saveABTree(abTree, treeKey);
+						
+						$updated.html(_translatorData['saving'][LANG]);
+						saveABTree(abTree, treeKey).then(
+							function (ok) {
+								$updated.fadeOut('slow', function () {
+									$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
+								});
+							},
+							function (err) {
+							}
+						);
 						TREE_MODIFIED = false;
 					}
+					
+					$('#editor[modified="1"]').each(function (index, element) {
+						var $editor = $('#editor'),
+							$files = $('#files');
+						
+						$updated.html(_translatorData['saving'][LANG]);
+						$(element).attr('modified', 0);
+						
+						saveDocument('#editor').then(
+							function (ok) {
+								$updated.fadeOut('slow', function () {
+									console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
+									if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+										$(this).removeClass('pending');
+									}
+									
+									$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
+								});
+							},
+							function (err) {
+								onError(err);
+							}
+						);
+					});
 				}, 3000);
 				
 				/*loadTree(AWS.config.credentials.identityId + "/trees", cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
@@ -812,7 +848,11 @@ function addHoverDom(treeId, treeNode) {
 			i++;
 		}
 		zTree.addNodes(treeNode, {id: GetGUID(), name: name, files: []});
-		//createObjectS3(path, "", onError);
+		
+		$updated.addClass('pending');
+		$updated.html(_translatorData['edited'][LANG]);
+		TREE_MODIFIED = true;
+
 		return false;
 	});
 };
@@ -846,17 +886,21 @@ function buildPrefixPath(treeNode) {
 }
 
 function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
+	$updated.addClass('pending');
+	$updated.html(_translatorData['edited'][LANG]);
 	TREE_MODIFIED = true;
 };
 
 function onNodeCreated(event, treeId, treeNode) {
-	TREE_MODIFIED = true;
+
 };
 
 function beforeRemove(treeId, treeNode) {
 	var tree = $.fn.zTree.getZTreeObj(treeId);
 	$('#buttonDelete').click( function() {
 		tree.removeNode(treeNode, false);
+		$updated.addClass('pending');
+		$updated.html(_translatorData['edited'][LANG]);
 		TREE_MODIFIED = true;
 	});
 	var message = "Документ <b>" + treeNode.name + "</b> будет удалён, продолжить?";
@@ -909,6 +953,8 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 
 function onRename(event, treeId, treeNode, isCancel) {
 	if (!isCancel) {
+		$updated.addClass('pending');
+		$updated.html(_translatorData['edited'][LANG]);
 		TREE_MODIFIED = true;
 	}
 }
