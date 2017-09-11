@@ -9,7 +9,8 @@ function isFilePaste(event) {
 		$.inArray('Files', event.clipboardData.types) > -1;
 }
 
-//s3 file uploader
+// s3 file uploader
+// Returns Promise(key) with abort() method.
 function s3Uploader(params, onprogress) {
 	//console.log(params);
 	
@@ -28,7 +29,7 @@ function s3Uploader(params, onprogress) {
 
 	var reqPromise = request.promise();
 
-	return new Promise( function (resolve, reject) {
+	var promise = new Promise( function (resolve, reject) {
 		reqPromise.then(
 			function (data) {
 				resolve(params.Key);
@@ -38,6 +39,13 @@ function s3Uploader(params, onprogress) {
 			}
 		);
 	});
+
+	promise.abort = function () {
+		request.abort();
+		console.log('Upload aborted');
+	};
+	
+	return promise;
 }
 
 //s3 file downloader
@@ -75,18 +83,28 @@ function loadDocument(path, id) {
 }
 
 // Saves editor's (#id) content
-// s3key is stored as editor's attribute
+// guid is stored as editor's attribute
 function saveDocument(id) {
 	var params = {
-		Key: $(id).attr('s3key'),
+		Key: USERID + '/' + $(id).attr('guid') + '/index.html',
 		Body: $(id + ' >.ql-editor').html()
 	};
 	
 	return s3Uploader(params);
 }
 
+// Returns HTML for file attachment
+function genFileHTML(key, fileName, fileSize, finished) {
+	var fname = '<td class="file-name">' + (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) + '</td>',
+		fsize = '<td class="file-size">(' + GetSize(fileSize) + ')</td>',
+		progress = '<td class="file-progress">' + (finished ? '&nbsp;' : '<div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>') + '</td>',
+		remove_button = '<td class="remove-button"><span class="glyphicon glyphicon-remove ' + (finished ? 'remove' : 'abort') + '" aria-label="Del"></span></td>';
+
+	return $('<li s3key="' + key + '">').append('<table class="li-file"><tr>' + fname + fsize + progress + remove_button + '</tr></table>');
+}
+
 // Init editor and all it's stuff in #id
-function initQuill(id, docKey) {
+function initQuill(id, guid) {
 	/*var $updated = $('#tm_updated_' + tm_id),
 		$content = $(id),
 		$files = $('#m_files_' + tm_id),
@@ -104,9 +122,6 @@ function initQuill(id, docKey) {
 	// create new
 	$(id).append( // TODO: add translation
 		'<div id="editor-wrap" class="content-wrap">\
-			<div class="updated">\
-				<span id="updated"></span>\
-			</div>\
 			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
 			<ul id="files" class="files" waiting="0"></ul>\
 			<div id="dropzone" class="filedrag">\
@@ -118,15 +133,32 @@ function initQuill(id, docKey) {
 		</div>'
 	);
 	
-	loadDocument(docKey, '#editor')
+	var $content = $('#editor'),
+		$drop_zone = $('#dropzone'),
+		$clip = $drop_zone.find('#clip'),
+		$files = $('#files'),
+		$updated = $('#updated');
+	
+	withS3Files(USERID + '/' + guid + '/attachments/', function(f) {
+		var params = {
+			Bucket: STORAGE_BUCKET,
+			Key: f.Key
+		};
+		s3.headObject(params, function(err, data) {
+			if (err) {
+				onError(err);
+				return
+			}
+			
+			var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
+			$files.append($li);			
+		});	
+	});
+	
+	loadDocument(USERID + '/' + guid + '/index.html', '#editor')
 		.then(function(data) {
-			var $content = $('#editor'),
-				$drop_zone = $('#dropzone'),
-				$clip = $drop_zone.find('#clip'),
-				$files = $('#files'),
-				$updated = $('#updated');
 				
-			$updated.html('Loaded'); // TODO: load updated time from data
+			$updated.html(_translatorData['saved'][LANG]);
 			
 			//редактор Quill from https://quilljs.com
 			var toolbar_options = [
@@ -142,7 +174,7 @@ function initQuill(id, docKey) {
 
 			var editor = new Quill('#editor', editor_options);
 			$content.data('editor', editor);
-			$content.attr('s3key', docKey);
+			$content.attr('guid', guid);
 
 			//лупа для больших изображений
 			function backgroundReposition(e, image){
@@ -191,6 +223,7 @@ function initQuill(id, docKey) {
 
 			editor.on('text-change', function () {
 				$content.attr("modified", 1);
+				$updated.html(_translatorData['edited'][LANG]);
 				$updated.addClass('pending');
 			});
 			
@@ -208,13 +241,14 @@ function initQuill(id, docKey) {
 						if (item.kind === "file" && item.type === "image/png" && blob !== null) {
 
 							$updated.addClass('pending');
+							$updated.html(_translatorData['edited'][LANG]);
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							paste_index = editor.getSelection(true).index;
 							editor.insertEmbed(paste_index, 'image', 'img/ajax-loader.gif', 'silent');
 
 							//загружаем картинку в S3
-							var guid = GetGUID();
-							var key = USERID + '/files/embedded/' + guid + '.png';
+							var picGUID = GetGUID();
+							var key = USERID + '/' + guid + '/' + picGUID + '.png';
 							var params = {
 								Body: blob,
 								ContentType: "image/png",
@@ -289,6 +323,7 @@ function initQuill(id, docKey) {
 							}
 
 							$updated.addClass('pending');
+							$updated.html(_translatorData['edited'][LANG]);
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 							
@@ -309,8 +344,8 @@ function initQuill(id, docKey) {
 							var uploader = new Promise ( function(resolve, reject) {
 								readFilePromise.then(
 									function(blob) {
-										var guid = GetGUID(),
-											key = USERID + '/files/embedded/' + guid + '.png';	
+										var picGUID = GetGUID(),
+											key = USERID + '/' + guid + '/' + picGUID + '.png';	
 																	
 										var params = {
 											Body: blob,
@@ -454,17 +489,15 @@ function initQuill(id, docKey) {
 
 					var uploaders = new Array();
 					$.each(files, function (i, file) {
+						var fileGUID = GetGUID();
+						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
-						var fname = '<td class="file-name">' + file.name + '</td>',
-							fsize = '<td class="file-size">(' + GetSize(file['size']) + ')</td>',
-							progress = '<td class="file-progress"><div class="progress"><div class="progress-bar" style="width: 0%;"></div></div></td>',
-							remove_button = '<td class="remove-button"><span class="glyphicon glyphicon-remove abort" aria-label="Del"></span></td>';
-
-						var $li = $('<li>').append('<table class="li-file"><tr>' + fname + fsize + progress + remove_button + '</tr></table>');
+						var $li = genFileHTML(key, file.name, file.size);
 
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);
 						$updated.addClass('pending');
+						$updated.html(_translatorData['edited'][LANG]);
 
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
@@ -476,12 +509,10 @@ function initQuill(id, docKey) {
 						});
 						
 						//нужен promise, который вернёт key.
+						var uploaderPromise;
 						var uploader = new Promise ( function(resolve, reject) {
 							readFilePromise.then(
-								function(blob) {
-									var guid = GetGUID(),
-										key = USERID + '/files/' + guid;	
-																
+								function(blob) {						
 									var params = {
 										Body: blob,
 										ContentType: 'application/octet-stream',
@@ -490,12 +521,14 @@ function initQuill(id, docKey) {
 										ACL: 'public-read'
 									};
 									
-									s3Uploader(params, function (percents) {
+									uploaderPromise = s3Uploader(params, function (percents) {
 										var oldPercents = parseInt($li.find('.progress-bar').css('width'), 10)
 										if (percents > oldPercents) {
 											$li.find('.progress-bar').css('width', percents + '%');
 										}
-									}).then(
+									})
+									
+									uploaderPromise.then(
 										function(key) {
 											resolve(key);
 										},
@@ -509,6 +542,9 @@ function initQuill(id, docKey) {
 								}
 							);
 						});
+						uploader.abort = function () {
+							uploaderPromise.abort();
+						}
 						
 						uploaders.push(
 							uploader.then(
@@ -561,15 +597,22 @@ function initQuill(id, docKey) {
 
 			//удаление приложенных файлов
 			$files.on('click', 'span.remove', function () {
-				var $li = $(this).closest('li'),
-					$a = $li.find('td.file-name a'),
-					href = $a.attr('href');
-
-				$a.replaceWith($a.text());
+				var $li = $(this).closest('li');
+				var key = $li.attr('s3key');
+				
+				console.log('Removing ', key);
+				
 				$(this).replaceWith('<img src="img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
 				$updated.html(_translatorData['saving'][LANG]).addClass('pending');
 
+				// remove from s3
+				s3.deleteObject({
+					Bucket: STORAGE_BUCKET,
+					Key: key
+				}, function(err, data) {
+					console.log(err, data);
+				});
 				$li.fadeOut('slow', function () {
 					$(this).remove();
 				});
@@ -642,34 +685,3 @@ function encodeRFC5987ValueChars(str) {
 		replace(/%(?:7C|60|5E)/g, unescape);
 }
 
-//document.ready
-$(function () {
-	//saving.. messages content every 3 seconds
-	setInterval(function () {
-		$('#editor[modified="1"]').each(function (index, element) {
-			var $editor = $('#editor'),
-				$updated = $('#updated'),
-				$files = $('#files');
-			
-			$updated.html(_translatorData['saving'][LANG]);
-			$(element).attr('modified', 0);
-			
-			saveDocument('#editor').then(
-				function (ok) {
-				    $updated.fadeOut('slow', function () {
-						console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
-						if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-							$(this).removeClass('pending');
-						}
-						
-						var updatedTime = "yesterday"; // TODO
-						$(this).text(updatedTime).fadeIn('fast');
-					});
-				},
-				function (err) {
-					onError(err);
-				}
-			);
-		});
-	}, 3000);
-});

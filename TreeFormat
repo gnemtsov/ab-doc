@@ -2,16 +2,28 @@ USERID/files/* - pictures and files
 USERID/trees/* - all trees
 USERID/documents/* - documents (HTML)
 
-{
-	title: "TreeTitle",
-	nodes: [
-		{
-			guid: "guid", // Document body (HTML) GUID
-			name: "item1", // Visible name
-			files: ["guid1", "guid2"], // Attachments' GUIDs
-			modified: "8484848484848" // Last modified time (Milliseconds since 1 Jan 1970 00:00:00 UTC)
-			children: [{...}] // Sub-documents
-		},
-		{...}
-	],
-}
+[
+ {
+  "id": "GUID узла (документа)",
+  "name": "Имя узла (документа)",
+  "children": 
+   [
+    { "id": "...", "name": "...", "children": [...] },
+    { "id": "...", "name": "...", "children": [...] },
+    ...
+   ]
+ },
+
+ {
+  "id": "GUID узла (документа)",
+  "name": "Имя узла (документа)",
+  "children": 
+   [
+    { "id": "...", "name": "...", "children": [...] },
+    { "id": "...", "name": "...", "children": [...] },
+    ...
+   ]
+ },
+  
+ ...
+]
