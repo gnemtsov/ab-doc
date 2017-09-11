@@ -96,6 +96,14 @@ var _translatorData = {
 		"ru": "сохранение...",
 		"en": "saving..."
 	},
+	"saved": {
+		"ru": "сохранено",
+		"en": "saved"
+	},
+	"edited": {
+		"ru": "изменено",
+		"en": "edited"
+	},
 	"typeYourText": {
 		"ru": "ваш текст...",
 		"en": "type your text..."

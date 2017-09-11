@@ -161,7 +161,7 @@ function initQuill(id, guid) {
 	loadDocument(USERID + '/' + guid + '/index.html', '#editor')
 		.then(function(data) {
 				
-			$updated.html('Loaded'); // TODO: load updated time from data
+			$updated.html(_translatorData['saved'][LANG]);
 			
 			//редактор Quill from https://quilljs.com
 			var toolbar_options = [
@@ -226,6 +226,7 @@ function initQuill(id, guid) {
 
 			editor.on('text-change', function () {
 				$content.attr("modified", 1);
+				$updated.html(_translatorData['edited'][LANG]);
 				$updated.addClass('pending');
 			});
 			
@@ -243,6 +244,7 @@ function initQuill(id, guid) {
 						if (item.kind === "file" && item.type === "image/png" && blob !== null) {
 
 							$updated.addClass('pending');
+							$updated.html(_translatorData['edited'][LANG]);
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							paste_index = editor.getSelection(true).index;
 							editor.insertEmbed(paste_index, 'image', 'img/ajax-loader.gif', 'silent');
@@ -324,6 +326,7 @@ function initQuill(id, guid) {
 							}
 
 							$updated.addClass('pending');
+							$updated.html(_translatorData['edited'][LANG]);
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 							
@@ -497,6 +500,7 @@ function initQuill(id, guid) {
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);
 						$updated.addClass('pending');
+						$updated.html(_translatorData['edited'][LANG]);
 
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
@@ -704,8 +708,7 @@ $(function () {
 							$(this).removeClass('pending');
 						}
 						
-						var updatedTime = "yesterday"; // TODO
-						$(this).text(updatedTime).fadeIn('fast');
+						$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
 					});
 				},
 				function (err) {
