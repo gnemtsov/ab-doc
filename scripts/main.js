@@ -361,15 +361,19 @@ $(document).ready( function() {
 	var cognitoUser = userPool.getCurrentUser();
 	if(!cognitoUser) {
 		onError();
+		// no user. redirect to login.html
+		window.location.replace('/login.html');
 		return;
 	}
 			
 	$('#linkSignOut').click( function() {
 		cognitoUser.signOut();
+		window.location.replace('/login.html');
 		return true;	
 	});	
 	$('#linkReturn').click( function() {
 		cognitoUser.signOut();
+		window.location.replace('/login.html');
 		return true;	
 	});
 	
