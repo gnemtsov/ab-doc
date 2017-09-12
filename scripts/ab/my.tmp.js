@@ -122,8 +122,7 @@ function initQuill(id, guid) {
 	// create new
 	$(id).append( // TODO: add translation
 		'<div id="editor-wrap" class="content-wrap row">\
-			<div id="editor" class="message-content col-md-8" waiting="0" modified="0"></div>\
-			<div class="col-md-4">\
+			<div class="col-sm-3 col-md-3" style="float: right; z-index: 1000;">\
 				<div id="dropzone" class="filedrag">\
 					<div class="drop-files-here">\
 						Приложите вложения сюда, рисунки можно помещать сразу в текст.\
@@ -132,6 +131,7 @@ function initQuill(id, guid) {
 				</div>\
 				<ul id="files" class="files" waiting="0"></ul>\
 			</div>\
+			<span id="editor" class="message-content" waiting="0" modified="0"></span>\
 		</div>'
 	);
 	
