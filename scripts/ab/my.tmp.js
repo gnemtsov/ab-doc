@@ -95,7 +95,7 @@ function saveDocument(id) {
 
 // Returns HTML for file attachment
 function genFileHTML(key, fileName, fileSize, finished) {
-	var fname = '<td class="file-name">' + (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) + '</td>',
+	var fname = '<td class="file-name" style="text-overflow: ellipsis; overflow: hidden; width: 20%;">' + (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) + '</td>',
 		fsize = '<td class="file-size">(' + GetSize(fileSize) + ')</td>',
 		progress = '<td class="file-progress">' + (finished ? '&nbsp;' : '<div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>') + '</td>',
 		remove_button = '<td class="remove-button"><span class="glyphicon glyphicon-remove ' + (finished ? 'remove' : 'abort') + '" aria-label="Del"></span></td>';
@@ -121,14 +121,16 @@ function initQuill(id, guid) {
 	
 	// create new
 	$(id).append( // TODO: add translation
-		'<div id="editor-wrap" class="content-wrap">\
-			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
-			<ul id="files" class="files" waiting="0"></ul>\
-			<div id="dropzone" class="filedrag">\
-				<div class="drop-files-here">\
-					Приложите вложения сюда, рисунки можно помещать сразу в текст.\
-					<input id="clip" name="clip" multiple="multiple" type="file>\
+		'<div id="editor-wrap" class="content-wrap row">\
+			<div id="editor" class="message-content col-md-8" waiting="0" modified="0"></div>\
+			<div class="col-md-4">\
+				<div id="dropzone" class="filedrag">\
+					<div class="drop-files-here">\
+						Приложите вложения сюда, рисунки можно помещать сразу в текст.\
+						<input id="clip" name="clip" multiple="multiple" type="file">\
+					</div>\
 				</div>\
+				<ul id="files" class="files" waiting="0"></ul>\
 			</div>\
 		</div>'
 	);
