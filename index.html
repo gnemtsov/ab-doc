@@ -8,13 +8,14 @@
 		<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="/css/Bootstrap-Font-Awesome.min.css">
 		<link rel="stylesheet" type="text/css" href="/css/ztree/zTreeStyle.css">
-		<link rel="stylesheet" type="text/css" href="/css/bsSplitter/styles.css">
+		<!--link rel="stylesheet" type="text/css" href="/css/bsSplitter/styles.css"-->
 		<link rel="stylesheet" type="text/css" href="/css/quill/quill.core.css">
 		<link rel="stylesheet" type="text/css" href="/css/quill/quill.bubble.css">
 		<link rel="stylesheet" type="text/css" href="/css/quill/Jason_Chen.Quill.css">
 		<link rel="stylesheet" type="text/css" href="/css/ab/core.css">
 		<link rel="stylesheet" type="text/css" href="/css/ab/task.1.css">
 		<link rel="stylesheet" type="text/css" href="/css/ab/task.2.messages.css">
+		<link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
 		
 		<script src="/scripts/jquery/jquery-3.1.1.min.js"></script>
 		<script src="/scripts/jquery/ui/1.12.1/jquery-ui.js"></script>
@@ -31,7 +32,7 @@
 		<script src="/scripts/ztree/jquery.ztree.excheck.js"></script>
 		<script src="/scripts/ztree/jquery.ztree.exedit.js"></script>
 
-		<script src="/scripts/bsSplitter/jquery.bsSplitter.js"></script>
+		<!--script src="/scripts/bsSplitter/jquery.bsSplitter.js"></script-->
 		
 		<script src="/scripts/quill/quill.js"></script>
 		<!--script src="/scripts/quill/Jason_Chen.Quill.min.js"></script-->
@@ -49,9 +50,21 @@
 				*vertical-align:middle;
 			}
 			
-			.ztree-div {
+			#ztree-div {
+				border-left-style: none;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 2px;
 				overflow: hidden;
 				text-overflow: ellipsis;
+			}
+			
+			#document {
+				border-style: none;
+			}
+			
+			.ui-resizable-e {
+				width: 14px;
 			}
 		</style>
 		
@@ -129,6 +142,7 @@
 				</div>
 			</div>
  			
+ 			<!--
  			<div class="row bs-splitter-parent app-container">
 				<div class="col-md-4 split-left ztree-div">
 					<div class="draggable">
@@ -139,6 +153,16 @@
 					</div>
 				</div>
 				<div class="col-md-8 split-right" id="document">
+					<span id="selectedDoc"></span>
+				</div>
+ 			</div>
+ 			-->
+ 			
+ 			<div class="row app-container">
+				<div class="ui-widget ui-widget-content col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4" id="ztree-div">
+					<ul id="abTree" class="ztree"></ul>
+				</div>
+				<div class="ui-widget ui-widget-content col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8" id="document">
 					<span id="selectedDoc"></span>
 				</div>
  			</div>

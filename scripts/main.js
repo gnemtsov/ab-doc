@@ -365,7 +365,7 @@ $(document).ready( function() {
 	
 	$('.app-container').hide();
 
-	$('#splitter').bsSplitter();
+	//$('#splitter').bsSplitter();
 	//$('.draggable').draggable({cancel: ".draggable *"});
 	
 	var cognitoUser = userPool.getCurrentUser();
@@ -388,6 +388,54 @@ $(document).ready( function() {
 	});
 	
 	$('#username').text(cognitoUser.username);
+	
+	// Columns resizing
+	$('#ztree-div').resizable({
+		handles: 'e'
+	}).bind('resize', function (event, ui) {
+		var $document = $('#document'),
+			$ztree_div = $('#ztree-div'),
+			$app_container = $('.app-container');
+		
+		var totalWidth = $app_container.width(),
+			docWidth = totalWidth - $ztree_div.outerWidth(),
+			zTreeWidth = $ztree_div.outerWidth();
+			
+		var threshold = 50;
+
+		if (docWidth < threshold) {
+			$document.outerWidth(threshold);
+			$ztree_div.outerWidth(totalWidth - threshold);
+			
+			return;
+		}
+		
+		if (zTreeWidth < threshold) {
+			$document.outerWidth(totalWidth - threshold);
+			$ztree_div.outerWidth(threshold);
+			
+			return;
+		}
+
+		$document.outerWidth(docWidth);
+		console.log('resize event ', event);
+	});
+	
+	// Keep columns proportions when resizing window
+	$(window).resize(function() {
+		var $document = $('#document'),
+			$ztree_div = $('#ztree-div'),
+			$app_container = $('.app-container');
+		
+		var totalWidth = $app_container.width(),
+			docWidth = totalWidth - $ztree_div.outerWidth(),
+			zTreeWidth = $ztree_div.outerWidth(),
+			oldTotalWidth = docWidth + zTreeWidth,
+			k = totalWidth / oldTotalWidth;
+			
+		$document.outerWidth(docWidth * k);
+		$ztree_div.outerWidth(zTreeWidth * k);
+	});
 	
 	cognitoUser.getSession( function(err, session) {
 		if(err) {
