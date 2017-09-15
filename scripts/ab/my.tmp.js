@@ -121,11 +121,12 @@ function initQuill(id, guid) {
 	
 	// create new
 	$(id).append( // TODO: add translation
-		'<div id="editor-wrap" class="content-wrap row">\
-			<div class="col-sm-3 col-md-3" style="float: right; z-index: 1000;">\
-				<div id="dropzone" class="filedrag">\
-					<div class="drop-files-here">\
-						Приложите вложения сюда, рисунки можно помещать сразу в текст.\
+		'<div id="editor-wrap" class="content-wrap">\
+			<div style="float: right; z-index: 10000; overflow: hidden;">\
+				<div id="dropzone" class="filedrag" style="width: 100px; height: 100px;">\
+					<div class="drop-files-here justify-content-center">\
+						!!!Dropzone!!!\
+						<img src="/img/icons/check.svg"></img>\
 						<input id="clip" name="clip" multiple="multiple" type="file">\
 					</div>\
 				</div>\

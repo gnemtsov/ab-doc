@@ -5,9 +5,10 @@
 		<meta charset="utf-8">  
   
 		<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
-		<link rel="stylesheet" type="text/css" href="/css/Bootstrap-Font-Awesome.min.css">
+		<link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
 
 		<script src="/scripts/jquery/jquery-3.1.1.min.js"></script>
+		<script src="/scripts/popper.js/popper.min.js"></script>
 		<script src="/scripts/bootstrap/bootstrap.min.js"></script>
 		<script src="/scripts/jsbn/jsbn.js"></script>
 		<script src="/scripts/jsbn/jsbn2.js"></script>
@@ -33,45 +34,45 @@
 				</ul>
 			</nav>
 			
- 			<div class="row">
+ 			<div class="row justify-content-center">
  				<div style="margin-top: 100px;"></div>
-				<div class="col-md-8 offset-md-2">
+				<div class="col-8">
 					<form>
 						<fieldset>
 							<legend id="legend" data-translate="loginPage"></legend>
 							<div class="form-group row">
-								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertUserDoesntExist" data-translate="alertUserDoesntExist">
+								<div class="alert alert-danger collapse col-12" role="alert" id="alertUserDoesntExist" data-translate="alertUserDoesntExist">
 								</div>							
 							</div>
 							<div class="form-group row">
-								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongPassword" data-translate="alertWrongPassword">
+								<div class="alert alert-danger collapse col-12" role="alert" id="alertWrongPassword" data-translate="alertWrongPassword">
 								</div>							
 							</div>
 							<div class="form-group row">
-								<label for="inputEmail" class="col-md-2 col-form-label" id="labelInputEmail" data-translate="email"></label>
-								<div class="col-md-10">
+								<label for="inputEmail" class="col-2 col-form-label" id="labelInputEmail" data-translate="email"></label>
+								<div class="col-10">
 									<input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" data-translate="yourEmail" attr-translate="placeholder">
 								</div>
 							</div>
 							<div class="form-group row">
-								<label for="inputPassword" class="col-md-2 col-form-label" id="labelInputPassword" data-translate="password"></label>
-								<div class="col-md-10">
+								<label for="inputPassword" class="col-2 col-form-label" id="labelInputPassword" data-translate="password"></label>
+								<div class="col-10">
 									<input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" data-translate="yourPassword" attr-translate="placeholder">
 								</div>
 							</div>
 							<div class="form-group row collapse" id="divConfirmation">
-								<div class="alert alert-danger collapse col-md-12" role="alert" id="alertWrongCode" data-translate="alertWrongCode">
+								<div class="alert alert-danger collapse col-12" role="alert" id="alertWrongCode" data-translate="alertWrongCode">
 								</div>	
-								<label for="inputCode" class="col-md-2 col-form-label" id="labelInputCode" data-translate="confirmationCode"></label>
-								<div class="col-md-10">
+								<label for="inputCode" class="col-2 col-form-label" id="labelInputCode" data-translate="confirmationCode"></label>
+								<div class="col-10">
 									<input type="text" class="form-control" id="inputCode" data-translate="yourConfirmationCode" attr-translate="placeholder">
 								</div>						
 							</div>
 							<div class="form-group row">
-								<div class="col-md-2 offset-md-2">
+								<div class="col-2">
 									<button type="submit" class="btn btn-primary" id="buttonLogin" data-translate="enter"></button>
 								</div>
-								<div class="col-md-4 offset-md-4">
+								<div class="col-4">
 									<a href="/signup.html" id="linkSignup" data-translate="signUp"></a>
 								</div>
 							</div>
