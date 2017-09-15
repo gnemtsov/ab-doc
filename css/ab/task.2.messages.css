@@ -381,6 +381,7 @@ table.li-file{
 
 td.file-name{
   width: 1%;
+  max-width: 100px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -388,9 +389,9 @@ td.file-name{
   padding-right: 5px;
 }
 
-@media (max-width: 767px) { td.file-name{ max-width: 150px; } }
+/*@media (max-width: 767px) { td.file-name{ max-width: 150px; } }
 @media (min-width: 768px) { td.file-name{ max-width: 250px; } }
-@media (min-width: 992px) { td.file-name{ max-width: 400px; } }
+@media (min-width: 992px) { td.file-name{ max-width: 400px; } }*/
 
 td.file-size{
   width: 1%;

@@ -69,7 +69,9 @@
 
 					    if ((_leftElmWidth > _leftThold) && (_rightElmWidth > _rightThold)){					
 						    $leftElm.css('width', _leftElmWidth + 'px');
+						    $leftElm.css('max-width', _leftElmWidth + 'px');
 						    $rightElm.css('width', _rightElmWidth + 'px');
+						    $rightElm.css('max-width', _rightElmWidth + 'px');
 					    }else{
 							console.log(_leftElmWidth, _rightElmWidth, _leftThold, _rightThold, _moved);
 						    _leftElmWidth -= _moved;
@@ -102,7 +104,9 @@
 
 					    if ((_leftElmWidth > _leftThold) && (_rightElmWidth > _rightThold)){					
 						    $leftElm.css('width', _leftElmWidth + 'px');
+						    $leftElm.css('max-width', _leftElmWidth + 'px');
 						    $rightElm.css('width', _rightElmWidth + 'px');
+						    $rightElm.css('max-width', _rightElmWidth + 'px');
 					    }else{
 							console.log(_leftElmWidth, _rightElmWidth, _leftThold, _rightThold, _moved);
 						    _leftElmWidth -= _moved;

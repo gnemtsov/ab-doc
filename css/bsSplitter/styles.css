@@ -1,9 +1,9 @@
-html, body {
+/*html, body {
 	height: 100%;
 }
 .navbar {
 	margin:0;
-}
+}*/
 /*!
     bsSplitter v0.0.1
     Boostrap Grid's Column Resizer and Splitter
@@ -13,7 +13,7 @@ html, body {
     Released under the MIT license  
     https://github.com/shekhardesigner/BS-Grid-Splitter/blob/master/LICENSE
 */
-.container-fluid {
+/*.container-fluid {
 	height: calc(100% - 51px);
 }
 .row {
@@ -27,7 +27,7 @@ html, body {
 [class*='col-'] {
 	padding: 30px;
 }
-
+*/
 .bs-splitter {
     position: absolute;
     top: 0;
@@ -37,7 +37,9 @@ html, body {
     background: #ccc;
     cursor: ew-resize;
     
+    bottom: 100%;
 }
+
 .bs-splitter__handle {
     position: absolute;
     top: 50%;
@@ -53,9 +55,9 @@ html, body {
 }
 
 /* https://css-tricks.com/almanac/properties/u/user-select/ */
-.text-select-off {
+/*.text-select-off {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-}
+}*/

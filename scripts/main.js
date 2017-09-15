@@ -107,7 +107,32 @@ var _translatorData = {
 	"typeYourText": {
 		"ru": "ваш текст...",
 		"en": "type your text..."
-	}
+	},
+	
+	"deleteTitle": {
+		"ru": "Удаление",
+		"en": "Delete"
+	},
+	"deleteQuestion1": {
+		"ru": "Документ",
+		"en": "You are going to delete document"
+	},
+	"deleteQuestion2": {
+		"ru": " будет удалён, продолжить?",
+		"en": ", continue?"
+	},
+	"deleteQuestion3": {
+		"ru": " Также будут удалены все вложенные документы и папки.",
+		"en": " All sub-documents are going to be deleted too."
+	},
+	"ok": {
+		"ru": "Ок",
+		"en": "Ok"
+	},
+	"cancel": {
+		"ru": "Отмена",
+		"en": "Cancel"
+	},
 }
 
 // ====================
@@ -365,7 +390,7 @@ $(document).ready( function() {
 	
 	$('.app-container').hide();
 
-	$('#splitter').bsSplitter();
+	//$('#splitter').bsSplitter();
 	//$('.draggable').draggable({cancel: ".draggable *"});
 	
 	var cognitoUser = userPool.getCurrentUser();
@@ -388,6 +413,129 @@ $(document).ready( function() {
 	});
 	
 	$('#username').text(cognitoUser.username);
+	
+	// Columns resizing
+	/*$('#ztree-div').resizable({
+		handles: 'e'
+	}).bind('resize', function (event, ui) {
+		var $document = $('#document'),
+			$ztree_div = $('#ztree-div'),
+			$app_container = $('.app-container');
+		
+		var totalWidth = $app_container.width(),
+			docWidth = totalWidth - $ztree_div.outerWidth(),
+			zTreeWidth = $ztree_div.outerWidth();
+			
+		var threshold = 50;
+		
+		console.log(ui);
+
+		/*if (docWidth < threshold) {
+			$document.outerWidth(threshold);
+			$ztree_div.outerWidth(totalWidth - threshold);
+			
+			return;
+		}
+		
+		if (zTreeWidth < threshold) {
+			$document.outerWidth(totalWidth - threshold);
+			$ztree_div.outerWidth(threshold);
+			
+			return;
+		}*/
+/*
+
+		console.log(totalWidth);
+
+		$document.outerWidth(docWidth);
+	});*/
+	
+	/*$('#document').resizable({
+		handles: 'w'
+	}).bind('resize', function (event, ui) {
+		console.log('resize event ', event);
+	});*/
+	
+	// Init splitter, ztree and document columns
+	var $document = $('#document'),
+		$ztree_div = $('#ztree-div'),
+		$splitter = $('#splitter'),
+		$app_container = $('.app-container'),
+		$nav = $('.navbar');
+	
+	{
+		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
+		var totalWidth = $app_container.width(),
+			zTreeWidth = totalWidth * 0.15,
+			splitterWidth = $splitter.outerWidth(),
+			docWidth = totalWidth - zTreeWidth - splitterWidth;
+		
+		$ztree_div.outerWidth(zTreeWidth);
+		$splitter.css('left', zTreeWidth + 'px');
+		$document.outerWidth(docWidth);
+		$document.css('left', zTreeWidth + splitterWidth);
+	}
+	
+	// Splitter moving
+	{
+		var splitterDragging = false,
+			oldX;
+		
+		$splitter.mousedown(function(event) {
+			splitterDragging = true;
+			oldX = event.clientX;
+		});
+		
+		$(document).mouseup(function(event) {
+			splitterDragging = false;
+		});
+		
+		$(document).mousemove(function(event) {
+			if (splitterDragging) {
+				var newX = event.clientX;
+				
+				var totalWidth = $app_container.width(),
+					zTreeWidth = $ztree_div.outerWidth(),
+					newZTreeWidth = zTreeWidth + newX - oldX;
+					
+				if (newZTreeWidth > 32 && newZTreeWidth < totalWidth - 32) {
+					zTreeWidth = newZTreeWidth;
+					
+					var	splitterWidth = $splitter.outerWidth(),
+						docWidth = totalWidth - zTreeWidth - splitterWidth;	
+						
+					$ztree_div.outerWidth(zTreeWidth);
+					$splitter.css('left', zTreeWidth + 'px');
+					$document.outerWidth(docWidth);
+					$document.css('left', zTreeWidth + splitterWidth);
+				}			
+				
+				oldX = newX;
+			}
+		});
+	}
+	
+	// Keep columns proportions and height when resizing window
+	$(window).resize(function() {
+
+		
+		var totalWidth = $app_container.width(),
+			docWidth = totalWidth - $ztree_div.outerWidth(),
+			splitterWidth = $splitter.outerWidth(),
+			zTreeWidth = $ztree_div.outerWidth(),
+			oldTotalWidth = docWidth + zTreeWidth,
+			k = totalWidth / oldTotalWidth;
+		
+		// proportions
+		/*console.log(zTreeWidth * k, k);
+		$ztree_div.outerWidth(zTreeWidth * k);	
+		$document.outerWidth(docWidth * k);
+		$document.css('left', zTreeWidth * k + 'px');*/
+		
+		
+		// app-container's height
+		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
+	});
 	
 	cognitoUser.getSession( function(err, session) {
 		if(err) {
@@ -498,6 +646,7 @@ $(document).ready( function() {
 								});
 							},
 							function (err) {
+								onError(err);
 							}
 						);
 						TREE_MODIFIED = false;
@@ -895,9 +1044,9 @@ function beforeRemove(treeId, treeNode) {
 		$updated.html(_translatorData['edited'][LANG]);
 		TREE_MODIFIED = true;
 	});
-	var message = "Документ <b>" + treeNode.name + "</b> будет удалён, продолжить?";
+	var message = _translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + _translatorData["deleteQuestion2"][LANG];
 	if (treeNode.isParent) {
-		message += " Также будут удалены все вложенные документы и папки."
+		message += _translatorData["deleteQuestion3"][LANG];
 	}
 	$("#pDeleteMessage").html(message);
 	$("#modalDelete").modal("show");
