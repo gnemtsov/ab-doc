@@ -465,7 +465,7 @@ $(document).ready( function() {
 	
 	{
 		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
-		var totalWidth = $app_container.width(),
+		var totalWidth = window.innerWidth,//$app_container[0].clientWidth,
 			zTreeWidth = totalWidth * 0.15,
 			splitterWidth = $splitter.outerWidth(),
 			docWidth = totalWidth - zTreeWidth - splitterWidth;
@@ -473,7 +473,7 @@ $(document).ready( function() {
 		$ztree_div.outerWidth(zTreeWidth);
 		$splitter.css('left', zTreeWidth + 'px');
 		$document.outerWidth(docWidth);
-		$document.css('left', zTreeWidth + splitterWidth);
+		$document.css('left', (zTreeWidth + splitterWidth) + 'px');
 	}
 	
 	// Splitter moving
@@ -494,7 +494,7 @@ $(document).ready( function() {
 			if (splitterDragging) {
 				var newX = event.clientX;
 				
-				var totalWidth = $app_container.width(),
+				var totalWidth = window.innerWidth,
 					zTreeWidth = $ztree_div.outerWidth(),
 					newZTreeWidth = zTreeWidth + newX - oldX;
 					
@@ -522,7 +522,7 @@ $(document).ready( function() {
 		var docWidth = $document.outerWidth(),
 			splitterWidth = $splitter.outerWidth(),
 			zTreeWidth = $ztree_div.outerWidth(),
-			totalWidth = $app_container.width() - splitterWidth,
+			totalWidth = window.innerWidth - splitterWidth,
 			oldTotalWidth = docWidth + zTreeWidth,
 			k = totalWidth / oldTotalWidth;
 		
@@ -531,7 +531,6 @@ $(document).ready( function() {
 		$splitter.css('left', zTreeWidth * k + 'px');
 		$document.outerWidth(docWidth * k);
 		$document.css('left', (zTreeWidth * k + splitterWidth) + 'px');
-		
 		
 		// app-container's height
 		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
