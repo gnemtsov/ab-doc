@@ -47,14 +47,92 @@
 				height: 100%;
 			}
 			
+			.node_name {
+				font-size: 16px;
+				margin-left: 4px;
+				vertical-align: middle;
+			}
+			
 			.ztree li span.button.add {
 				margin-left:2px;
 				margin-right: -1px;
-				background-position:-144px 0;
-				vertical-align:top;
-				*vertical-align:middle;
+				background: url(/img/icons/circle-with-plus.svg);
+				vertical-align: vertical;
+				/*vertical-align:middle;*/
 			}
 			
+			.ztree li span.button {
+				background-position: 0px 0px !important;
+				background-size: contain !important;
+				background-repeat: no-repeat !important;
+				width: 24px !important;
+				height: 24px !important;
+				margin: 0px; !important;
+			}
+			
+			.ztree li a {
+				line-height: 24px !important;
+				height: 24px !important;
+			}
+			
+		
+			.ztree li span.button.remove {
+				background: url(/img/icons/trashcan.svg);
+			}
+			
+			.ztree li span.button.edit {
+				background: url(/img/icons/edit.svg);
+			}
+			
+			.ztree li span.button.ico_close {
+				background: url(/img/icons/folder.svg);
+			}
+			
+			.ztree li span.button.ico_open {
+				background: url(/img/icons/folder.svg);
+			}
+			
+			.ztree li span.button.switch.center_close {
+				background-image: url(/img/icons/squared-plus.svg);
+			}
+			
+			.ztree li span.button.switch.center_open {
+				background-image: url(/img/icons/squared-minus.svg);
+			}
+
+			.ztree li span.button.switch.root_close {
+				background-image: url(/img/icons/squared-plus.svg);
+			}
+			
+			.ztree li span.button.switch.root_open {
+				background-image: url(/img/icons/squared-minus.svg);
+			}
+
+			.ztree li span.button.ico_docu {
+				background-image: url(/img/icons/file.svg);
+			}
+					
+			.ztree li span.button.center_docu {
+				background-image: url(/img/icons/line-fork.svg);
+			}	
+
+			.ztree li span.button.bottom_docu {
+				background-image: url(/img/icons/line-bottom.svg);
+			}
+
+			.ztree li span.button.bottom_close {
+				background-image: url(/img/icons/squared-plus.svg);
+			}
+
+			.ztree li span.button.bottom_open {
+				background-image: url(/img/icons/squared-minus.svg);
+			}
+			
+			.ztree li ul.line {
+				background-image: url(/img/icons/line-vertical.svg);
+				background-size: 24px 24px;
+			}
+				
 			#ztree-div {
 				overflow: hidden;
 				text-overflow: ellipsis;

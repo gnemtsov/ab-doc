@@ -1,12 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch -->
-    <title>keyboard</title>
-    <desc>Created with Sketch.</desc>
-    <defs></defs>
-    <g id="Octicons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="keyboard" fill="#000000">
-            <path d="M10,5 L9,5 L9,4 L10,4 L10,5 L10,5 Z M3,6 L2,6 L2,7 L3,7 L3,6 L3,6 Z M8,4 L7,4 L7,5 L8,5 L8,4 L8,4 Z M4,4 L2,4 L2,5 L4,5 L4,4 L4,4 Z M12,11 L14,11 L14,10 L12,10 L12,11 L12,11 Z M8,7 L9,7 L9,6 L8,6 L8,7 L8,7 Z M4,10 L2,10 L2,11 L4,11 L4,10 L4,10 Z M12,4 L11,4 L11,5 L12,5 L12,4 L12,4 Z M14,4 L13,4 L13,5 L14,5 L14,4 L14,4 Z M12,9 L14,9 L14,6 L12,6 L12,9 L12,9 Z M16,3 L16,12 C16,12.55 15.55,13 15,13 L1,13 C0.45,13 0,12.55 0,12 L0,3 C0,2.45 0.45,2 1,2 L15,2 C15.55,2 16,2.45 16,3 L16,3 Z M15,3 L1,3 L1,12 L15,12 L15,3 L15,3 Z M6,7 L7,7 L7,6 L6,6 L6,7 L6,7 Z M6,4 L5,4 L5,5 L6,5 L6,4 L6,4 Z M4,7 L5,7 L5,6 L4,6 L4,7 L4,7 Z M5,11 L11,11 L11,10 L5,10 L5,11 L5,11 Z M10,7 L11,7 L11,6 L10,6 L10,7 L10,7 Z M3,8 L2,8 L2,9 L3,9 L3,8 L3,8 Z M8,8 L8,9 L9,9 L9,8 L8,8 L8,8 Z M6,8 L6,9 L7,9 L7,8 L6,8 L6,8 Z M5,8 L4,8 L4,9 L5,9 L5,8 L5,8 Z M10,9 L11,9 L11,8 L10,8 L10,9 L10,9 Z" id="Shape"></path>
-        </g>
-    </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 18.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Keyboard" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve">
+<path d="M18.6,4h-17.2C0.629,4,0,4.629,0,5.4V14.6C0,15.369,0.629,16,1.399,16h17.2c0.77,0,1.4-0.631,1.4-1.4V5.4
+	C20,4.629,19.369,4,18.6,4z M11,6h2v2h-2V6z M14,9v2h-2V9H14z M8,6h2v2H8V6z M11,9v2H9V9H11z M5,6h2v2H5V6z M8,9v2H6V9H8z M2,6h2v2
+	H2V6z M5,9v2H3V9H5z M4,14H2v-2h2V14z M15,14H5v-2h10V14z M18,14h-2v-2h2V14z M15,11V9h2v2H15z M18,8h-4V6h4V8z"/>
 </svg>

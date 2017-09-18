@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="14px" height="16px" viewBox="0 0 14 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch -->
-    <title>inbox</title>
-    <desc>Created with Sketch.</desc>
-    <defs></defs>
-    <g id="Octicons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="inbox" fill="#000000">
-            <path d="M14,9 L12.87,1.86 C12.79,1.38 12.37,1 11.87,1 L2.13,1 C1.63,1 1.21,1.38 1.13,1.86 L0,9 L0,14 C0,14.55 0.45,15 1,15 L13,15 C13.55,15 14,14.55 14,14 L14,9 L14,9 Z M10.72,9.55 L10.28,10.44 C10.11,10.78 9.76,11 9.37,11 L4.61,11 C4.23,11 3.89,10.78 3.72,10.45 L3.28,9.54 C3.11,9.21 2.76,8.99 2.39,8.99 L1,8.99 L2,1.99 L12,1.99 L13,8.99 L11.62,8.99 C11.23,8.99 10.89,9.21 10.71,9.54 L10.72,9.55 Z" id="Shape"></path>
-        </g>
-    </g>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 18.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Inbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve">
+<path d="M19.253,9.542c-0.388-0.416-2.265-2.271-3.122-3.118C15.868,6.165,15.492,6,15.098,6H4.902c-0.394,0-0.77,0.165-1.033,0.424
+	C3.011,7.271,1.135,9.125,0.747,9.542c-0.485,0.521-0.723,0.902-0.624,1.449s0.466,2.654,0.556,3.074
+	C0.767,14.484,1.363,15,1.919,15h16.162c0.556,0,1.152-0.516,1.241-0.935c0.089-0.42,0.457-2.527,0.556-3.074
+	S19.739,10.062,19.253,9.542z M14.014,10.003c-0.101,0-0.193,0.052-0.238,0.133L12.966,12H7.034l-0.809-1.864
+	c-0.045-0.081-0.137-0.133-0.238-0.133H2.473L4.495,8h11.01l2.023,2.003H14.014z"/>
 </svg>

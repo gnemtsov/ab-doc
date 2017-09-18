@@ -483,7 +483,7 @@ $(document).ready( function() {
 		
 		$splitter.mousedown(function(event) {
 			splitterDragging = true;
-			oldX = event.clientX;
+			oldX = event.clientX;en:"../../../css/zTreeStyle/img/diy/1_open.png"
 		});
 		
 		$(document).mouseup(function(event) {
@@ -599,7 +599,7 @@ $(document).ready( function() {
 						var zNodes = [{
 							id: 'top',
 							head: true,
-							icon: "/css/ztree/img/diy/1_open.png",
+							icon: "/img/icons/home.svg",
 							name: "",
 							children: abTree,
 							open: false
