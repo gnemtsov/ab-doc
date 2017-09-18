@@ -121,9 +121,9 @@ function initQuill(id, guid) {
 	
 	// create new
 	$(id).append( // TODO: add translation
-		'<div id="editor-wrap" class="content-wrap">\
-			<div style="float: right; z-index: 10000; overflow: hidden;">\
-				<div id="dropzone" class="filedrag" style="width: 100px; height: 100px;">\
+		'<div id="editor-wrap">\
+			<div class="float-right" style="z-index: 10000; overflow: hidden;">\
+				<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">\
 					<div class="drop-files-here justify-content-center">\
 						!!!Dropzone!!!\
 						<img src="/img/icons/check.svg"></img>\
