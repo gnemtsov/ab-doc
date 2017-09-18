@@ -519,18 +519,18 @@ $(document).ready( function() {
 	$(window).resize(function() {
 
 		
-		var totalWidth = $app_container.width(),
-			docWidth = totalWidth - $ztree_div.outerWidth(),
+		var docWidth = $document.outerWidth(),
 			splitterWidth = $splitter.outerWidth(),
 			zTreeWidth = $ztree_div.outerWidth(),
+			totalWidth = $app_container.width() - splitterWidth,
 			oldTotalWidth = docWidth + zTreeWidth,
 			k = totalWidth / oldTotalWidth;
 		
 		// proportions
-		/*console.log(zTreeWidth * k, k);
-		$ztree_div.outerWidth(zTreeWidth * k);	
+		$ztree_div.outerWidth(zTreeWidth * k);
+		$splitter.css('left', zTreeWidth * k + 'px');
 		$document.outerWidth(docWidth * k);
-		$document.css('left', zTreeWidth * k + 'px');*/
+		$document.css('left', (zTreeWidth * k + splitterWidth) + 'px');
 		
 		
 		// app-container's height
