@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="14px" height="16px" viewBox="0 0 14 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch -->
-    <title>briefcase</title>
-    <desc>Created with Sketch.</desc>
-    <defs></defs>
-    <g id="Octicons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="briefcase" fill="#000000">
-            <path d="M9,4 L9,3 C9,2.45 8.55,2 8,2 L6,2 C5.45,2 5,2.45 5,3 L5,4 L1,4 C0.45,4 0,4.45 0,5 L0,13 C0,13.55 0.45,14 1,14 L13,14 C13.55,14 14,13.55 14,13 L14,5 C14,4.45 13.55,4 13,4 L9,4 L9,4 Z M6,3 L8,3 L8,4 L6,4 L6,3 L6,3 Z M13,9 L8,9 L8,10 L6,10 L6,9 L1,9 L1,5 L2,5 L2,8 L12,8 L12,5 L13,5 L13,9 L13,9 Z" id="Shape"></path>
-        </g>
-    </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 18.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Briefcase" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve">
+<path d="M9,10h2v2h9c0,0-0.149-4.459-0.2-5.854C19.75,4.82,19.275,4,17.8,4h-3.208c-0.497-0.938-1.032-1.945-1.197-2.256
+	C13.064,1.121,12.951,1,12.216,1H7.783C7.048,1,6.936,1.121,6.604,1.744C6.439,2.055,5.904,3.062,5.408,4H2.199
+	c-1.476,0-1.945,0.82-2,2.146C0.145,7.473,0,12,0,12h9V10z M7.649,2.916C7.879,2.484,7.957,2.4,8.466,2.4h3.067
+	c0.509,0,0.588,0.084,0.816,0.516c0.086,0.16,0.318,0.6,0.575,1.084H7.074C7.331,3.516,7.563,3.076,7.649,2.916z M11,15H9v-2H0.5
+	c0,0,0.124,1.797,0.199,3.322C0.73,16.955,0.917,18,2.499,18H17.5c1.582,0,1.765-1.047,1.8-1.678C19.387,14.754,19.5,13,19.5,13H11
+	V15z"/>
 </svg>
