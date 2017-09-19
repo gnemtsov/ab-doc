@@ -53,6 +53,11 @@
 				vertical-align: middle;
 			}
 			
+			.ztree li a.curSelectedNode {
+				background-color: rgb(176, 230, 255);
+				border-color: rgb(81, 185, 255);
+			}
+			
 			.ztree li span.button.add {
 				margin-left:2px;
 				margin-right: -1px;
@@ -77,7 +82,7 @@
 			
 		
 			.ztree li span.button.remove {
-				background: url(/img/icons/trashcan.svg);
+				background: url(/img/icons/trash.svg);
 			}
 			
 			.ztree li span.button.edit {
@@ -169,6 +174,19 @@
 				height: 400px;
 				width: 100%;
 			}
+			
+			span.remove {
+				width: 24px;
+				height: 24px;
+				background-image: url(/img/icons/trash.svg);
+				background-size: contain;
+				background-repeat: no-repeat;
+			}
+			
+			.filedrag {
+				border-style: none;
+			}
+
 		</style>
 		
 		<style type="text/css">
@@ -255,7 +273,7 @@
 					<div id="splitter" class="bs-splitter">
 						<span class="bs-splitter__handle">. . . <span class="sr-only">Resize Columns</span></span>
 					</div>
-				</div>
+				</div>uuuuuuuuuuuuuuuuuuuuuuu
 				<div class="col-md-8 split-right" id="document">
 					<span id="selectedDoc"></span>
 				</div>

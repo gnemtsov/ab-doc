@@ -361,6 +361,7 @@ var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
 var STORAGE_BUCKET = "ab-doc-storage";
 var LANG;
 var TREE_MODIFIED = false;
+var TREE_READY = false; // Is tree.json loaded?
 var TREE_FILENAME = "tree.json";
 var $updated;
 
@@ -413,48 +414,6 @@ $(document).ready( function() {
 	});
 	
 	$('#username').text(cognitoUser.username);
-	
-	// Columns resizing
-	/*$('#ztree-div').resizable({
-		handles: 'e'
-	}).bind('resize', function (event, ui) {
-		var $document = $('#document'),
-			$ztree_div = $('#ztree-div'),
-			$app_container = $('.app-container');
-		
-		var totalWidth = $app_container.width(),
-			docWidth = totalWidth - $ztree_div.outerWidth(),
-			zTreeWidth = $ztree_div.outerWidth();
-			
-		var threshold = 50;
-		
-		console.log(ui);
-
-		/*if (docWidth < threshold) {
-			$document.outerWidth(threshold);
-			$ztree_div.outerWidth(totalWidth - threshold);
-			
-			return;
-		}
-		
-		if (zTreeWidth < threshold) {
-			$document.outerWidth(totalWidth - threshold);
-			$ztree_div.outerWidth(threshold);
-			
-			return;
-		}*/
-/*
-
-		console.log(totalWidth);
-
-		$document.outerWidth(docWidth);
-	});*/
-	
-	/*$('#document').resizable({
-		handles: 'w'
-	}).bind('resize', function (event, ui) {
-		console.log('resize event ', event);
-	});*/
 	
 	// Init splitter, ztree and document columns
 	var $document = $('#document'),
@@ -570,15 +529,6 @@ $(document).ready( function() {
 				
 				// Used in my.tmp.js
 				USERID = AWS.config.credentials.identityId;
-				/*s3.getBucketLocation({Bucket: "ab-doc-storage"}).promise()
-					.then(
-						function(data) {
-							AWS_CDN_ENDPOINT = "https://s3-" + data.LocationConstraint + ".amazonaws.com/ab-doc-storage/";
-						},
-						function(err) {
-							onError(err);
-						}
-					)*/
 				
 				// Trying to load the tree
 				var treeKey = USERID + '/' + TREE_FILENAME;
@@ -607,7 +557,15 @@ $(document).ready( function() {
 						
 						$.fn.zTree.init($("#abTree"), settings, zNodes);
 						$('.app-container').show();
-						$('.preloader-container').hide();					
+						$('.preloader-container').hide();
+						
+						TREE_READY = true;
+						
+						// Routing when page is loaded
+						var wantGUID = window.location.href.split('#/')[1];
+						if (wantGUID) {
+							TryLoadGUID(wantGUID);
+						}
 					},
 					function(err) {
 						onError(err);
@@ -722,6 +680,37 @@ function saveABTree(abTree, key) {
 		Key: key
 	};
 	return s3.putObject(params).promise();
+}
+
+//---------------------------------------
+//--------------- Routing ---------------
+//---------------------------------------
+
+function TryLoadGUID(guid) {
+	var zTree = $.fn.zTree.getZTreeObj("abTree");
+	var node = zTree.getNodesByParam('id', guid)[0];
+	if (node) {
+		zTree.selectNode(node);
+		// ...And load document
+		try {
+			if (!node.head) {
+				$('#selectedDoc')[0].innerHTML = node.name;
+				initQuill('#document', node.id);
+			}
+		} catch(err) {
+			onError(err);
+		}
+	}
+}
+
+window.onhashchange = function(event) {
+	console.log(event);
+	if (TREE_READY) {
+		var wantGUID = window.location.href.split('#/')[1];
+		if (wantGUID) {
+			TryLoadGUID(wantGUID);
+		}
+	}
 }
 
 //---------------------------------------
@@ -850,21 +839,6 @@ function nextNode(treeNode) {
 	}
 }
 
-/*function preNode(treeNode) {
-	var pre = treeNode.getPreNode();
-	if (pre) {
-		if (pre.isParent) {
-			return pre.children[pre.children.length - 1];
-		}
-		return pre;
-	}
-	var pn = treeNode.getParentNode();
-	if(pn) {
-		return pn.getPreNode();
-	}
-	return null;
-}*/
-
 function onClick(event, treeId, treeNode, clickFlag) {
 	// expand the node
 	tree = $.fn.zTree.getZTreeObj(treeId);
@@ -934,8 +908,11 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	
 	try {
 		if (!treeNode.head) {
-			$('#selectedDoc')[0].innerHTML = treeNode.name;
-			initQuill('#document', treeNode.id);
+			/*$('#selectedDoc')[0].innerHTML = treeNode.name;
+			initQuill('#document', treeNode.id);*/
+			
+			// onhashchange is triggered. It will load editor.
+			window.location.hash = '/' + treeNode.id;
 		}
 	} catch(err) {
 		onError(err);
