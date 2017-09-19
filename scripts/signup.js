@@ -177,7 +177,7 @@ function signUp(userEmail, userPassword, userPassword2, confirmationCode) {
 				}
 				return false;		
 			}
-			window.location = '/index.html';
+			window.location = '/';
 		});	
 		
 		return;
