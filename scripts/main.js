@@ -365,28 +365,6 @@ var TREE_READY = false; // Is tree.json loaded?
 var TREE_FILENAME = "tree.json";
 var $updated;
 
-window.onhashchange = function() {
-	if (TREE_READY) {
-		var zTree = $.fn.zTree.getZTreeObj("abTree");
-		var wantGUID = window.location.href.split('#/')[1];
-		if (wantGUID) {
-			var node = zTree.getNodesByParam('id', wantGUID)[0];
-			if (node) {
-				zTree.selectNode(node);
-				// ...And load document
-				try {
-					if (!node.head) {
-						$('#selectedDoc')[0].innerHTML = node.name;
-						initQuill('#document', node.id);
-					}
-				} catch(err) {
-					onError(err);
-				}
-			}
-		}
-	}
-}
-
 $(document).ready( function() {
 	// Translation
 	LANG = localStorage.getItem('ab-doc.translator.lang');
@@ -584,22 +562,9 @@ $(document).ready( function() {
 						TREE_READY = true;
 						
 						// Routing when page is loaded
-						var zTree = $.fn.zTree.getZTreeObj("abTree");
 						var wantGUID = window.location.href.split('#/')[1];
 						if (wantGUID) {
-							var node = zTree.getNodesByParam('id', wantGUID)[0];
-							if (node) {
-								zTree.selectNode(node);
-								// ...And load document
-								try {
-									if (!node.head) {
-										$('#selectedDoc')[0].innerHTML = node.name;
-										initQuill('#document', node.id);
-									}
-								} catch(err) {
-									onError(err);
-								}
-							}
+							TryLoadGUID(wantGUID);
 						}
 					},
 					function(err) {
@@ -715,6 +680,37 @@ function saveABTree(abTree, key) {
 		Key: key
 	};
 	return s3.putObject(params).promise();
+}
+
+//---------------------------------------
+//--------------- Routing ---------------
+//---------------------------------------
+
+function TryLoadGUID(guid) {
+	var zTree = $.fn.zTree.getZTreeObj("abTree");
+	var node = zTree.getNodesByParam('id', guid)[0];
+	if (node) {
+		zTree.selectNode(node);
+		// ...And load document
+		try {
+			if (!node.head) {
+				$('#selectedDoc')[0].innerHTML = node.name;
+				initQuill('#document', node.id);
+			}
+		} catch(err) {
+			onError(err);
+		}
+	}
+}
+
+window.onhashchange = function(event) {
+	console.log(event);
+	if (TREE_READY) {
+		var wantGUID = window.location.href.split('#/')[1];
+		if (wantGUID) {
+			TryLoadGUID(wantGUID);
+		}
+	}
 }
 
 //---------------------------------------
@@ -843,21 +839,6 @@ function nextNode(treeNode) {
 	}
 }
 
-/*function preNode(treeNode) {
-	var pre = treeNode.getPreNode();
-	if (pre) {
-		if (pre.isParent) {
-			return pre.children[pre.children.length - 1];
-		}
-		return pre;
-	}
-	var pn = treeNode.getParentNode();
-	if(pn) {
-		return pn.getPreNode();
-	}
-	return null;
-}*/
-
 function onClick(event, treeId, treeNode, clickFlag) {
 	// expand the node
 	tree = $.fn.zTree.getZTreeObj(treeId);
@@ -927,8 +908,10 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	
 	try {
 		if (!treeNode.head) {
-			$('#selectedDoc')[0].innerHTML = treeNode.name;
-			initQuill('#document', treeNode.id);
+			/*$('#selectedDoc')[0].innerHTML = treeNode.name;
+			initQuill('#document', treeNode.id);*/
+			
+			// onhashchange is triggered. It will load editor.
 			window.location.hash = '/' + treeNode.id;
 		}
 	} catch(err) {
