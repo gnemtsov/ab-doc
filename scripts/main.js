@@ -366,33 +366,7 @@ var TREE_FILENAME = "tree.json";
 var $updated;
 
 $(document).ready( function() {
-	// Translation
-	LANG = localStorage.getItem('ab-doc.translator.lang');
-	if (!LANG) {
-		LANG = "ru";
-	}
-	$('[data-translate]').each( function(i, el) {
-		var dt = $(el).attr('data-translate'),
-			at = $(el).attr('attr-translate');
-		
-		if (at) {
-			$(el).attr(at, _translatorData[dt][LANG]);
-		} else {
-			$(el).html(_translatorData[dt][LANG]);
-		}
-	});
-	// ========
-	
-	$('#selectLang').change( function(event) {
-		localStorage.setItem('ab-doc.translator.lang', $('#selectLang option:selected').val());
-		location.reload();
-	});
-	$('#selectLang').val(LANG);
-	
 	$('.app-container').hide();
-
-	//$('#splitter').bsSplitter();
-	//$('.draggable').draggable({cancel: ".draggable *"});
 	
 	var cognitoUser = userPool.getCurrentUser();
 	if(!cognitoUser) {
@@ -415,85 +389,7 @@ $(document).ready( function() {
 	
 	$('#username').text(cognitoUser.username);
 	
-	// Init splitter, ztree and document columns
-	var $document = $('#document'),
-		$ztree_div = $('#ztree-div'),
-		$splitter = $('#splitter'),
-		$app_container = $('.app-container'),
-		$nav = $('.navbar');
-	
-	{
-		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
-		var totalWidth = window.innerWidth,//$app_container[0].clientWidth,
-			zTreeWidth = totalWidth * 0.15,
-			splitterWidth = $splitter.outerWidth(),
-			docWidth = totalWidth - zTreeWidth - splitterWidth;
-		
-		$ztree_div.outerWidth(zTreeWidth);
-		$splitter.css('left', zTreeWidth + 'px');
-		$document.outerWidth(docWidth);
-		$document.css('left', (zTreeWidth + splitterWidth) + 'px');
-	}
-	
-	// Splitter moving
-	{
-		var splitterDragging = false,
-			oldX;
-		
-		$splitter.mousedown(function(event) {
-			splitterDragging = true;
-			oldX = event.clientX;en:"../../../css/zTreeStyle/img/diy/1_open.png"
-		});
-		
-		$(document).mouseup(function(event) {
-			splitterDragging = false;
-		});
-		
-		$(document).mousemove(function(event) {
-			if (splitterDragging) {
-				var newX = event.clientX;
-				
-				var totalWidth = window.innerWidth,
-					zTreeWidth = $ztree_div.outerWidth(),
-					newZTreeWidth = zTreeWidth + newX - oldX;
-					
-				if (newZTreeWidth > 32 && newZTreeWidth < totalWidth - 32) {
-					zTreeWidth = newZTreeWidth;
-					
-					var	splitterWidth = $splitter.outerWidth(),
-						docWidth = totalWidth - zTreeWidth - splitterWidth;	
-						
-					$ztree_div.outerWidth(zTreeWidth);
-					$splitter.css('left', zTreeWidth + 'px');
-					$document.outerWidth(docWidth);
-					$document.css('left', zTreeWidth + splitterWidth);
-				}			
-				
-				oldX = newX;
-			}
-		});
-	}
-	
-	// Keep columns proportions and height when resizing window
-	$(window).resize(function() {
 
-		
-		var docWidth = $document.outerWidth(),
-			splitterWidth = $splitter.outerWidth(),
-			zTreeWidth = $ztree_div.outerWidth(),
-			totalWidth = window.innerWidth - splitterWidth,
-			oldTotalWidth = docWidth + zTreeWidth,
-			k = totalWidth / oldTotalWidth;
-		
-		// proportions
-		$ztree_div.outerWidth(zTreeWidth * k);
-		$splitter.css('left', zTreeWidth * k + 'px');
-		$document.outerWidth(docWidth * k);
-		$document.css('left', (zTreeWidth * k + splitterWidth) + 'px');
-		
-		// app-container's height
-		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
-	});
 	
 	cognitoUser.getSession( function(err, session) {
 		if(err) {
@@ -633,11 +529,6 @@ $(document).ready( function() {
 						);
 					});
 				}, 3000);
-				
-				/*loadTree(AWS.config.credentials.identityId + "/trees", cognitoUser.username, $.fn.zTree.getZTreeObj("abTree"), function() {
-					$('.app-container').show();
-					$('.preloader-container').hide();
-				});*/
 			});
 		});
 	});
@@ -712,6 +603,119 @@ window.onhashchange = function(event) {
 		}
 	}
 }
+
+//---------------------------------------
+//----------- Translation ---------------
+//---------------------------------------
+
+$(function() {
+	LANG = localStorage.getItem('ab-doc.translator.lang');
+	if (!LANG) {
+		LANG = "ru";
+	}
+	$('[data-translate]').each( function(i, el) {
+		var dt = $(el).attr('data-translate'),
+			at = $(el).attr('attr-translate');
+		
+		if (at) {
+			$(el).attr(at, _translatorData[dt][LANG]);
+		} else {
+			$(el).html(_translatorData[dt][LANG]);
+		}
+	});
+	
+	$('#selectLang').change( function(event) {
+		localStorage.setItem('ab-doc.translator.lang', $('#selectLang option:selected').val());
+		location.reload();
+	});
+	$('#selectLang').val(LANG);
+});
+
+//---------------------------------------
+//----------- Columns resizing ----------
+//---------------------------------------
+
+$(function () {
+	// Init splitter, ztree and document columns
+	var $document = $('#document'),
+		$ztree_div = $('#ztree-div'),
+		$splitter = $('#splitter'),
+		$app_container = $('.app-container'),
+		$nav = $('.navbar');
+	
+	{
+		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
+		var totalWidth = window.innerWidth,//$app_container[0].clientWidth,
+			zTreeWidth = totalWidth * 0.15,
+			splitterWidth = $splitter.outerWidth(),
+			docWidth = totalWidth - zTreeWidth - splitterWidth;
+		
+		$ztree_div.outerWidth(zTreeWidth);
+		$splitter.css('left', zTreeWidth + 'px');
+		$document.outerWidth(docWidth);
+		$document.css('left', (zTreeWidth + splitterWidth) + 'px');
+	}
+	
+	// Splitter moving
+	{
+		var splitterDragging = false,
+			oldX;
+		
+		$splitter.mousedown(function(event) {
+			splitterDragging = true;
+			oldX = event.clientX;en:"../../../css/zTreeStyle/img/diy/1_open.png"
+		});
+		
+		$(document).mouseup(function(event) {
+			splitterDragging = false;
+		});
+		
+		$(document).mousemove(function(event) {
+			if (splitterDragging) {
+				var newX = event.clientX;
+				
+				var totalWidth = window.innerWidth,
+					zTreeWidth = $ztree_div.outerWidth(),
+					newZTreeWidth = zTreeWidth + newX - oldX;
+					
+				if (newZTreeWidth > 32 && newZTreeWidth < totalWidth - 32) {
+					zTreeWidth = newZTreeWidth;
+					
+					var	splitterWidth = $splitter.outerWidth(),
+						docWidth = totalWidth - zTreeWidth - splitterWidth;	
+						
+					$ztree_div.outerWidth(zTreeWidth);
+					$splitter.css('left', zTreeWidth + 'px');
+					$document.outerWidth(docWidth);
+					$document.css('left', zTreeWidth + splitterWidth);
+				}			
+				
+				oldX = newX;
+			}
+		});
+	}
+	
+	// Keep columns proportions and height when resizing window
+	$(window).resize(function() {
+
+		
+		var docWidth = $document.outerWidth(),
+			splitterWidth = $splitter.outerWidth(),
+			zTreeWidth = $ztree_div.outerWidth(),
+			totalWidth = window.innerWidth - splitterWidth,
+			oldTotalWidth = docWidth + zTreeWidth,
+			k = totalWidth / oldTotalWidth;
+		
+		// proportions
+		$ztree_div.outerWidth(zTreeWidth * k);
+		$splitter.css('left', zTreeWidth * k + 'px');
+		$document.outerWidth(docWidth * k);
+		$document.css('left', (zTreeWidth * k + splitterWidth) + 'px');
+		
+		// app-container's height
+		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
+	});
+});
 
 //---------------------------------------
 //----------- zTree callbacks -----------
