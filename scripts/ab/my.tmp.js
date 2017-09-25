@@ -113,7 +113,7 @@ function initQuill(id, guid) {
 		$clip = $drop_zone.find('#clip');*/
 	
 	// if editor exists, save it's contents before loading new
-	if ($('#editor').length > 0) {
+	if ($('#editor').attr('modified') !== 0) {
 		saveDocument('#editor');
 	}
 	
@@ -133,7 +133,7 @@ function initQuill(id, guid) {
 				</div>\
 				<ul id="files" class="files" waiting="0"></ul>\
 			</div>\
-			<span id="editor" class="message-content" waiting="0" modified="0"></span>\
+			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
 		</div>'
 	);
 	
