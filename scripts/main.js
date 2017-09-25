@@ -365,6 +365,8 @@ var TREE_READY = false; // Is tree.json loaded?
 var TREE_FILENAME = "tree.json";
 var TREE_KEY;
 var COGNITO_USER;
+var ROOT_DOC_GUID = 'root-doc';
+var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html'
 var $updated;
 
 $(document).ready( function() {
@@ -375,6 +377,9 @@ $(document).ready( function() {
 	initS3()
 		.then( function(ok) {
 			return initTree();
+		})
+		.then( function() {
+			window.onhashchange();
 		})
 		.catch( function(err) {
 			switch(err.name) {
@@ -432,6 +437,9 @@ $(document).ready( function() {
 			.then( function() {
 				return initTree();
 			})
+			.then( function() {
+				window.onhashchange();
+			})
 			.catch( function (err) {
 				console.log(err);
 				switch(err.name) {
@@ -478,6 +486,9 @@ $(document).ready( function() {
 			})
 			.then( function() {
 				return initTree();
+			})
+			.then( function() {
+				window.onhashchange();
 			})
 			.catch( function (err) {
 				console.log(err.name, 'Here!');
@@ -703,6 +714,47 @@ function initS3() {
 }
 
 // Returns Promise(ok, err)
+function initRootDoc(srcLocation, dstKey) {
+	var getPromise = new Promise(function (resolve, reject) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', srcLocation);
+		xhr.onload = function () {
+			if (this.status >= 200 && this.status < 300) {
+				resolve(xhr.response);
+				console.log(xhr.response);
+			} else {
+				reject({
+					status: this.status,
+					statusText: xhr.statusText
+				});
+			}
+		};
+		xhr.onerror = function () {
+			reject({
+				status: this.status,
+				statusText: xhr.statusText
+			});
+		};
+		xhr.send();
+	});
+	
+	return getPromise
+		.then( function(data) {
+			var params = {
+				Body: data,
+				Bucket: STORAGE_BUCKET,
+				Key: dstKey,
+				ACL: 'public-read'
+			};
+			
+			return s3.putObject(params).promise();
+		})
+		.catch( function(err) {
+			return err;
+		});
+}
+
+// Returns Promise(ok, err)
 function initTree() {
 	var promise = new Promise( function(resolve, reject) {
 		SetAuthenticatedMode();
@@ -713,7 +765,18 @@ function initTree() {
 			},
 			function(err) {
 				if (err.name == 'NoSuchKey') {
-					return Promise.resolve([]);
+					// No tree. It user's first visit.
+					// Create root-doc
+					
+					//return Promise.resolve([]);
+					return initRootDoc(DEFAULT_ROOT_DOC_LOCATION, USERID + '/' + ROOT_DOC_GUID + '/index.html')
+						.then( function() {
+							TREE_MODIFIED = true;
+							return [];
+						})
+						.catch( function(err) {
+							return Promise.reject(err);
+						});
 				} else {
 					return Promise.reject(err);
 				}
@@ -721,7 +784,7 @@ function initTree() {
 		).then(function(abTree) {
 			console.log(abTree);
 			var zNodes = [{
-				id: 'top',
+				id: ROOT_DOC_GUID,
 				head: true,
 				icon: "/img/icons/home.svg",
 				name: "",
@@ -740,6 +803,8 @@ function initTree() {
 			if (wantGUID) {
 				TryLoadGUID(wantGUID);
 			}
+			
+			resolve(true);
 		}).catch( function(err) {
 			reject(err);
 		});
@@ -851,6 +916,7 @@ function saveABTree(abTree, key) {
 //--------------- Routing ---------------
 //---------------------------------------
 
+// returns true if guid exists, false otherwise
 function TryLoadGUID(guid) {
 	var zTree = $.fn.zTree.getZTreeObj("abTree");
 	var node = zTree.getNodesByParam('id', guid)[0];
@@ -858,22 +924,29 @@ function TryLoadGUID(guid) {
 		zTree.selectNode(node);
 		// ...And load document
 		try {
-			if (!node.head) {
-				$('#selectedDoc')[0].innerHTML = node.name;
-				initQuill('#document', node.id);
-			}
+			$('#selectedDoc')[0].innerHTML = node.name;
+			initQuill('#document', node.id);
 		} catch(err) {
 			onError(err);
 		}
+		return true;
+	} else {
+		// for debugging
+		console.log("Couldn't load", guid);
+		return false;
 	}
 }
 
 window.onhashchange = function(event) {
-	console.log(event);
+	console.log('onhashchange', event);
 	if (TREE_READY) {
 		var wantGUID = window.location.href.split('#/')[1];
+		var ok = false;
 		if (wantGUID) {
-			TryLoadGUID(wantGUID);
+			ok = TryLoadGUID(wantGUID);
+		} 
+		if (!ok) {
+			window.location.hash = '/' + ROOT_DOC_GUID;
 		}
 	}
 }
@@ -1005,7 +1078,7 @@ $(function() {
 	setInterval(function () {
 		if (TREE_MODIFIED) {
 			var zTree = $.fn.zTree.getZTreeObj("abTree");
-			var nodes = zTree.getNodesByParam('id', 'top')[0].children;
+			var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID)[0].children;
 			var abTree;
 			if (nodes) {
 				var f = function(n) {
@@ -1256,17 +1329,7 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	// my!
 	tree.lastClicked = treeNode;
 	
-	try {
-		if (!treeNode.head) {
-			/*$('#selectedDoc')[0].innerHTML = treeNode.name;
-			initQuill('#document', treeNode.id);*/
-			
-			// onhashchange is triggered. It will load editor.
-			window.location.hash = '/' + treeNode.id;
-		}
-	} catch(err) {
-		onError(err);
-	}
+	window.location.hash = '/' + treeNode.id;
 }
 
 function showRemoveBtn(id, node) {
