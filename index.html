@@ -280,6 +280,19 @@
 				<div id="splitter"></div>
 				<div id="document">
 					<h2 id="selectedDoc"></h2>
+					<div id="editor-wrap">
+						<div class="float-right" style="z-index: 10000; overflow: hidden;">
+							<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">
+								<div class="drop-files-here justify-content-center">
+									!!!Dropzone!!!
+									<img src="/img/icons/check.svg"></img>
+									<input id="clip" name="clip" multiple="multiple" type="file">
+								</div>
+							</div>
+							<ul id="files" class="files" waiting="0"></ul>
+						</div>
+						<div id="editor" class="message-content" waiting="0" modified="0"></div>
+					</div>
 				</div>
  			</div>
  			
