@@ -87,7 +87,8 @@ function loadDocument(path, id) {
 function saveDocument(id) {
 	var params = {
 		Key: USERID + '/' + $(id).attr('guid') + '/index.html',
-		Body: $(id + ' >.ql-editor').html()
+		Body: $(id + ' >.ql-editor').html(),
+		ACL: 'public-read'
 	};
 	
 	return s3Uploader(params);

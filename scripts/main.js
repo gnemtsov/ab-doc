@@ -3,7 +3,7 @@
 var _translatorData = {
 	"loginPage": {
 		"ru": "Вход",
-		"en": "Login page"
+		"en": "Sign in"
 	},
 	"email": {
 		"ru": "Почта",
@@ -145,7 +145,7 @@ var poolData = {
     ClientId : '1p7uks7hoothql33e17mssr7q1'
 };
 
-var userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
+var USER_POOL = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
 // zTree \/
 var settings = {
@@ -185,7 +185,7 @@ var settings = {
 };
 
 
-
+/*
 // TODO: fix overwriting if object with this name already exists.
 function createObjectS3(path, body, errCallback) {
 	var params = {
@@ -198,10 +198,10 @@ function createObjectS3(path, body, errCallback) {
 			errCallback(err);
 		}
 	});
-};
+};*/
 
 function createObjectS3Params(params, errCallback) {
-	params.Bucket = "ab-doc-storage";
+	params.Bucket = STORAGE_BUCKET;
 	
 	return s3.putObject(params, function(err, data) {
 		if (err && (errCallback instanceof Function)) {
@@ -210,7 +210,7 @@ function createObjectS3Params(params, errCallback) {
 	});
 };
 
-function getObjectS3(path, errCallback) {
+/*function getObjectS3(path, errCallback) {
 	var params = {
 		Bucket: "ab-doc-storage",
 		Key: path
@@ -220,10 +220,10 @@ function getObjectS3(path, errCallback) {
 			errCallback(err);
 		}		
 	});
-}
+}*/
 
 function getObjectS3Params(params, errCallback) {
-	params.Bucket = "ab-doc-storage";
+	params.Bucket = STORAGE_BUCKET;
 	
 	console.log(params);
 	
@@ -234,7 +234,7 @@ function getObjectS3Params(params, errCallback) {
 	});
 }
 
-function removeTreeS3(treeNode, errCallback) {
+/*function removeTreeS3(treeNode, errCallback) {
 	var params = {
 		Bucket: "ab-doc-storage",
 		Key: buildPath(treeNode)
@@ -285,13 +285,13 @@ function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
 			});	
 		});
 	}, errCallback);
-}
+}*/
 
 // Loads list of files with specified prefix and passes each one to callback
 function withS3Files(prefix, callback, errCallback) {
 	var files = [];
 	var params = {
-		Bucket: "ab-doc-storage",
+		Bucket: STORAGE_BUCKET,
 		Prefix: prefix,
 		MaxKeys: 1000
 	};
@@ -323,7 +323,7 @@ function withS3Files(prefix, callback, errCallback) {
 }
 
 // prefix should not end with "/"
-function loadTree(prefix, username, tree, callback, errCallback) {
+/*function loadTree(prefix, username, tree, callback, errCallback) {
 	withS3Files(prefix+"/", function(files) {
 		var head = {id: newId(), name: username, s3path: prefix, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"};
 		tree.addNodes(null, head, true);
@@ -342,7 +342,7 @@ function loadTree(prefix, username, tree, callback, errCallback) {
 		
 		callback();
 	}, errCallback);
-}
+}*/
 
 // zTree /\
 
@@ -363,176 +363,450 @@ var LANG;
 var TREE_MODIFIED = false;
 var TREE_READY = false; // Is tree.json loaded?
 var TREE_FILENAME = "tree.json";
+var TREE_KEY;
+var COGNITO_USER;
 var $updated;
 
 $(document).ready( function() {
 	$('.app-container').hide();
 	
-	var cognitoUser = userPool.getCurrentUser();
-	if(!cognitoUser) {
-		onError();
-		// no user. redirect to login.html
-		window.location.replace('/login.html');
-		return;
-	}
-			
+	SetUnknownMode();
+	
+	initS3()
+		.then( function(ok) {
+			return initTree();
+		})
+		.catch( function(err) {
+			switch(err.name) {
+				case 'NotSignedIn':
+					SetUnauthenticatedMode();
+					break;
+				default:
+					onError(err);
+			}
+		});
+	
 	$('#linkSignOut').click( function() {
-		cognitoUser.signOut();
-		window.location.replace('/login.html');
+		if (COGNITO_USER) {
+			COGNITO_USER.signOut();
+		}
+		//window.location.replace('/login.html');
+		SetUnauthenticatedMode();
 		return true;	
 	});	
 	$('#linkReturn').click( function() {
-		cognitoUser.signOut();
-		window.location.replace('/login.html');
+		if (COGNITO_USER) {
+			COGNITO_USER.signOut();
+		}
+		//window.location.replace('/login.html');
+		SetUnauthenticatedMode();
 		return true;	
 	});
 	
-	$('#username').text(cognitoUser.username);
+	$('#linkSignIn').click( function() {
+		// Signing in
+		$('#modalSignIn').modal('show');
+	});
 	
-
+	$('#linkSignUp').click( function() {
+		// Signing up
+		$('#modalSignUp').modal('show');
+	});
 	
-	cognitoUser.getSession( function(err, session) {
-		if(err) {
-			onError(err);
-			return;			
-		} 
-
-		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
-			Logins : {
-				'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
-			}
-		});
-		
-		AWS.config.credentials.refresh( function(err) {
-			if (err) {
-				onError(err);
-				return;
-			}
-			
-			AWS.config.credentials.get( function() {
-				var accessKeyId = AWS.config.credentials.accessKeyId;
-				var secretAccessKey = AWS.config.credentials.secretAccessKey;
-				var sessionToken = AWS.config.credentials.sessionToken;
-				
-				s3 = new AWS.S3({
-					apiVersion: '2006-03-01',
-					accessKeyId: accessKeyId,
-					secretAccessKey: secretAccessKey,
-					sessionToken: sessionToken,
-					region: "eu-west-1"
-				});
-				
-				// Used in my.tmp.js
-				USERID = AWS.config.credentials.identityId;
-				
-				// Trying to load the tree
-				var treeKey = USERID + '/' + TREE_FILENAME;
-				loadABTree(treeKey).then(
-					function(abTree) {
-						return Promise.resolve(abTree);
-					},
-					function(err) {
-						if (err.name == 'NoSuchKey') {
-							return Promise.resolve([]);
-						} else {
-							return Promise.reject(err);
-						}
-					}
-				).then(
-					function(abTree) {
-						console.log(abTree);
-						var zNodes = [{
-							id: 'top',
-							head: true,
-							icon: "/img/icons/home.svg",
-							name: "",
-							children: abTree,
-							open: false
-						}];
-						
-						$.fn.zTree.init($("#abTree"), settings, zNodes);
-						$('.app-container').show();
-						$('.preloader-container').hide();
-						
-						TREE_READY = true;
-						
-						// Routing when page is loaded
-						var wantGUID = window.location.href.split('#/')[1];
-						if (wantGUID) {
-							TryLoadGUID(wantGUID);
-						}
-					},
-					function(err) {
+	//$('#username').text(cognitoUser.username);
+	
+	$('#btnSignIn').click( function() {
+		$('#alertSignInError').hide();
+		var code;
+		if ($('#signInConfirmationCode').is(':visible')) {
+			code = $('#signInConfirmationCode').val();
+		}
+		signIn($('#signInEmail').val(), $('#signInPassword').val(), code)
+			.then( function() {
+				return initS3();
+			})
+			.then( function() {
+				SetAuthenticatedMode();
+				$('#modalSignIn').modal('hide');
+			})
+			.then( function() {
+				return initTree();
+			})
+			.catch( function (err) {
+				console.log(err);
+				switch(err.name) {
+					case 'UserNotFoundException':
+						$('#alertSignInError').html(_translatorData['alertUserDoesntExist'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					case 'NotAuthorizedException':
+						$('#alertSignInError').html(_translatorData['alertWrongPassword'][LANG]);
+						$('#alertSignInError').show();
+						break;		
+					case 'UserNotConfirmedException':
+						$('#divSignInConfirmationCode').show();
+						break;
+					case 'CodeMismatchException':
+						$('#alertSignInError').html(_translatorData['alertWrongCode'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					default:
 						onError(err);
-					}
-				);
-				
-				$updated = $('#updated');
-				
-				setInterval(function () {
-					if (TREE_MODIFIED) {
-						var zTree = $.fn.zTree.getZTreeObj("abTree");
-						var nodes = zTree.getNodesByParam('id', 'top')[0].children;
-						var abTree;
-						if (nodes) {
-							var f = function(n) {
-								var abNode = {
-									id : n.id,
-									name : n.name,
-									children : n.children ? n.children.map(f) : []
-								};
-								
-								return abNode;
-							};
-							
-							abTree = nodes.map(f);
-						} else {
-							abTree = [];
-						}
-						
-						$updated.html(_translatorData['saving'][LANG]);
-						saveABTree(abTree, treeKey).then(
-							function (ok) {
-								$updated.fadeOut('slow', function () {
-									$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
-								});
-							},
-							function (err) {
-								onError(err);
-							}
-						);
-						TREE_MODIFIED = false;
-					}
-					
-					$('#editor[modified="1"]').each(function (index, element) {
-						var $editor = $('#editor'),
-							$files = $('#files');
-						
-						$updated.html(_translatorData['saving'][LANG]);
-						$(element).attr('modified', 0);
-						
-						saveDocument('#editor').then(
-							function (ok) {
-								$updated.fadeOut('slow', function () {
-									console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
-									if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-										$(this).removeClass('pending');
-									}
-									
-									$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
-								});
-							},
-							function (err) {
-								onError(err);
-							}
-						);
-					});
-				}, 3000);
-			});
-		});
+				}
+			})
+	});
+	
+	$('#btnSignUp').click( function() {
+		$('#alertSignUpError').hide();
+		var code;
+		if ($('#signUpConfirmationCode').is(':visible')) {
+			code = $('#signUpConfirmationCode').val();
+		}
+		var email = $('#signUpEmail').val(),
+			password = $('#signUpPassword').val(),
+			password2 = $('#signUpRepeatPassword').val();
+		signUp(email, password, password2, code)
+			.then( function() {
+				return signIn(email, password);
+			})
+			.then( function() {
+				return initS3();
+			})
+			.then( function() {
+				SetAuthenticatedMode();
+				$('#modalSignUp').modal('hide');
+			})
+			.then( function() {
+				return initTree();
+			})
+			.catch( function (err) {
+				console.log(err.name, 'Here!');
+				switch(err.name) {
+					case 'CodeMismatchException':
+						$('#alertSignUpError').html(_translatorData['alertWrongCode'][LANG]);
+						$('#alertSignUpError').show();
+						break;
+					case 'InvalidParameterException':
+						$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
+						$('#alertSignUpError').show();
+						break;
+					case 'InvalidPasswordException':
+						$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
+						$('#alertSignUpError').show();
+						break;
+					case 'UsernameExistsException':
+						$('#alertSignUpError').html(_translatorData['alertUserExists'][LANG]);
+						$('#alertSignUpError').show();
+						break;
+					case 'ConfirmationRequired':
+						$('#divSignUpConfirmationCode').show();
+						break;
+					case 'WrongRepeat':
+						$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
+						$('#alertSignUpError').show();
+						break;			
+					default:
+						onError(err);
+				}
+			})
 	});
 });
+
+//------------------------------------------------
+//-----------  Signing in, signing up  -----------
+//------------------------------------------------
+
+// Returns Promise (ok, error)
+function signUp(email, password, password2, confirmationCode) {
+	var promise = new Promise( function(resolve, reject) {
+		//AWSCognito.config.region = 'us-west-2';	 
+
+		if(password != password2) {
+			reject(ABError('WrongRepeat'));
+		}
+		  
+		var dataEmail = {
+			Name : 'email',
+			Value : email
+		};
+
+		var attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
+
+		var attributeList = [attributeEmail];
+
+		if(confirmationCode) {
+			console.log('confirm');
+			
+			var userData = {
+				Username : email,
+				Pool : USER_POOL
+			};
+		
+			var cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);		
+			
+			cognitoUser.confirmRegistration(confirmationCode, true, function(err, result) {
+				if(err) {
+					reject(err);	
+				} else {
+					console.log(result);
+					resolve(true);
+				}
+			});
+			return;
+		}  
+
+		USER_POOL.signUp(email, password, attributeList, null, function(err, result) {
+			if (err) {
+				reject(err);
+				return;
+			}
+	 
+			reject(ABError('ConfirmationRequired'));
+			//cognitoUser = result.user;
+			//$('#divConfirmation').show();
+		});
+    });
+    
+    return promise;
+}
+
+// Returns Promise (ok, error)
+function signIn(email, password, confirmationCode) {
+	console.log(email, password);
+	var promise = new Promise( function(resolve, reject) {
+		//AWSCognito.config.region = 'us-west-2';	
+		
+		var authenticationData = {
+			Username : email,
+			Password : password,
+		};
+		
+		var authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData);
+
+		var userData = {
+			Username : email,
+			Pool : USER_POOL
+		};
+		
+		var cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+		
+		// using promise to wait for confirmation. if confirmation is not needed, promise is resolved
+		var confirmationPromise = Promise.resolve(true);
+		if(confirmationCode){
+			confirmationPromise = new Promise( function(resolve, reject) {
+				console.log('confirm');
+				cognitoUser.confirmRegistration(confirmationCode, true, function(err, result) {
+					if(err) {
+						console.log(err);
+						reject(err);
+					} else {
+						console.log(result);
+						resolve(result);
+					}
+				});	
+			});
+		}    
+		
+		confirmationPromise
+			.then( function(ok) {
+				cognitoUser.authenticateUser(authenticationDetails, {
+					onSuccess: function (result) {;
+						resolve(true);
+					},
+
+					onFailure: function(err) {
+						reject(err);        
+					},
+					
+					newPasswordRequired: function(userAttributes, requiredAttributes) {
+						// User was signed up by an admin and must provide new 
+						// password and required attributes, if any, to complete 
+						// authentication.
+
+						// Get these details and call 
+						alert('Требуется сменить пароль. Эта функция пока не работает.');
+						reject();
+						//cognitoUser.completeNewPasswordChallenge(newPassword, data, this)
+					}
+				});
+			})
+			.catch( function(err) {
+				reject(err);
+			});
+    });
+    
+    return promise;
+}
+
+// Returns Promise(ok, error)
+// Doesn't affect UI
+function initS3() {
+	var promise = new Promise( function(resolve, reject) {
+		// Checking if we are signed in
+		var cognitoUser = USER_POOL.getCurrentUser();
+		COGNITO_USER = cognitoUser;
+		if(!cognitoUser) {
+			//SetUnauthenticatedMode();
+			//console.log('Not signed in');
+			reject(ABError('NotSignedIn'));
+			return;
+		} else {
+			cognitoUser.getSession( function(err, session) {
+				if(err) {
+					//onError(err);
+					console.log('error here!');
+					reject(err);
+					return;			
+				} 
+
+				AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+					IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
+					Logins : {
+						'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
+					}
+				});
+				AWS.config.credentials.clearCachedId();
+					
+				AWS.config.credentials.get( function(err) {
+					if (err) {
+						// No error messages
+						console.log('error there!');
+						cognitoUser.signOut();
+						reject(err);
+						return
+					}
+					
+					var accessKeyId = AWS.config.credentials.accessKeyId;
+					var secretAccessKey = AWS.config.credentials.secretAccessKey;
+					var sessionToken = AWS.config.credentials.sessionToken;
+					
+					s3 = new AWS.S3({
+						apiVersion: '2006-03-01',
+						accessKeyId: accessKeyId,
+						secretAccessKey: secretAccessKey,
+						sessionToken: sessionToken,
+						region: "eu-west-1"
+					});
+					
+					// Used in my.tmp.js
+					USERID = AWS.config.credentials.identityId;
+					
+					// Trying to load the tree
+					TREE_KEY = USERID + '/' + TREE_FILENAME;	
+					resolve(true);		
+				});
+			});
+		}
+	});
+	
+	return promise;
+}
+
+// Returns Promise(ok, err)
+function initTree() {
+	var promise = new Promise( function(resolve, reject) {
+		SetAuthenticatedMode();
+		// Trying to load tree
+		loadABTree(TREE_KEY).then(
+			function(abTree) {
+				return Promise.resolve(abTree);
+			},
+			function(err) {
+				if (err.name == 'NoSuchKey') {
+					return Promise.resolve([]);
+				} else {
+					return Promise.reject(err);
+				}
+			}
+		).then(function(abTree) {
+			console.log(abTree);
+			var zNodes = [{
+				id: 'top',
+				head: true,
+				icon: "/img/icons/home.svg",
+				name: "",
+				children: abTree,
+				open: false
+			}];
+			
+			$.fn.zTree.init($("#abTree"), settings, zNodes);
+			
+			SetAuthenticatedMode();
+			
+			TREE_READY = true;
+			
+			// Routing when page is loaded
+			var wantGUID = window.location.href.split('#/')[1];
+			if (wantGUID) {
+				TryLoadGUID(wantGUID);
+			}
+		}).catch( function(err) {
+			reject(err);
+		});
+		
+		$updated = $('#updated');
+	});
+	
+	return promise;
+}
+
+// Reset UI on Modals
+$(function() {
+	$('#modalSignIn').on('show.bs.modal', function(event) {
+		$('#divSignInConfirmationCode').hide();
+		$('#signInConfirmationCode').val('');
+	});
+	$('#modalSignUp').on('show.bs.modal', function(event) {
+		$('#divSignUpConfirmationCode').hide();
+		$('#signUpConfirmationCode').val('');
+	});
+});
+
+//------------------------------------------------
+//-----------       App-mode           -----------
+//------------------------------------------------
+
+// Changes UI for using in authenticated mode (tree + doc)
+function SetAuthenticatedMode() {
+	// TODO
+	console.log('authenticated');
+	
+	$('.preloader-container').hide();
+	$('.app-container').show();
+	
+	$('.authenticated-mode').show();
+	$('.unauthenticated-mode').hide();
+	
+	$('#username').text(COGNITO_USER.username);
+}
+
+// Changes UI for using in unauthenticated mode (only doc)
+function SetUnauthenticatedMode() {
+	console.log('unauthenticated');
+	
+	$('.preloader-container').hide();
+	$('.app-container').show();
+	
+	$('.unauthenticated-mode').show();
+	$('.authenticated-mode').hide();
+}
+
+function SetUnknownMode() {
+	console.log('unknown');
+	
+	$('.authenticated-mode').hide();
+	$('.unauthenticated-mode').hide();
+}
+
+//--------------------------------------
+//----------- Custom error -------------
+//--------------------------------------
+
+function ABError(name) {
+	var err = new Error(name);
+	err.name = name;
+	return err;
+}
 
 //------------------------------------------------
 //----------- ABTree-related functions -----------
@@ -616,6 +890,11 @@ $(function() {
 	$('[data-translate]').each( function(i, el) {
 		var dt = $(el).attr('data-translate'),
 			at = $(el).attr('attr-translate');
+
+		if (!_translatorData[dt]) {
+			console.log('"' + dt + '" not found in _translatorData');
+			return
+		}
 		
 		if (at) {
 			$(el).attr(at, _translatorData[dt][LANG]);
@@ -661,9 +940,10 @@ $(function () {
 		var splitterDragging = false,
 			oldX;
 		
+		// TODO: prevent default on events
 		$splitter.mousedown(function(event) {
 			splitterDragging = true;
-			oldX = event.clientX;en:"../../../css/zTreeStyle/img/diy/1_open.png"
+			oldX = event.clientX;//en:"../../../css/zTreeStyle/img/diy/1_open.png"
 		});
 		
 		$(document).mouseup(function(event) {
@@ -715,6 +995,72 @@ $(function () {
 		// app-container's height
 		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
 	});
+});
+
+//-------------------------------------------------
+//----------- Timer (tree and document) -----------
+//-------------------------------------------------
+
+$(function() {
+	setInterval(function () {
+		if (TREE_MODIFIED) {
+			var zTree = $.fn.zTree.getZTreeObj("abTree");
+			var nodes = zTree.getNodesByParam('id', 'top')[0].children;
+			var abTree;
+			if (nodes) {
+				var f = function(n) {
+					var abNode = {
+						id : n.id,
+						name : n.name,
+						children : n.children ? n.children.map(f) : []
+					};
+					
+					return abNode;
+				};
+				
+				abTree = nodes.map(f);
+			} else {
+				abTree = [];
+			}
+			
+			$updated.html(_translatorData['saving'][LANG]);
+			saveABTree(abTree, TREE_KEY).then(
+				function (ok) {
+					$updated.fadeOut('slow', function () {
+						$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
+					});
+				},
+				function (err) {
+					onError(err);
+				}
+			);
+			TREE_MODIFIED = false;
+		}
+		
+		$('#editor[modified="1"]').each(function (index, element) {
+			var $editor = $('#editor'),
+				$files = $('#files');
+			
+			$updated.html(_translatorData['saving'][LANG]);
+			$(element).attr('modified', 0);
+			
+			saveDocument('#editor').then(
+				function (ok) {
+					$updated.fadeOut('slow', function () {
+						console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
+						if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+							$(this).removeClass('pending');
+						}
+						
+						$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
+					});
+				},
+				function (err) {
+					onError(err);
+				}
+			);
+		});
+	}, 3000);
 });
 
 //---------------------------------------
