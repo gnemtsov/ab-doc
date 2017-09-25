@@ -118,10 +118,10 @@ function initQuill(id, guid) {
 	}
 	
 	// remove old editor
-	$('#editor-wrap').remove();
+	//$('#editor-wrap').remove();
 	
 	// create new
-	$(id).append( // TODO: add translation
+	/*$(id).append( // TODO: add translation
 		'<div id="editor-wrap">\
 			<div class="float-right" style="z-index: 10000; overflow: hidden;">\
 				<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">\
@@ -135,13 +135,15 @@ function initQuill(id, guid) {
 			</div>\
 			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
 		</div>'
-	);
+	);*/
 	
 	var $content = $('#editor'),
 		$drop_zone = $('#dropzone'),
 		$clip = $drop_zone.find('#clip'),
 		$files = $('#files'),
 		$updated = $('#updated');
+		
+	$files.html('');
 	
 	withS3Files(USERID + '/' + guid + '/attachments/', function(f) {
 		var params = {
