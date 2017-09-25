@@ -232,7 +232,7 @@
 			</button>
 			<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
 				<ul class="navbar-nav">
-					<li class="nav-item">
+					<li class="nav-item authenticated-mode">
 						<span class="nav-link" id="updated"></span>
 					</li>
 					<li class="nav-item">
@@ -241,11 +241,17 @@
 							<option value="en">English</option>
 						</select>
 					</li>
-					<li class="nav-item">
+					<li class="nav-item authenticated-mode">
 						<a class="nav-link" href="#" id="username">Name</a>
 					</li>
-					<li class="nav-item">
-						<a class="nav-link" id="linkSignOut" href="/index.html" data-translate="exit"></a>
+					<li class="nav-item authenticated-mode">
+						<a class="nav-link" id="linkSignOut" href="#" data-translate="exit"></a>
+					</li>
+					<li class="nav-item unauthenticated-mode">
+						<a class="nav-link" id="linkSignIn" href="#" data-translate="enter"></a>
+					</li>
+					<li class="nav-item unauthenticated-mode">
+						<a class="nav-link" id="linkSignUp" href="#" data-translate="signUp"></a>
 					</li>
 				</ul>
 			</div>
@@ -267,22 +273,6 @@
 				</div>
 			</div>
  			
- 			<!--
- 			<div class="row bs-splitter-parent app-container">
-				<div class="col-md-4 split-left ztree-div">
-					<div class="draggable">
-						<ul id="abTree" class="ztree"></ul>
-					</div>
-					<div id="splitter" class="bs-splitter">
-						<span class="bs-splitter__handle">. . . <span class="sr-only">Resize Columns</span></span>
-					</div>
-				</div>
-				<div class="col-md-8 split-right" id="document">
-					<span id="selectedDoc"></span>
-				</div>
- 			</div>
- 			-->
- 			
  			<div class="row app-container">
 				<div id="ztree-div">
 					<ul id="abTree" class="ztree"></ul>
@@ -293,8 +283,7 @@
 				</div>
  			</div>
  			
- 			<!-- Modal -->
- 			
+ 			<!-- Modal Delete -->
  			<div id="modalDelete" class="modal fade" role="dialog">
 				<div class="modal-dialog" role="document">
 					<div class="modal-content">
@@ -307,6 +296,90 @@
 						<div class="modal-footer">
 							<button id = "buttonDelete" type="button" class="btn btn-primary" data-dismiss="modal" data-translate="ok"></button>
 							<button type="button" class="btn btn-secondary" data-dismiss="modal" data-translate="cancel"></button>
+						</div>
+					</div>
+				</div>
+ 			</div>
+
+ 			<!-- Modal Sign In -->
+ 			<div id="modalSignIn" class="modal fade" role="dialog">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title" data-translate="loginPage"></h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<div class="container-fluid">
+								<div class="row">
+									<div class="form-group">
+										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
+									</div>							
+									<div class="form-group input-group">
+										<span class="input-group-addon" data-translate="email"></span>
+										<input id="signInEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-addon" data-translate="password"></span>
+										<input id="signInPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+									</div>
+									<div class="form-group input-group" id="divSignInConfirmationCode">
+										<span class="input-group-addon" data-translate="confirmationCode"></span>
+										<input id="signInConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-btn">
+											<button id="btnSignIn" class="btn btn-secondary" type="button" data-translate="enter"></button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+ 			</div>
+ 			
+ 			<!-- Modal Sign Up -->
+ 			<div id="modalSignUp" class="modal fade" role="dialog">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title" data-translate="registration"></h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<div class="container-fluid">
+								<div class="row">
+									<div class="form-group">
+										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignUpError"></div>
+									</div>							
+									<div class="form-group input-group">
+										<span class="input-group-addon" data-translate="email"></span>
+										<input id="signUpEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-addon" data-translate="password"></span>
+										<input id="signUpPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-addon" data-translate="password"></span>
+										<input id="signUpRepeatPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="repeatPassword"></input>
+									</div>
+									<div class="form-group input-group" id="divSignUpConfirmationCode">
+										<span class="input-group-addon" data-translate="confirmationCode"></span>
+										<input id="signUpConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-btn">
+											<button id="btnSignUp" class="btn btn-secondary" type="button" data-translate="signUp2"></button>
+										</span>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
