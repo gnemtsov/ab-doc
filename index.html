@@ -150,6 +150,11 @@
 				padding: 30px 20px 20px 20px;
 			}
 			
+			#ztree-div.ab-closed {
+				width: 0px !important;
+				padding: 0px;
+			}
+			
 			#document {
 				border-style: none;
 				position: absolute;
@@ -161,14 +166,53 @@
 				padding: 30px 20px 20px 20px;
 			}
 			
+			#document.ab-closed {
+				left: 12px !important;
+			}
+			
 			#splitter {
 				cursor: col-resize;
-				border-left: 1px solid #b0b0b0;
+				border-left: 1px solid;
+				border-color: #b0b0b0;
 				position: absolute;
 				width: 12px;
 				top: 0px;
 				bottom: 0px;
 				margin: 20px 0px;
+				display: block;
+			}
+			
+			#splitter.ab-closed {
+				left: 0px !important;
+			}
+			
+			/*#ztree-div, #splitter, #document,*/ #toggleButton {
+				transition: all 0.3s ease 0.0s;
+			}
+			
+			#toggleButton {
+				cursor: pointer;
+				position: relative;
+				top: 45px;
+				border: solid;
+				border-width: 1px;
+				border-color: inherit;
+				width: 20px;
+				height: 40px;
+			}
+			
+			#toggleButton.ab-opened {
+				border-right-color: #ffffff;
+				border-top-left-radius: 5px;
+				border-bottom-left-radius: 5px;
+				margin-left: -20px;
+			}
+
+			#toggleButton.ab-closed {
+				border-left-color: #ffffff;
+				border-top-right-radius: 5px;
+				border-bottom-right-radius: 5px;
+				/*margin-left: -1px;*/
 			}
 			
 			.app-container {
@@ -272,11 +316,14 @@
 			</div>
  			
  			<div class="row app-container">
-				<div id="ztree-div">
+				<div id="ztree-div" class="ab-opened">
 					<ul id="abTree" class="ztree"></ul>
 				</div>
-				<div id="splitter"></div>
-				<div id="document">
+				<div id="splitter" class="ab-opened">
+					<div id="toggleButton" class="ab-opened">
+					</div>
+				</div>
+				<div id="document" class="ab-opened">
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
 						<div class="float-right" style="z-index: 10000; overflow: hidden;">

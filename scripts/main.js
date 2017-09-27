@@ -1015,15 +1015,24 @@ $(function () {
 		
 		// TODO: prevent default on events
 		$splitter.mousedown(function(event) {
-			splitterDragging = true;
-			oldX = event.clientX;//en:"../../../css/zTreeStyle/img/diy/1_open.png"
+			event.preventDefault();
+			
+			// Allow dragging only when ztree column is opened
+			if ($ztree_div.hasClass('ab-opened')) {
+				splitterDragging = true;
+			}
+			oldX = event.clientX;
 		});
 		
 		$(document).mouseup(function(event) {
+			event.preventDefault();
+			
 			splitterDragging = false;
 		});
 		
 		$(document).mousemove(function(event) {
+			event.preventDefault();
+			
 			if (splitterDragging) {
 				var newX = event.clientX;
 				
@@ -1050,7 +1059,7 @@ $(function () {
 	
 	// Keep columns proportions and height when resizing window
 	$(window).resize(function() {
-
+		event.preventDefault();
 		
 		var docWidth = $document.outerWidth(),
 			splitterWidth = $splitter.outerWidth(),
@@ -1067,6 +1076,30 @@ $(function () {
 		
 		// app-container's height
 		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
+	});
+	
+	/*
+	 *  
+	 * Tree colums has 2 states:
+	 * closed
+	 * opened
+	 * 
+	 */ 
+	
+	// Toogle button
+	$('#toggleButton').mousedown( function(event) {
+		event.preventDefault();
+		
+		if ( $('#toggleButton').hasClass('ab-opened') ) {
+			$('#toggleButton, #ztree-div, #splitter, #document').addClass('ab-closed').removeClass('ab-opened');
+			
+			return
+		}
+		if ( $('#toggleButton').hasClass('ab-closed') ) {
+			$('#toggleButton, #ztree-div, #splitter, #document').addClass('ab-opened').removeClass('ab-closed');
+			
+			return
+		}
 	});
 });
 
