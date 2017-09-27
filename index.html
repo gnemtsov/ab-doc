@@ -151,7 +151,7 @@
 			}
 			
 			#ztree-div.ab-closed {
-				width: 0px !important;
+				/*width: 0px !important;*/
 				padding: 0px;
 			}
 			
@@ -167,7 +167,7 @@
 			}
 			
 			#document.ab-closed {
-				left: 12px !important;
+				/*left: 12px !important;*/
 			}
 			
 			#splitter {
@@ -183,10 +183,10 @@
 			}
 			
 			#splitter.ab-closed {
-				left: 0px !important;
+				/*left: 0px !important;*/
 			}
 			
-			/*#ztree-div, #splitter, #document,*/ #toggleButton {
+			#ztree-div:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging), #toggleButton {
 				transition: all 0.3s ease 0.0s;
 			}
 			
@@ -199,9 +199,14 @@
 				border-color: inherit;
 				width: 20px;
 				height: 40px;
+				background-size: contain;
+				background-repeat: no-repeat;
+				background-position: center;
+				z-index: 10000;
 			}
 			
 			#toggleButton.ab-opened {
+				background-image: url(/img/icons/chevron-small-left.svg);
 				border-right-color: #ffffff;
 				border-top-left-radius: 5px;
 				border-bottom-left-radius: 5px;
@@ -209,6 +214,7 @@
 			}
 
 			#toggleButton.ab-closed {
+				background-image: url(/img/icons/chevron-small-right.svg);
 				border-left-color: #ffffff;
 				border-top-right-radius: 5px;
 				border-bottom-right-radius: 5px;
