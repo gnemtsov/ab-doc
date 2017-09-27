@@ -987,25 +987,62 @@ $(function() {
 //----------- Columns resizing ----------
 //---------------------------------------
 
+// Sets tree's width = w, document's width and splitter's position to fit page
+function setTreeWidth(w) {
+	var sw = $('#splitter').outerWidth();
+	
+	$('#ztree-div').outerWidth(w);
+	$('#splitter').css('left', w + 'px');
+	$('#document').outerWidth(window.innerWidth - w - sw);
+	$('#document').css('left', (w + sw) + 'px');	
+}
+
 $(function () {
-	// Init splitter, ztree and document columns
 	var $document = $('#document'),
 		$ztree_div = $('#ztree-div'),
 		$splitter = $('#splitter'),
 		$app_container = $('.app-container'),
 		$nav = $('.navbar');
+		
+	// Toogle button
+	$('#toggleButton').mousedown( function(event) {
+		if (event) {
+			event.preventDefault();
+		}
+		
+		if ( $('#toggleButton').hasClass('ab-opened') ) {
+			$('#toggleButton, #ztree-div, #splitter, #document').addClass('ab-closed').removeClass('ab-opened');
+			oldTreeWidth = $ztree_div.outerWidth();
+			setTreeWidth(0);
+			return;
+		}
+		if ( $('#toggleButton').hasClass('ab-closed') ) {
+			$('#toggleButton, #ztree-div, #splitter, #document').addClass('ab-opened').removeClass('ab-closed');
+			setTreeWidth(Math.max(Math.min(oldTreeWidth, window.innerWidth - thresholdRight), thresholdLeft));
+			return;
+		}
+	});
+	
+	// Init splitter, ztree and document columns
+		
+	var oldTreeWidth;
+	var thresholdLeft = parseFloat($ztree_div.css('padding-left')) + parseFloat($ztree_div.css('padding-right')),
+		thresholdRight = $splitter.outerWidth() + parseFloat($document.css('padding-left')) + parseFloat($document.css('padding-right'))
+	//console.log(threshold);
 	
 	{
 		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
-		var totalWidth = window.innerWidth,//$app_container[0].clientWidth,
-			zTreeWidth = totalWidth * 0.15,
-			splitterWidth = $splitter.outerWidth(),
-			docWidth = totalWidth - zTreeWidth - splitterWidth;
-		
-		$ztree_div.outerWidth(zTreeWidth);
-		$splitter.css('left', zTreeWidth + 'px');
-		$document.outerWidth(docWidth);
-		$document.css('left', (zTreeWidth + splitterWidth) + 'px');
+		var totalWidth = window.innerWidth;
+		oldTreeWidth = parseFloat(localStorage.getItem('ab-doc.tree.width'));
+		console.log(oldTreeWidth);
+		if (!(typeof oldTreeWidth === 'number')) {
+			oldTreeWidth = totalWidth*0.25;
+			setTreeWidth(oldTreeWidth);
+		} else if (oldTreeWidth === 0) {
+			$('#toggleButton').mousedown();
+		} else {
+			setTreeWidth(oldTreeWidth);
+		}
 	}
 	
 	// Splitter moving
@@ -1015,15 +1052,24 @@ $(function () {
 		
 		// TODO: prevent default on events
 		$splitter.mousedown(function(event) {
+			event.preventDefault();
+			
 			splitterDragging = true;
-			oldX = event.clientX;//en:"../../../css/zTreeStyle/img/diy/1_open.png"
+			$('#ztree-div, #splitter, #document').addClass('ab-dragging');
+			
+			oldX = event.clientX;
 		});
 		
 		$(document).mouseup(function(event) {
+			event.preventDefault();
+			
 			splitterDragging = false;
+			$('#ztree-div, #splitter, #document').removeClass('ab-dragging');
 		});
 		
 		$(document).mousemove(function(event) {
+			event.preventDefault();
+			
 			if (splitterDragging) {
 				var newX = event.clientX;
 				
@@ -1031,26 +1077,30 @@ $(function () {
 					zTreeWidth = $ztree_div.outerWidth(),
 					newZTreeWidth = zTreeWidth + newX - oldX;
 					
-				if (newZTreeWidth > 32 && newZTreeWidth < totalWidth - 32) {
-					zTreeWidth = newZTreeWidth;
+				if (newZTreeWidth > totalWidth - thresholdRight) {
+					return;
+				}
 					
-					var	splitterWidth = $splitter.outerWidth(),
-						docWidth = totalWidth - zTreeWidth - splitterWidth;	
-						
-					$ztree_div.outerWidth(zTreeWidth);
-					$splitter.css('left', zTreeWidth + 'px');
-					$document.outerWidth(docWidth);
-					$document.css('left', zTreeWidth + splitterWidth);
-				}			
-				
-				oldX = newX;
+				if (newZTreeWidth > thresholdLeft) {
+					if( $('#toggleButton').hasClass('ab-closed') ) {
+						$('#toggleButton').mousedown();
+					}
+					
+					setTreeWidth(newZTreeWidth);
+					oldX = newX;
+				} else {
+					// close if approaching left edge
+					if( $('#toggleButton').hasClass('ab-opened') ) {
+						$('#toggleButton').mousedown();
+					}					
+				}
 			}
 		});
 	}
 	
-	// Keep columns proportions and height when resizing window
-	$(window).resize(function() {
-
+	// Keep tree column width, resize others and change height when resizing window
+	$(window).resize(function(event) {
+		event.preventDefault();
 		
 		var docWidth = $document.outerWidth(),
 			splitterWidth = $splitter.outerWidth(),
@@ -1059,14 +1109,17 @@ $(function () {
 			oldTotalWidth = docWidth + zTreeWidth,
 			k = totalWidth / oldTotalWidth;
 		
-		// proportions
-		$ztree_div.outerWidth(zTreeWidth * k);
-		$splitter.css('left', zTreeWidth * k + 'px');
-		$document.outerWidth(docWidth * k);
-		$document.css('left', (zTreeWidth * k + splitterWidth) + 'px');
+		// resize columns
+		var newZTreeWidth;
+		if ( $('#toggleButton').hasClass('ab-opened') ) {
+			newZTreeWidth = Math.max(Math.min(zTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
+		} else {
+			newZTreeWidth = 0;
+		}
+		setTreeWidth(newZTreeWidth);
 		
 		// app-container's height
-		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
+		$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
 	});
 });
 
@@ -1076,6 +1129,9 @@ $(function () {
 
 $(function() {
 	setInterval(function () {
+		// Save tree column's size
+		localStorage.setItem('ab-doc.tree.width', $('#ztree-div').outerWidth());
+		
 		if (TREE_MODIFIED) {
 			var zTree = $.fn.zTree.getZTreeObj("abTree");
 			var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID)[0].children;
