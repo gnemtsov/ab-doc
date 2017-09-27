@@ -1035,7 +1035,7 @@ $(function () {
 		var totalWidth = window.innerWidth;
 		oldTreeWidth = parseFloat(localStorage.getItem('ab-doc.tree.width'));
 		console.log(oldTreeWidth);
-		if (!(typeof oldTreeWidth === 'number')) {
+		if (oldTreeWidth === NaN) {
 			oldTreeWidth = totalWidth*0.25;
 			setTreeWidth(oldTreeWidth);
 		} else if (oldTreeWidth === 0) {
