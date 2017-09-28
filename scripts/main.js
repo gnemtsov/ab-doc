@@ -1012,7 +1012,6 @@ function updateWidthSplit(w) {
 	$('#document').show();
 	$('#document').outerWidth(window.innerWidth - w - sw);
 	$('#document').css('left', (w + sw) + 'px');
-	console.log(w, sw);
 }
 
 // Update columns' sizes when in 'tree' mode
@@ -1059,11 +1058,11 @@ function updateMode(mode, w) {
 }
 
 var COLUMNS_MODE;
+var TREE_WIDTH;
 
 $(function () {
 	// if (window's width < smallWidth) window is considered small, otherwise it's big 
 	var smallWidth = 600;
-	var treeWidth = 0;
 	
 	var $document = $('#document'),
 		$ztree_div = $('#ztree-div'),
@@ -1103,7 +1102,7 @@ $(function () {
 			}
 		}
 		
-		updateMode(COLUMNS_MODE, treeWidth);
+		updateMode(COLUMNS_MODE, TREE_WIDTH);
 	});
 	
 	// Window resizing
@@ -1129,9 +1128,10 @@ $(function () {
 			}
 		}
 
-		if( !updateMode(COLUMNS_MODE, treeWidth) ) {
+		TREE_WIDTH = Math.max(Math.min(TREE_WIDTH, window.innerWidth - thresholdRight), thresholdLeft);
+		if( !updateMode(COLUMNS_MODE, TREE_WIDTH) ) {
 			COLUMNS_MODE = 'split';
-			updateMode(COLUMNS_MODE, treeWidth);
+			updateMode(COLUMNS_MODE, TREE_WIDTH);
 		}
 		
 		// app-container's height
@@ -1140,14 +1140,18 @@ $(function () {
 	
 	// Init columns
 	var thresholdLeft = parseFloat($ztree_div.css('padding-left')) + parseFloat($ztree_div.css('padding-right')),
-		thresholdRight = $splitter.outerWidth() + parseFloat($document.css('padding-left')) + parseFloat($document.css('padding-right'));
+		thresholdRight = $splitter.outerWidth() +
+						parseFloat($document.css('padding-left')) +
+						parseFloat($document.css('padding-right')) +
+						300;//$('#dropzone-wrap').outerWidth();
+	console.log(thresholdRight, $('#dropzone-wrap').outerWidth());
 		
 	//$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
-	treeWidth = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
-	if (isNaN(treeWidth)) {
-		treeWidth = window.innerWidth * 0.25;
+	TREE_WIDTH = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
+	if (isNaN(TREE_WIDTH)) {
+		TREE_WIDTH = window.innerWidth * 0.25;
 	}
-	console.log(treeWidth);
+	console.log(TREE_WIDTH);
 	COLUMNS_MODE = localStorage.getItem('ab-doc.columns.mode');
 	// Let window.resize() correct the layout
 	$(window).resize();
@@ -1185,21 +1189,17 @@ $(function () {
 					newZTreeWidth = zTreeWidth + newX - oldX,
 					ok = false;
 					
-				if (newZTreeWidth > totalWidth - thresholdRight) {
-					ok = false;
-				} else if (newZTreeWidth > thresholdLeft) {
-					ok = true
-					oldX = newX;
-				} else {
+				if (newZTreeWidth < thresholdLeft) {
 					// go to 'document' mode if approaching left edge
 					COLUMNS_MODE = 'document';
 					splitterDragging = false;
 					ok = true;			
 				}
 				
-				if (ok) {
-					updateMode(COLUMNS_MODE, newZTreeWidth);
-				}
+				TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
+				console.log(TREE_WIDTH, thresholdRight);
+				updateMode(COLUMNS_MODE, TREE_WIDTH);
+				oldX = newX;
 			}
 		});
 	}
@@ -1212,7 +1212,8 @@ $(function () {
 $(function() {
 	setInterval(function () {
 		// Save tree column's size
-		localStorage.setItem('ab-doc.tree.width', $('#ztree-div').outerWidth());
+		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
+		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
 		
 		if (TREE_MODIFIED) {
 			var zTree = $.fn.zTree.getZTreeObj("abTree");
