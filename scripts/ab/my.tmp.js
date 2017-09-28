@@ -164,7 +164,8 @@ function initQuill(id, guid) {
 	loadDocument(USERID + '/' + guid + '/index.html', '#editor')
 		.then(function(data) {
 				
-			$updated.html(_translatorData['saved'][LANG]);
+			//$updated.html(_translatorData['saved'][LANG]);
+			$updated.hide();
 			
 			//редактор Quill from https://quilljs.com
 			var toolbar_options = [
@@ -247,7 +248,7 @@ function initQuill(id, guid) {
 						if (item.kind === "file" && item.type === "image/png" && blob !== null) {
 
 							$updated.addClass('pending');
-							$updated.html(_translatorData['edited'][LANG]);
+							$updated.show();
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							paste_index = editor.getSelection(true).index;
 							editor.insertEmbed(paste_index, 'image', 'img/ajax-loader.gif', 'silent');
@@ -329,7 +330,7 @@ function initQuill(id, guid) {
 							}
 
 							$updated.addClass('pending');
-							$updated.html(_translatorData['edited'][LANG]);
+							$updated.show();
 							$content.attr('waiting', Number($content.attr('waiting')) + 1);
 							editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 							
@@ -503,7 +504,7 @@ function initQuill(id, guid) {
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);
 						$updated.addClass('pending');
-						$updated.html(_translatorData['edited'][LANG]);
+						$updated.show();
 
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
@@ -561,7 +562,7 @@ function initQuill(id, guid) {
 
 									$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
 									$li.find('span.abort').removeClass('abort').addClass('remove');
-									$updated.html(_translatorData['saving'][LANG]);
+									$updated.show();
 
 									// Тут было updateMessageFiles для записи в БД
 									// Мы не решили в БД буем хранить или в json-файле. 
@@ -610,7 +611,7 @@ function initQuill(id, guid) {
 				
 				$(this).replaceWith('<img src="img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
-				$updated.html(_translatorData['saving'][LANG]).addClass('pending');
+				$updated.show().addClass('pending');
 
 				// remove from s3
 				s3.deleteObject({

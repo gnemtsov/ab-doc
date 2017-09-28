@@ -54,14 +54,18 @@
 			}
 			
 			.ztree li a.curSelectedNode {
-				background-color: rgb(176, 230, 255);
-				border-color: rgb(81, 185, 255);
+				background-color: inherit;
+				border: inherit;
+				border-left: 4px solid #dd6600;
+				margin-left: -10px;
+				padding-left: 6px;
+				font-weight: bold;
 			}
 			
 			.ztree li span.button.add {
 				margin-left:2px;
 				margin-right: -1px;
-				background: url(/img/icons/circle-with-plus.svg);
+				background: url(/img/icons/file.svg);
 				vertical-align: vertical;
 				/*vertical-align:middle;*/
 			}
@@ -94,23 +98,23 @@
 			}
 			
 			.ztree li span.button.ico_open {
-				background: url(/img/icons/folder.svg);
+				background: url(/img/icons/folder-open.svg);
 			}
 			
 			.ztree li span.button.switch.center_close {
-				background-image: url(/img/icons/squared-plus.svg);
+				background-image: none;
 			}
 			
 			.ztree li span.button.switch.center_open {
-				background-image: url(/img/icons/squared-minus.svg);
+				background-image: none;
 			}
 
 			.ztree li span.button.switch.root_close {
-				background-image: url(/img/icons/squared-plus.svg);
+				background-image: none;
 			}
 			
 			.ztree li span.button.switch.root_open {
-				background-image: url(/img/icons/squared-minus.svg);
+				background-image: none;
 			}
 
 			.ztree li span.button.ico_docu {
@@ -118,26 +122,34 @@
 			}
 					
 			.ztree li span.button.center_docu {
-				background-image: url(/img/icons/line-fork.svg);
+				background-image: none;
 			}	
 
 			.ztree li span.button.bottom_docu {
-				background-image: url(/img/icons/line-bottom.svg);
+				background-image: none;
 			}
 
 			.ztree li span.button.bottom_close {
-				background-image: url(/img/icons/squared-plus.svg);
+				background-image: none;
 			}
 
 			.ztree li span.button.bottom_open {
-				background-image: url(/img/icons/squared-minus.svg);
+				background-image: none;
 			}
 			
 			.ztree li ul.line {
-				background-image: url(/img/icons/line-vertical.svg);
+				background-image: none;
 				background-size: 24px 24px;
 			}
+			
+			.ztree li[class*=level] {
+				margin-top: 8px;
+			}
+			
+			.ztree input.rename {
 				
+			}
+			
 			#ztree-div {
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -208,7 +220,7 @@
 			}
 			
 			#toggleButton.ab-opened {
-				background-image: url(/img/icons/chevron-small-left.svg);
+				background-image: url(/img/icons/chevron-left.svg);
 				border-right-color: #ffffff;
 				border-top-left-radius: 5px;
 				border-bottom-left-radius: 5px;
@@ -216,7 +228,7 @@
 			}
 
 			#toggleButton.ab-closed {
-				background-image: url(/img/icons/chevron-small-right.svg);
+				background-image: url(/img/icons/chevron-right.svg);
 				border-left-color: #ffffff;
 				border-top-right-radius: 5px;
 				border-bottom-right-radius: 5px;
@@ -274,36 +286,56 @@
 				padding-bottom: 4px;
 				padding-top: 4px;
 			}
+			
+			.navbar-dark .navbar-text {
+				color: #ffffff;				
+			}
+			
+			.nav-item {
+				margin-left: 4px;
+				margin-right: 4px;
+			}
+			
+			.nav-item > select.form-control {
+				font-size: 14px;
+				height: 28px !important;
+				padding: 4px;
+				/*it doesn't work ---> vertical-align: middle;*/
+				margin-top: 4px;
+			}
+			
+			
 		</style>
 	</head>
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
-			<a class="navbar-brand" href="#">Test-app</a>
+			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></img></a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
 				<ul class="navbar-nav">
 					<li class="nav-item authenticated-mode">
-						<span class="nav-link" id="updated"></span>
+						<!--span class="navbar-text update-indicator update-indicator-ready" id="updated"></span-->
+						<img src="/img/icons/compose_my.svg" id="updated"></img>
+					</li>
+					<li class="nav-item authenticated-mode">
+						<span class="navbar-text" id="username">Name</span>
 					</li>
 					<li class="nav-item">
 						<select class="form-control" id="selectLang">
-							<option value="ru">Русский</option>
-							<option value="en">English</option>
+							<option value="ru">Ру</option>
+							<option value="en">En</option>
 						</select>
 					</li>
 					<li class="nav-item authenticated-mode">
-						<a class="nav-link" href="#" id="username">Name</a>
-					</li>
-					<li class="nav-item authenticated-mode">
-						<a class="nav-link" id="linkSignOut" href="#" data-translate="exit"></a>
+						<span class="navbar-text" id="linkSignOut" data-translate="exit"></span>
 					</li>
 					<li class="nav-item unauthenticated-mode">
-						<a class="nav-link" id="linkSignIn" href="#" data-translate="enter"></a>
+						<span class="navbar-text" id="linkSignIn" data-translate="enter"></span>
 					</li>
 					<li class="nav-item unauthenticated-mode">
-						<a class="nav-link" id="linkSignUp" href="#" data-translate="signUp"></a>
+						<span class="navbar-text" id="linkSignUp" data-translate="signUp"></span>
 					</li>
 				</ul>
 			</div>
