@@ -183,10 +183,11 @@
 			}
 			
 			#splitter.ab-closed {
-				/*left: 0px !important;*/
+				border-style: none;
+				cursor: auto;
 			}
-			
-			#ztree-div:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging), #toggleButton {
+
+			/*#ztree-div:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
 				transition: all 0.3s ease 0.0s;
 			}
 			
@@ -219,7 +220,7 @@
 				border-left-color: #ffffff;
 				border-top-right-radius: 5px;
 				border-bottom-right-radius: 5px;
-				/*margin-left: -1px;*/
+				margin-left: -1px;
 			}
 			
 			.app-container {
@@ -333,7 +334,7 @@
 				<div id="document" class="ab-opened">
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
-						<div class="float-right" style="z-index: 10000; overflow: hidden;">
+						<div id="dropzone-wrap" class="float-right" style="z-index: 10000; overflow: hidden;">
 							<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">
 								<div class="drop-files-here justify-content-center">
 									!!!Dropzone!!!

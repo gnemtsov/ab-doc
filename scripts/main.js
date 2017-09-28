@@ -987,140 +987,222 @@ $(function() {
 //----------- Columns resizing ----------
 //---------------------------------------
 
-// Sets tree's width = w, document's width and splitter's position to fit page
-function setTreeWidth(w) {
+/* 3 possible modes:
+ * 'tree' - only tree is shown, splitter is on the left, hidden
+ * 'split' - tree | splitter | document
+ * 'document' - only document is shown, splitter is on the left, hidden
+ * 
+ * Small window:
+ * 
+ *   tree <-----> document
+ * 
+ * Big window:
+ *   
+ *    split <-----> document
+*/
+
+// Used when in 'split' mode. Sets tree's width = w, document's width and splitter's position to fit page
+function updateWidthSplit(w) {
 	var sw = $('#splitter').outerWidth();
 	
+	$('#ztree-div').show();
+	$('#ztree-div').css('left', 0 + 'px');
 	$('#ztree-div').outerWidth(w);
 	$('#splitter').css('left', w + 'px');
+	$('#document').show();
 	$('#document').outerWidth(window.innerWidth - w - sw);
-	$('#document').css('left', (w + sw) + 'px');	
+	$('#document').css('left', (w + sw) + 'px');
 }
 
+// Update columns' sizes when in 'tree' mode
+function updateWidthTree() {
+	var sw = $('#splitter').outerWidth();
+	
+	$('#ztree-div').show();
+	$('#ztree-div').css('left', sw + 'px');
+	$('#ztree-div').outerWidth(window.innerWidth - sw);
+	$('#splitter').css('left', 0 + 'px');
+	$('#document').hide();	
+}
+
+// Update columns' sizes when in 'document' mode
+function updateWidthDocument() {
+	var sw = $('#splitter').outerWidth();
+	
+	$('#document').show();
+	$('#document').css('left', sw + 'px');
+	$('#document').outerWidth(window.innerWidth - sw);
+	$('#splitter').css('left', 0 + 'px');
+	$('#ztree-div').hide();	
+}
+
+// Update columns' sizes, use given mode
+// Returns true on success, false on wrong mode value
+function updateMode(mode, w) {
+	switch(mode) {
+		case 'tree':
+			updateWidthTree();
+			$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
+			return true;
+		case 'document':
+			updateWidthDocument();
+			$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
+			return true;
+		case 'split':
+			updateWidthSplit(w);
+			$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
+			return true;
+		default:
+			return false;
+	}
+}
+
+var COLUMNS_MODE;
+var TREE_WIDTH;
+
 $(function () {
+	// if (window's width < smallWidth) window is considered small, otherwise it's big 
+	var smallWidth = 600;
+	
 	var $document = $('#document'),
 		$ztree_div = $('#ztree-div'),
 		$splitter = $('#splitter'),
 		$app_container = $('.app-container'),
-		$nav = $('.navbar');
+		$nav = $('.navbar');	
 		
-	// Toogle button
+	// Toggle button
 	$('#toggleButton').mousedown( function(event) {
 		if (event) {
 			event.preventDefault();
 		}
 		
-		if ( $('#toggleButton').hasClass('ab-opened') ) {
-			$('#toggleButton, #ztree-div, #splitter, #document').addClass('ab-closed').removeClass('ab-opened');
-			oldTreeWidth = $ztree_div.outerWidth();
-			setTreeWidth(0);
-			return;
+		if (window.innerWidth < smallWidth) {
+			switch (COLUMNS_MODE) {
+				case 'tree':
+					COLUMNS_MODE = 'document';
+					break;
+				case 'document':
+					COLUMNS_MODE = 'tree';
+					break;
+				default:
+					console.log('Wrong COLUMNS_MODE!');
+					COLUMNS_MODE = 'tree';
+			}
+		} else {
+			switch (COLUMNS_MODE) {
+				case 'split':
+					COLUMNS_MODE = 'document';
+					break;
+				case 'document':
+					COLUMNS_MODE = 'split';
+					break;
+				default:
+					console.log('Wrong COLUMNS_MODE!');
+					COLUMNS_MODE = 'split';
+			}
 		}
-		if ( $('#toggleButton').hasClass('ab-closed') ) {
-			$('#toggleButton, #ztree-div, #splitter, #document').addClass('ab-opened').removeClass('ab-closed');
-			setTreeWidth(Math.max(Math.min(oldTreeWidth, window.innerWidth - thresholdRight), thresholdLeft));
-			return;
-		}
+		
+		updateMode(COLUMNS_MODE, TREE_WIDTH);
 	});
 	
-	// Init splitter, ztree and document columns
-		
-	var oldTreeWidth;
-	var thresholdLeft = parseFloat($ztree_div.css('padding-left')) + parseFloat($ztree_div.css('padding-right')),
-		thresholdRight = $splitter.outerWidth() + parseFloat($document.css('padding-left')) + parseFloat($document.css('padding-right'))
-	//console.log(threshold);
-	
-	{
-		$app_container.outerHeight($(window).height() - 1 - $nav.outerHeight());
-		var totalWidth = window.innerWidth;
-		oldTreeWidth = parseFloat(localStorage.getItem('ab-doc.tree.width'));
-		console.log(oldTreeWidth);
-		if (oldTreeWidth === NaN) {
-			oldTreeWidth = totalWidth*0.25;
-			setTreeWidth(oldTreeWidth);
-		} else if (oldTreeWidth === 0) {
-			$('#toggleButton').mousedown();
+	// Window resizing
+	// Keep tree column width, resize others and change height when resizing window
+	$(window).resize(function(event) {
+		event.preventDefault();
+
+		if (window.innerWidth < smallWidth) {
+			switch (COLUMNS_MODE) {
+				case 'document':
+				case 'tree':
+					break;
+				default:
+					COLUMNS_MODE = 'tree';
+			}
 		} else {
-			setTreeWidth(oldTreeWidth);
+			switch (COLUMNS_MODE) {
+				case 'document':
+				case 'split':
+					break;
+				default:
+					COLUMNS_MODE = 'split';
+			}
 		}
-	}
+
+		TREE_WIDTH = Math.max(Math.min(TREE_WIDTH, window.innerWidth - thresholdRight), thresholdLeft);
+		if( !updateMode(COLUMNS_MODE, TREE_WIDTH) ) {
+			COLUMNS_MODE = 'split';
+			updateMode(COLUMNS_MODE, TREE_WIDTH);
+		}
+		
+		// app-container's height
+		$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
+	});
 	
+	// Init columns
+	var thresholdLeft = parseFloat($ztree_div.css('padding-left')) + parseFloat($ztree_div.css('padding-right')),
+		thresholdRight = $splitter.outerWidth() +
+						parseFloat($document.css('padding-left')) +
+						parseFloat($document.css('padding-right')) +
+						300;//$('#dropzone-wrap').outerWidth();
+	console.log(thresholdRight, $('#dropzone-wrap').outerWidth());
+		
+	//$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
+	TREE_WIDTH = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
+	if (isNaN(TREE_WIDTH)) {
+		TREE_WIDTH = window.innerWidth * 0.25;
+	}
+	console.log(TREE_WIDTH);
+	COLUMNS_MODE = localStorage.getItem('ab-doc.columns.mode');
+	// Let window.resize() correct the layout
+	$(window).resize();
+
 	// Splitter moving
 	{
 		var splitterDragging = false,
 			oldX;
 		
-		// TODO: prevent default on events
 		$splitter.mousedown(function(event) {
 			event.preventDefault();
 			
-			splitterDragging = true;
-			$('#ztree-div, #splitter, #document').addClass('ab-dragging');
+			if (COLUMNS_MODE === 'split') {
+				splitterDragging = true;
+			}
 			
 			oldX = event.clientX;
 		});
 		
 		$(document).mouseup(function(event) {
-			event.preventDefault();
+			//event.preventDefault();
 			
 			splitterDragging = false;
-			$('#ztree-div, #splitter, #document').removeClass('ab-dragging');
 		});
 		
 		$(document).mousemove(function(event) {
 			event.preventDefault();
 			
+			// splitterDragging is true only in 'split' mode
 			if (splitterDragging) {
 				var newX = event.clientX;
 				
 				var totalWidth = window.innerWidth,
 					zTreeWidth = $ztree_div.outerWidth(),
-					newZTreeWidth = zTreeWidth + newX - oldX;
+					newZTreeWidth = zTreeWidth + newX - oldX,
+					ok = false;
 					
-				if (newZTreeWidth > totalWidth - thresholdRight) {
-					return;
+				if (newZTreeWidth < thresholdLeft) {
+					// go to 'document' mode if approaching left edge
+					COLUMNS_MODE = 'document';
+					splitterDragging = false;
+					ok = true;			
 				}
-					
-				if (newZTreeWidth > thresholdLeft) {
-					if( $('#toggleButton').hasClass('ab-closed') ) {
-						$('#toggleButton').mousedown();
-					}
-					
-					setTreeWidth(newZTreeWidth);
-					oldX = newX;
-				} else {
-					// close if approaching left edge
-					if( $('#toggleButton').hasClass('ab-opened') ) {
-						$('#toggleButton').mousedown();
-					}					
-				}
+				
+				TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
+				console.log(TREE_WIDTH, thresholdRight);
+				updateMode(COLUMNS_MODE, TREE_WIDTH);
+				oldX = newX;
 			}
 		});
 	}
-	
-	// Keep tree column width, resize others and change height when resizing window
-	$(window).resize(function(event) {
-		event.preventDefault();
-		
-		var docWidth = $document.outerWidth(),
-			splitterWidth = $splitter.outerWidth(),
-			zTreeWidth = $ztree_div.outerWidth(),
-			totalWidth = window.innerWidth - splitterWidth,
-			oldTotalWidth = docWidth + zTreeWidth,
-			k = totalWidth / oldTotalWidth;
-		
-		// resize columns
-		var newZTreeWidth;
-		if ( $('#toggleButton').hasClass('ab-opened') ) {
-			newZTreeWidth = Math.max(Math.min(zTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
-		} else {
-			newZTreeWidth = 0;
-		}
-		setTreeWidth(newZTreeWidth);
-		
-		// app-container's height
-		$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
-	});
 });
 
 //-------------------------------------------------
@@ -1130,7 +1212,8 @@ $(function () {
 $(function() {
 	setInterval(function () {
 		// Save tree column's size
-		localStorage.setItem('ab-doc.tree.width', $('#ztree-div').outerWidth());
+		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
+		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
 		
 		if (TREE_MODIFIED) {
 			var zTree = $.fn.zTree.getZTreeObj("abTree");
