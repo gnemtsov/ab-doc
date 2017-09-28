@@ -1042,15 +1042,15 @@ function updateMode(mode, w) {
 	switch(mode) {
 		case 'tree':
 			updateWidthTree();
-			$('#toggleButton').removeClass('ab-opened').addClass('ab-closed');
+			$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
 			return true;
 		case 'document':
 			updateWidthDocument();
-			$('#toggleButton').removeClass('ab-opened').addClass('ab-closed');
+			$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
 			return true;
 		case 'split':
 			updateWidthSplit(w);
-			$('#toggleButton').removeClass('ab-closed').addClass('ab-opened');
+			$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
 			return true;
 		default:
 			return false;
