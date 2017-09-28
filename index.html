@@ -145,7 +145,11 @@
 			.ztree li[class*=level] {
 				margin-top: 8px;
 			}
+			
+			.ztree input.rename {
 				
+			}
+			
 			#ztree-div {
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -299,6 +303,8 @@
 				/*it doesn't work ---> vertical-align: middle;*/
 				margin-top: 4px;
 			}
+			
+			
 		</style>
 	</head>
  	<body>
@@ -310,7 +316,8 @@
 			<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
 				<ul class="navbar-nav">
 					<li class="nav-item authenticated-mode">
-						<span class="navbar-text" id="updated"></span>
+						<!--span class="navbar-text update-indicator update-indicator-ready" id="updated"></span-->
+						<img src="/img/icons/compose_my.svg" id="updated"></img>
 					</li>
 					<li class="nav-item authenticated-mode">
 						<span class="navbar-text" id="username">Name</span>

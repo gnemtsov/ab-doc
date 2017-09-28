@@ -264,7 +264,7 @@ $(function () {
                 $editor = $('#m_content_' + tm_id + ' >.ql-editor'),
                 $files = $('#m_files_' + tm_id);
 
-            $updated.html(tfu_js['saving']);
+            $updated.show();
             $content.attr("modified", 0);
 
             $.post(

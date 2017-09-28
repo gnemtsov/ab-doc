@@ -1235,11 +1235,11 @@ $(function() {
 				abTree = [];
 			}
 			
-			$updated.html(_translatorData['saving'][LANG]);
+			$updated.show();
 			saveABTree(abTree, TREE_KEY).then(
 				function (ok) {
 					$updated.fadeOut('slow', function () {
-						$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
+						$(this).hide();
 					});
 				},
 				function (err) {
@@ -1253,7 +1253,7 @@ $(function() {
 			var $editor = $('#editor'),
 				$files = $('#files');
 			
-			$updated.html(_translatorData['saving'][LANG]);
+			$updated.show();
 			$(element).attr('modified', 0);
 			
 			saveDocument('#editor').then(
@@ -1264,7 +1264,7 @@ $(function() {
 							$(this).removeClass('pending');
 						}
 						
-						$(this).text(_translatorData['saved'][LANG]).fadeIn('fast');
+						$(this).hide();
 					});
 				},
 				function (err) {
@@ -1519,7 +1519,7 @@ function addHoverDom(treeId, treeNode) {
 		zTree.addNodes(treeNode, {id: GetGUID(), name: name, files: []});
 		
 		$updated.addClass('pending');
-		$updated.html(_translatorData['edited'][LANG]);
+		$updated.show();
 		TREE_MODIFIED = true;
 
 		return false;
@@ -1556,7 +1556,7 @@ function buildPrefixPath(treeNode) {
 
 function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
 	$updated.addClass('pending');
-	$updated.html(_translatorData['edited'][LANG]);
+	$updated.show();
 	TREE_MODIFIED = true;
 };
 
@@ -1569,7 +1569,7 @@ function beforeRemove(treeId, treeNode) {
 	$('#buttonDelete').click( function() {
 		tree.removeNode(treeNode, false);
 		$updated.addClass('pending');
-		$updated.html(_translatorData['edited'][LANG]);
+		$updated.show();
 		TREE_MODIFIED = true;
 	});
 	var message = _translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + _translatorData["deleteQuestion2"][LANG];
@@ -1623,7 +1623,7 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 function onRename(event, treeId, treeNode, isCancel) {
 	if (!isCancel) {
 		$updated.addClass('pending');
-		$updated.html(_translatorData['edited'][LANG]);
+		$updated.show();
 		TREE_MODIFIED = true;
 	}
 }
