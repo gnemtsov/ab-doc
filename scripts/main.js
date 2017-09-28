@@ -1404,7 +1404,7 @@ function nextNode(treeNode) {
 function onClick(event, treeId, treeNode, clickFlag) {
 	// expand the node
 	tree = $.fn.zTree.getZTreeObj(treeId);
-	tree.expandNode(treeNode, true, false, true, true);
+	tree.expandNode(treeNode, !treeNode.open, false, true, true);
 	
 	// shift - select
 	/*if((event.originalEvent.shiftKey) && (tree.lastClicked)) {
