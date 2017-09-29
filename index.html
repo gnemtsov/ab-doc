@@ -50,7 +50,7 @@
 			}
 			
 			.node_name {
-				font-size: 16px;
+				font-size: 15px;
 				margin-left: 4px;
 				vertical-align: middle;
 			}
@@ -76,9 +76,9 @@
 				background-position: 0px 0px !important;
 				background-size: contain !important;
 				background-repeat: no-repeat !important;
-				width: 24px !important;
-				height: 24px !important;
-				margin: 0px; !important;
+				width: 20px !important;
+				height: 20px !important;
+				margin: 2px 2px 0px 0px !important;
 			}
 			
 			.ztree li a {
@@ -151,8 +151,9 @@
 				margin-top: 8px;
 			}
 			
-			.ztree input.rename {
-				
+			input.rename {
+				font-size: 15px !important;
+				height: 24px !important;
 			}
 			
 			#ztree-div {
@@ -266,6 +267,10 @@
 				border-style: none;
 			}
 
+			#updated {
+				margin-left: 12px;
+			}
+
 		</style>
 		
 		<style type="text/css">
@@ -324,15 +329,12 @@
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
 			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></img></a>
+			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated"></img>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
 				<ul class="navbar-nav">
-					<li class="nav-item authenticated-mode">
-						<!--span class="navbar-text update-indicator update-indicator-ready" id="updated"></span-->
-						<img src="/img/icons/compose_my.svg" id="updated"></img>
-					</li>
 					<li class="nav-item authenticated-mode">
 						<span class="navbar-text" id="username">Name</span>
 					</li>
