@@ -44,7 +44,9 @@
 		
 		<style type="text/css">
 			body html {
+				margin: 0;
 				height: 100%;
+				overflow: hidden;
 			}
 			
 			.node_name {
@@ -198,9 +200,16 @@
 				border-style: none;
 				cursor: auto;
 			}
+			
+			#splitter.thin {
+				width: 0px;
+				padding: 0px;
+				margin: 0px 0px;
+			}
 
 			/*#ztree-div:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
-				transition: all 0.3s ease 0.0s;
+				/* temporarly disabled. it adds horizontal scroll, when it's on the right size of page.*/
+				/*transition: all 0.3s ease 0.0s;*/
 			}
 			
 			#toggleButton {
@@ -237,6 +246,7 @@
 			
 			.app-container {
 				position: absolute;
+				/*top: 100px;*/
 				height: 400px;
 				width: 100%;
 			}
@@ -285,6 +295,7 @@
 			.navbar {
 				padding-bottom: 4px;
 				padding-top: 4px;
+				z-index: 1001;
 			}
 			
 			.navbar-dark .navbar-text {
