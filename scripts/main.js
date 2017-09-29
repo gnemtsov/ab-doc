@@ -1005,6 +1005,9 @@ $(function() {
 
 // Used when in 'split' mode. Sets tree's width = w, document's width and splitter's position to fit page
 function updateWidthSplit(w) {
+	$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
+	$('#splitter').removeClass('thin');
+	
 	var sw = $('#splitter').outerWidth();
 	
 	$('#ztree-div').show();
@@ -1018,41 +1021,55 @@ function updateWidthSplit(w) {
 
 // Update columns' sizes when in 'tree' mode
 function updateWidthTree() {
+	$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
+	$('#splitter').removeClass('thin');
+	
 	var sw = $('#splitter').outerWidth();
 	
 	$('#ztree-div').show();
 	$('#ztree-div').css('left', sw + 'px');
 	$('#ztree-div').outerWidth(window.innerWidth - sw);
 	$('#splitter').css('left', 0 + 'px');
-	$('#document').hide();	
+	$('#document').hide();
 }
 
 // Update columns' sizes when in 'document' mode
-function updateWidthDocument() {
-	var sw = $('#splitter').outerWidth();
-	
-	$('#document').show();
-	$('#document').css('left', sw + 'px');
-	$('#document').outerWidth(window.innerWidth - sw);
-	$('#splitter').css('left', 0 + 'px');
-	$('#ztree-div').hide();	
+function updateWidthDocument(small) {
+	if (small) {
+		$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
+		$('#splitter').addClass('thin');
+		
+		$('#document').css('left', 0 + 'px');
+		$('#document').outerWidth(window.innerWidth - 1);
+		$('#document').show();
+		$('#splitter').css('left', window.innerWidth - 1 + 'px');
+		$('#ztree-div').hide();	
+	} else {
+		$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
+		$('#splitter').removeClass('thin');
+		
+		var sw = $('#splitter').outerWidth();
+		
+		$('#document').css('left', sw + 'px');
+		$('#document').outerWidth(window.innerWidth - sw);
+		$('#document').show();
+		$('#splitter').css('left', 0 + 'px');
+		$('#ztree-div').hide();	
+	}
 }
 
 // Update columns' sizes, use given mode
 // Returns true on success, false on wrong mode value
-function updateMode(mode, w) {
+function updateMode(mode, small, w) {
 	switch(mode) {
 		case 'tree':
 			updateWidthTree();
-			$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
 			return true;
 		case 'document':
-			updateWidthDocument();
-			$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
+			updateWidthDocument(small);
 			return true;
 		case 'split':
 			updateWidthSplit(w);
-			$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
 			return true;
 		default:
 			return false;
@@ -1062,15 +1079,17 @@ function updateMode(mode, w) {
 var COLUMNS_MODE;
 var TREE_WIDTH;
 
-$(function () {
-	// if (window's width < smallWidth) window is considered small, otherwise it's big 
-	var smallWidth = 600;
-	
+$(function () {	
 	var $document = $('#document'),
 		$ztree_div = $('#ztree-div'),
 		$splitter = $('#splitter'),
 		$app_container = $('.app-container'),
 		$nav = $('.navbar');	
+		
+	// if (window's width < smallWidth) window is considered small, otherwise it's big 
+	var smallWidth = 600;
+	// save navbar's initial height
+	var navHeight = $nav.outerHeight();
 		
 	// Toggle button
 	$('#toggleButton').mousedown( function(event) {
@@ -1104,12 +1123,12 @@ $(function () {
 			}
 		}
 		
-		updateMode(COLUMNS_MODE, TREE_WIDTH);
+		updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
 	});
 	
 	// Window resizing
 	// Keep tree column width, resize others and change height when resizing window
-	$(window).resize(function(event) {
+	$(window).resize( function(event) {
 		event.preventDefault();
 
 		if (window.innerWidth < smallWidth) {
@@ -1131,13 +1150,13 @@ $(function () {
 		}
 
 		TREE_WIDTH = Math.max(Math.min(TREE_WIDTH, window.innerWidth - thresholdRight), thresholdLeft);
-		if( !updateMode(COLUMNS_MODE, TREE_WIDTH) ) {
+		if( !updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH) ) {
 			COLUMNS_MODE = 'split';
-			updateMode(COLUMNS_MODE, TREE_WIDTH);
+			updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
 		}
 		
 		// app-container's height
-		$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
+		$app_container.outerHeight(window.innerHeight - 1 - navHeight);
 	});
 	
 	// Init columns
@@ -1147,8 +1166,11 @@ $(function () {
 						parseFloat($document.css('padding-right')) +
 						300;//$('#dropzone-wrap').outerWidth();
 	console.log(thresholdRight, $('#dropzone-wrap').outerWidth());
-		
-	//$app_container.outerHeight(window.innerHeight - 1 - $nav.outerHeight());
+	
+	
+	$app_container.outerHeight(window.innerHeight - 1 - navHeight);
+	$app_container.css('top', $nav.outerHeight() + 'px');
+	
 	TREE_WIDTH = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
 	if (isNaN(TREE_WIDTH)) {
 		TREE_WIDTH = window.innerWidth * 0.25;
@@ -1200,7 +1222,7 @@ $(function () {
 				
 				TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
 				console.log(TREE_WIDTH, thresholdRight);
-				updateMode(COLUMNS_MODE, TREE_WIDTH);
+				updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
 				oldX = newX;
 			}
 		});
