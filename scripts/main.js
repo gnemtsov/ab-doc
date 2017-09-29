@@ -366,7 +366,7 @@ var TREE_FILENAME = "tree.json";
 var TREE_KEY;
 var COGNITO_USER;
 var ROOT_DOC_GUID = 'root-doc';
-var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html'
+var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
 var $updated;
 
 $(document).ready( function() {
@@ -767,12 +767,15 @@ function initTree() {
 				if (err.name == 'NoSuchKey') {
 					// No tree. It user's first visit.
 					// Create root-doc
-					
+					ROOT_DOC_GUID = GetGUID();
 					//return Promise.resolve([]);
 					return initRootDoc(DEFAULT_ROOT_DOC_LOCATION, USERID + '/' + ROOT_DOC_GUID + '/index.html')
 						.then( function() {
 							TREE_MODIFIED = true;
-							return [];
+							return [{
+								id: ROOT_DOC_GUID,
+								name: ""
+							}];
 						})
 						.catch( function(err) {
 							return Promise.reject(err);
@@ -782,15 +785,14 @@ function initTree() {
 				}
 			}
 		).then(function(abTree) {
-			console.log(abTree);
-			var zNodes = [{
-				id: ROOT_DOC_GUID,
-				head: true,
-				icon: "/img/icons/home.svg",
-				name: "",
-				children: abTree,
-				open: false
-			}];
+			//console.log(abTree);
+			
+			var zNodes = abTree;
+			zNodes[0].head = true;
+			zNodes[0].icon = '/img/icons/home.svg';
+			zNodes[0].open = true;
+			
+			ROOT_DOC_GUID = zNodes[0].id;
 			
 			$.fn.zTree.init($("#abTree"), settings, zNodes);
 			
@@ -1217,7 +1219,7 @@ $(function() {
 		
 		if (TREE_MODIFIED) {
 			var zTree = $.fn.zTree.getZTreeObj("abTree");
-			var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID)[0].children;
+			var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID);
 			var abTree;
 			if (nodes) {
 				var f = function(n) {
@@ -1500,7 +1502,6 @@ function addHoverDom(treeId, treeNode) {
 	var btn = $("#addBtn_"+treeNode.tId);
 	if (btn) btn.bind("click", function() {
 		var zTree = $.fn.zTree.getZTreeObj("abTree");
-		var id = newId();
 		var name; 
 		var path; 
 		var ok = false;
