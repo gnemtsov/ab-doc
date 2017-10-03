@@ -914,6 +914,17 @@ function saveABTree(abTree, key) {
 	return s3.putObject(params).promise();
 }
 
+// Searches for document in all user's folders
+// Returns {userId, guid} or null if not found
+function findDocument(guid) {
+	// finding user
+	withS3Files('/', function(f) {
+		console.log(f);
+	}, function(err) {
+		console.log(err);
+	});
+}
+
 //---------------------------------------
 //--------------- Routing ---------------
 //---------------------------------------
@@ -948,6 +959,8 @@ window.onhashchange = function(event) {
 			ok = TryLoadGUID(wantGUID);
 		} 
 		if (!ok) {
+			// TODO
+			findDocument(wantGUID);
 			window.location.hash = '/' + ROOT_DOC_GUID;
 		}
 	}
