@@ -299,8 +299,11 @@ function withS3Files(prefix, callback, errCallback) {
 	// Ugly recursion!!!!!!!!
 	// TODO: rewrite it all!!!!!!!!
 	function f(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
+		console.log('withS3Files f(' + err + ', ' + data + ')');
+		if (err) {
+			if (errCallback instanceof Function) {
+				errCallback(err);
+			}
 			return;
 		}
 		// Data must be undefined when calling this function directly
@@ -918,10 +921,11 @@ function saveABTree(abTree, key) {
 // Returns {userId, guid} or null if not found
 function findDocument(guid) {
 	// finding user
+	console.log('findDocument', guid);
 	withS3Files('/', function(f) {
 		console.log(f);
 	}, function(err) {
-		console.log(err);
+		console.log('/', err);
 	});
 }
 
