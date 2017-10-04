@@ -145,7 +145,7 @@ function initQuill(id, guid) {
 		
 	$files.html('');
 	
-	withS3Files(USERID + '/' + guid + '/attachments/', function(f) {
+	/*withS3Files(USERID + '/' + guid + '/attachments/', function(f) {
 		var params = {
 			Bucket: STORAGE_BUCKET,
 			Key: f.Key
@@ -159,7 +159,28 @@ function initQuill(id, guid) {
 			var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
 			$files.append($li);			
 		});	
-	});
+	});*/
+	listS3Files(USERID + '/' + guid + '/attachments/')
+		.then( function(files) {
+			files.forEach( function(f) {
+				var params = {
+					Bucket: STORAGE_BUCKET,
+					Key: f.Key
+				};
+				s3.headObject(params, function(err, data) {
+					if (err) {
+						onError(err);
+						return;
+					}
+					
+					var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
+					$files.append($li);			
+				});				
+			});
+		})
+		.catch( function(err) {
+			onError(err);
+		});
 	
 	loadDocument(USERID + '/' + guid + '/index.html', '#editor')
 		.then(function(data) {

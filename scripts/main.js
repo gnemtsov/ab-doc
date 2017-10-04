@@ -288,6 +288,7 @@ function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
 }*/
 
 // Loads list of files with specified prefix and passes each one to callback
+// Old. Use listS3Files instead
 function withS3Files(prefix, callback, errCallback) {
 	var files = [];
 	var params = {
@@ -310,20 +311,60 @@ function withS3Files(prefix, callback, errCallback) {
 		// It starts objects loading from S3
 		// Then this function is only used as a callback in s3.listObjects
 		if (!data) {
-			s3.listObjects(params, f);
+			s3.listObjectsV2(params, f);
 			return;
 		}
 		
 		files = files.concat(data.Contents);
 		if (data.isTruncated) {
 			params.Marker = data.NextMarker;
-			s3.listObjects(params, f);
+			s3.listObjectsV2(params, f);
 		} else {
 			files.forEach(callback);
 		}
 	};
 	f(undefined, undefined);	
 }
+
+// Loads list of files with spicified prefix and returns Promise(files, error)
+function listS3Files(prefix) {
+	var files = [];
+	var params = {
+		Bucket: STORAGE_BUCKET,
+		Prefix: prefix,
+		MaxKeys: 1000
+	};
+	
+	var promise = new Promise( function(resolve, reject) {
+		// It's ok
+		function f(err, data) {
+			console.log('listS3Files f(' + err + ', ' + data + ')');
+			if (err) {
+				reject(err);
+				return;
+			}
+			// Data must be undefined when calling this function directly
+			// It starts objects loading from S3
+			// Then this function is only used as a callback in s3.listObjects
+			if (!data) {
+				s3.listObjectsV2(params, f);
+				return;
+			}
+			
+			files = files.concat(data.Contents);
+			if (data.isTruncated) {
+				params.Marker = data.NextMarker;
+				s3.listObjectsV2(params, f);
+			} else {
+				resolve(files);
+			}
+		};
+		f(undefined, undefined);
+	});
+	
+	return promise;
+}
+
 
 // prefix should not end with "/"
 /*function loadTree(prefix, username, tree, callback, errCallback) {
@@ -918,15 +959,33 @@ function saveABTree(abTree, key) {
 }
 
 // Searches for document in all user's folders
-// Returns {userId, guid} or null if not found
+// Returns Promise({userId, guid} | null, error)
+// !!! null - not found, error - something bad happened!
 function findDocument(guid) {
 	// finding user
 	console.log('findDocument', guid);
-	withS3Files('/', function(f) {
-		console.log(f);
-	}, function(err) {
-		console.log('/', err);
-	});
+	
+	// serching with no prefix
+	return listS3Files(undefined)
+		.then( function(files) {
+			var result = null;
+			files.forEach(function(f) {
+				console.log(f.Key);
+				ss = f.Key.split('/');
+				// We have UserId and GUID here
+				if (ss[0] && ss[1]) {
+					console.log(ss[0], ss[1]);
+					result = {
+						userId: ss[0],
+						guid: ss[1]
+					};
+				}
+			});
+			return Promise.resolve(result);
+		})
+		.catch( function(err) {
+			console.log('findDocument:', err);
+		});
 }
 
 //---------------------------------------
