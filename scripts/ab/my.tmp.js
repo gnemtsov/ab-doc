@@ -145,22 +145,7 @@ function initQuill(id, guid) {
 		
 	$files.html('');
 	
-	/*withS3Files(USERID + '/' + guid + '/attachments/', function(f) {
-		var params = {
-			Bucket: STORAGE_BUCKET,
-			Key: f.Key
-		};
-		s3.headObject(params, function(err, data) {
-			if (err) {
-				onError(err);
-				return
-			}
-			
-			var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
-			$files.append($li);			
-		});	
-	});*/
-	listS3Files(USERID + '/' + guid + '/attachments/')
+	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
 		.then( function(files) {
 			files.forEach( function(f) {
 				var params = {
@@ -182,7 +167,7 @@ function initQuill(id, guid) {
 			onError(err);
 		});
 	
-	loadDocument(USERID + '/' + guid + '/index.html', '#editor')
+	loadDocument(TREE_USERID + '/' + guid + '/index.html', '#editor')
 		.then(function(data) {
 				
 			//$updated.html(_translatorData['saved'][LANG]);
@@ -510,10 +495,13 @@ function initQuill(id, guid) {
 				drop: function (e) {
 					e.preventDefault();
 					e.stopPropagation();
+					
+					//console.log('drop', e);
+					//console.log($(this).data('files'));
 
-					var files = ( $(this).data('files') ? $(this).data('files') : e.originalEvent.dataTransfer.files );
-					$(this).removeData('files');
-					$(this).removeClass('highlighted');
+					var files = ( $drop_zone.data('files') ? $$drop_zone.data('files') : e.originalEvent.dataTransfer.files );
+					$drop_zone.removeData('files');
+					$drop_zone.removeClass('highlighted');
 
 					var uploaders = new Array();
 					$.each(files, function (i, file) {

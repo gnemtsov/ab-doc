@@ -400,7 +400,8 @@ function onError(err) {
 }
 
 var s3;
-var USERID;
+var USERID; // Id of a currently logged in user
+var TREE_USERID; // Id of a user, whose tree is shown
 var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
 var STORAGE_BUCKET = "ab-doc-storage";
 var LANG;
@@ -745,9 +746,8 @@ function initS3() {
 					
 					// Used in my.tmp.js
 					USERID = AWS.config.credentials.identityId;
-					
-					// Trying to load the tree
-					TREE_KEY = USERID + '/' + TREE_FILENAME;	
+					TREE_USERID = USERID;
+					TREE_KEY = TREE_USERID + '/' + TREE_FILENAME;	
 					resolve(true);		
 				});
 			});
@@ -845,10 +845,10 @@ function initTree() {
 			TREE_READY = true;
 			
 			// Routing when page is loaded
-			var wantGUID = window.location.href.split('#/')[1];
+			/*var wantGUID = window.location.href.split('#/')[1];
 			if (wantGUID) {
 				TryLoadGUID(wantGUID);
-			}
+			}*/
 			
 			resolve(true);
 		}).catch( function(err) {
@@ -959,9 +959,9 @@ function saveABTree(abTree, key) {
 }
 
 // Searches for document in all user's folders
-// Returns Promise({userId, guid} | null, error)
+// Returns Promise(userId | null, error)
 // !!! null - not found, error - something bad happened!
-function findDocument(guid) {
+function findOwner(guid) {
 	// finding user
 	console.log('findDocument', guid);
 	
@@ -969,18 +969,16 @@ function findDocument(guid) {
 	return listS3Files(undefined)
 		.then( function(files) {
 			var result = null;
-			files.forEach(function(f) {
-				console.log(f.Key);
-				ss = f.Key.split('/');
-				// We have UserId and GUID here
-				if (ss[0] && ss[1]) {
-					console.log(ss[0], ss[1]);
-					result = {
-						userId: ss[0],
-						guid: ss[1]
-					};
-				}
-			});
+			if (guid) {
+				files.forEach(function(f) {
+					ss = f.Key.split('/');
+					// We have UserId and GUID here
+					if (ss[0] && (ss[1] === guid)) {
+						console.log(ss[0], ss[1]);
+						result = ss[0];
+					}
+				});
+			}
 			return Promise.resolve(result);
 		})
 		.catch( function(err) {
@@ -1017,15 +1015,64 @@ window.onhashchange = function(event) {
 	console.log('onhashchange', event);
 	if (TREE_READY) {
 		var wantGUID = window.location.href.split('#/')[1];
+		
 		var ok = false;
-		if (wantGUID) {
-			ok = TryLoadGUID(wantGUID);
-		} 
-		if (!ok) {
-			// TODO
-			findDocument(wantGUID);
-			window.location.hash = '/' + ROOT_DOC_GUID;
+		var zTree = $.fn.zTree.getZTreeObj("abTree");
+		var node = zTree.getNodesByParam('id', wantGUID)[0];
+		var promise;
+		// if current tree has wantGUID-node
+		if (node) {
+			ok = true;
+			promise = Promise.resolve(true);
+		} else {
+			// if not, try to find owner
+			promise = findOwner(wantGUID)
+				.then( function(uid) {
+					if (uid) {
+						// owner is found, load their tree
+						console.log('found: ', uid, wantGUID);
+						TREE_USERID = uid;
+						TREE_KEY = TREE_USERID + '/' + TREE_FILENAME;
+						return initTree();
+					} else {
+						// owner is not found
+						console.log('not found!');
+						return Promise.reject(null);
+					}
+				})
 		}
+		
+		promise
+			.then( function(ok) {
+				var zTree = $.fn.zTree.getZTreeObj("abTree");
+				var node = zTree.getNodesByParam('id', wantGUID)[0];
+				if (node) {
+					zTree.selectNode(node);
+					// ...And load document
+					try {
+						$('#selectedDoc')[0].innerHTML = node.name;
+						initQuill('#document', node.id);
+					} catch(err) {
+						onError(err);
+					}
+				} else {
+					console.log("You will never get this error!");
+				}				
+			})
+			.catch( function(err) {
+				var tmp = Promise.resolve(true);
+				if (TREE_USERID !== USERID) {
+					TREE_USERID = USERID;
+					TREE_KEY = TREE_USERID + '/' + TREE_FILENAME;
+					tmp = initTree();
+				}
+				tmp.then( function(ok) {
+					window.location.hash = '/' + ROOT_DOC_GUID;	
+				})
+				.catch( function(err) {
+					onError(err);
+				});		
+			});
 	}
 }
 
@@ -1336,16 +1383,18 @@ $(function() {
 			}
 			
 			$updated.show();
-			saveABTree(abTree, TREE_KEY).then(
-				function (ok) {
-					$updated.fadeOut('slow', function () {
-						$(this).hide();
-					});
-				},
-				function (err) {
-					onError(err);
-				}
-			);
+			if (TREE_USERID === USERID) {
+				saveABTree(abTree, TREE_KEY).then(
+					function (ok) {
+						$updated.fadeOut('slow', function () {
+							$(this).hide();
+						});
+					},
+					function (err) {
+						onError(err);
+					}
+				);
+			}
 			TREE_MODIFIED = false;
 		}
 		
@@ -1355,6 +1404,13 @@ $(function() {
 			
 			$updated.show();
 			$(element).attr('modified', 0);
+			
+			var promise;
+			if (USERID === TREE_USERID) {
+				promise = saveDocument('#editor');
+			} else {
+				promise = Promise.resolve(true);
+			}
 			
 			saveDocument('#editor').then(
 				function (ok) {
