@@ -105,7 +105,7 @@ function genFileHTML(key, fileName, fileSize, finished) {
 }
 
 // Init editor and all it's stuff in #id
-function initQuill(id, guid) {
+function initQuill(id, guid, ownerid, readOnly) {
 	/*var $updated = $('#tm_updated_' + tm_id),
 		$content = $(id),
 		$files = $('#m_files_' + tm_id),
@@ -114,28 +114,14 @@ function initQuill(id, guid) {
 	
 	// if editor exists, save it's contents before loading new
 	if ($('#editor').attr('modified') !== 0) {
-		saveDocument('#editor');
+		if (USERID === $('#editor').attr('ownerid')) {
+			console.log('new editor. save old document.', USERID, TREE_USERID);
+			//alert('saving ' + $('#editor').attr('guid') + ', owned by ' + $('#editor').attr('ownerid'));
+			saveDocument('#editor');
+		}
 	}
 	
-	// remove old editor
-	//$('#editor-wrap').remove();
-	
-	// create new
-	/*$(id).append( // TODO: add translation
-		'<div id="editor-wrap">\
-			<div class="float-right" style="z-index: 10000; overflow: hidden;">\
-				<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">\
-					<div class="drop-files-here justify-content-center">\
-						!!!Dropzone!!!\
-						<img src="/img/icons/check.svg"></img>\
-						<input id="clip" name="clip" multiple="multiple" type="file">\
-					</div>\
-				</div>\
-				<ul id="files" class="files" waiting="0"></ul>\
-			</div>\
-			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
-		</div>'
-	);*/
+	$('#editor').attr('ownerid', ownerid);
 	
 	var $content = $('#editor'),
 		$drop_zone = $('#dropzone'),
@@ -145,23 +131,29 @@ function initQuill(id, guid) {
 		
 	$files.html('');
 	
-	withS3Files(USERID + '/' + guid + '/attachments/', function(f) {
-		var params = {
-			Bucket: STORAGE_BUCKET,
-			Key: f.Key
-		};
-		s3.headObject(params, function(err, data) {
-			if (err) {
-				onError(err);
-				return
-			}
-			
-			var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
-			$files.append($li);			
-		});	
-	});
+	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
+		.then( function(files) {
+			files.forEach( function(f) {
+				var params = {
+					Bucket: STORAGE_BUCKET,
+					Key: f.Key
+				};
+				s3.headObject(params, function(err, data) {
+					if (err) {
+						onError(err);
+						return;
+					}
+					
+					var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
+					$files.append($li);			
+				});				
+			});
+		})
+		.catch( function(err) {
+			onError(err);
+		});
 	
-	loadDocument(USERID + '/' + guid + '/index.html', '#editor')
+	loadDocument(TREE_USERID + '/' + guid + '/index.html', '#editor')
 		.then(function(data) {
 				
 			//$updated.html(_translatorData['saved'][LANG]);
@@ -178,6 +170,9 @@ function initQuill(id, guid) {
 					toolbar: toolbar_options
 				},
 			};
+			if (readOnly) {
+				editor_options.readOnly = readOnly;
+			}
 
 			var editor = new Quill('#editor', editor_options);
 			$content.data('editor', editor);
@@ -229,6 +224,9 @@ function initQuill(id, guid) {
 			});
 
 			editor.on('text-change', function () {
+				if (readOnly) {
+					return;
+				}
 				$content.attr("modified", 1);
 				$updated.html(_translatorData['edited'][LANG]);
 				$updated.addClass('pending');
@@ -238,6 +236,10 @@ function initQuill(id, guid) {
 			$(editor.root).bind({
 				//вставка изображения из буфера обмена
 				paste: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
 					if (isFilePaste(e.originalEvent)) {
 						e.preventDefault();
 						e.stopPropagation();
@@ -302,11 +304,19 @@ function initQuill(id, guid) {
 				},
 				//вставка файлов путем перетаскивания
 				dragover: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
 					if ($("html").hasClass("ie")) {
 						e.preventDefault();
 					}
 				},
 				drop: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
 					console.log(e);
 					if ($content.attr('moving') !== '1') {
 						e.preventDefault();
@@ -430,14 +440,23 @@ function initQuill(id, guid) {
 					
 			//перемещение изображений
 			$(editor.root).on('dragstart', 'img', function (e) {
+				if (readOnly) {
+					return;
+				}
 				$content.attr('moving', 1);
 			});
 			$(editor.root).on('dragend', 'img', function (e) {
+				if (readOnly) {
+					return;
+				}
 				$content.attr('moving', 0);
 			});
 
 			//click по изображению
 			$(editor.root).on('mousedown', 'img', function (e) {
+				if (readOnly) {
+					return;
+				}
 				if(e.which === 1){
 					CaretBeforeElement(this);
 				}
@@ -454,9 +473,15 @@ function initQuill(id, guid) {
 			//загрузка файлов-приложений
 			$clip.bind({
 				click: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.stopPropagation();
 				},
 				change: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$drop_zone.data('files', this.files).trigger('drop');
@@ -465,34 +490,52 @@ function initQuill(id, guid) {
 			});    
 			$drop_zone.bind({
 				click: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).find('#clip').trigger('click');
 					return false;
 				},
 				dragenter: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).addClass('highlighted');
 					return false;
 				},
 				dragover: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).addClass('highlighted');
 					return false;
 				},
 				dragleave: function (e) {
+					if (readOnly) {
+						return;
+					}
 					$(this).removeClass('highlighted');
 					return false;
 				},
 				drop: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
+					
+					//console.log('drop', e);
+					//console.log($(this).data('files'));
 
-					var files = ( $(this).data('files') ? $(this).data('files') : e.originalEvent.dataTransfer.files );
-					$(this).removeData('files');
-					$(this).removeClass('highlighted');
+					var files = ( $drop_zone.data('files') ? $$drop_zone.data('files') : e.originalEvent.dataTransfer.files );
+					$drop_zone.removeData('files');
+					$drop_zone.removeClass('highlighted');
 
 					var uploaders = new Array();
 					$.each(files, function (i, file) {
@@ -604,6 +647,10 @@ function initQuill(id, guid) {
 
 			//удаление приложенных файлов
 			$files.on('click', 'span.remove', function () {
+				if (readOnly) {
+					return;
+				}
+				
 				var $li = $(this).closest('li');
 				var key = $li.attr('s3key');
 				
