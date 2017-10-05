@@ -409,6 +409,7 @@ var TREE_MODIFIED = false;
 var TREE_READY = false; // Is tree.json loaded?
 var TREE_FILENAME = "tree.json";
 var TREE_KEY;
+var TREE_READONLY;
 var COGNITO_USER;
 var ROOT_DOC_GUID = 'root-doc';
 var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
@@ -800,6 +801,7 @@ function initRootDoc(srcLocation, dstKey) {
 
 // Returns Promise(ok, err)
 function initTree() {
+	TREE_READONLY = TREE_USERID !== USERID;
 	var promise = new Promise( function(resolve, reject) {
 		SetAuthenticatedMode();
 		// Trying to load tree
@@ -1412,6 +1414,10 @@ $(function() {
 //---------------------------------------
 
 function beforeDrag(id, nodes) {
+	if (TREE_READONLY) {
+		return false;
+	}
+	
 	var ok = true;
 	nodes.forEach(function(x, i, arr) {
 		// We can't drag head of the tree
@@ -1425,6 +1431,10 @@ function beforeDrag(id, nodes) {
 
 // It always moves files on drop.
 function beforeDrop (treeId, treeNodes, targetNode, moveType) {
+	if (TREE_READONLY) {
+		return false;
+	}
+	
 	// We can't drop item out the tree
 	if (targetNode === null) {
 		return false;
@@ -1479,6 +1489,10 @@ function beforeDrop (treeId, treeNodes, targetNode, moveType) {
 }
 
 function beforeEditName(treeId, treeNode) {
+	if (TREE_READONLY) {
+		return false;
+	}
+	
 	// Do not allow editing name of the head (username)
 	if (treeNode.head === true) {
 		return false;
@@ -1604,10 +1618,16 @@ function onClick(event, treeId, treeNode, clickFlag) {
 }
 
 function showRemoveBtn(id, node) {
+	if (TREE_READONLY) {
+		return false;
+	}
 	return !node.head;
 }
 
 function showRenameBtn(id, node) {
+	if (TREE_READONLY) {
+		return false;
+	}
 	return !node.head;
 }
 
@@ -1618,6 +1638,10 @@ function newId() {
 }
 
 function addHoverDom(treeId, treeNode) {
+	if (TREE_READONLY) {
+		return;
+	}
+	
 	var sObj = $("#" + treeNode.tId + "_span");
 	if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) {
 		return;
@@ -1686,6 +1710,10 @@ function buildPrefixPath(treeNode) {
 }
 
 function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
+	if (TREE_READONLY) {
+		return false;
+	}
+	
 	$updated.addClass('pending');
 	$updated.show();
 	TREE_MODIFIED = true;
@@ -1696,6 +1724,10 @@ function onNodeCreated(event, treeId, treeNode) {
 };
 
 function beforeRemove(treeId, treeNode) {
+	if (TREE_READONLY) {
+		return false;
+	}
+	
 	var tree = $.fn.zTree.getZTreeObj(treeId);
 	$('#buttonDelete').click( function() {
 		tree.removeNode(treeNode, false);
@@ -1713,6 +1745,10 @@ function beforeRemove(treeId, treeNode) {
 };
 
 function beforeRename(treeId, treeNode, newName, isCancel) {
+	if (TREE_READONLY) {
+		return false;
+	}
+	
 	if(isCancel) {
 		return true;
 	}
