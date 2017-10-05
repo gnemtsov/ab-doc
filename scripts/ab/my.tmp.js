@@ -116,7 +116,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 	if ($('#editor').attr('modified') !== 0) {
 		if (USERID === $('#editor').attr('ownerid')) {
 			console.log('new editor. save old document.', USERID, TREE_USERID);
-			alert('saving ' + $('#editor').attr('guid') + ', owned by ' + $('#editor').attr('ownerid'));
+			//alert('saving ' + $('#editor').attr('guid') + ', owned by ' + $('#editor').attr('ownerid'));
 			saveDocument('#editor');
 		}
 	}
