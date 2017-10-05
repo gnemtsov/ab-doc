@@ -990,27 +990,6 @@ function findOwner(guid) {
 //--------------- Routing ---------------
 //---------------------------------------
 
-// returns true if guid exists, false otherwise
-function TryLoadGUID(guid) {
-	var zTree = $.fn.zTree.getZTreeObj("abTree");
-	var node = zTree.getNodesByParam('id', guid)[0];
-	if (node) {
-		zTree.selectNode(node);
-		// ...And load document
-		try {
-			$('#selectedDoc')[0].innerHTML = node.name;
-			initQuill('#document', node.id);
-		} catch(err) {
-			onError(err);
-		}
-		return true;
-	} else {
-		// for debugging
-		console.log("Couldn't load", guid);
-		return false;
-	}
-}
-
 window.onhashchange = function(event) {
 	console.log('onhashchange', event);
 	if (TREE_READY) {
@@ -1051,7 +1030,7 @@ window.onhashchange = function(event) {
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-						initQuill('#document', node.id, TREE_USERID !== USERID);
+						initQuill('#document', node.id, TREE_USERID, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}
@@ -1363,27 +1342,27 @@ $(function() {
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
 		
 		if (TREE_MODIFIED) {
-			var zTree = $.fn.zTree.getZTreeObj("abTree");
-			var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID);
-			var abTree;
-			if (nodes) {
-				var f = function(n) {
-					var abNode = {
-						id : n.id,
-						name : n.name,
-						children : n.children ? n.children.map(f) : []
+			if (TREE_USERID === USERID) {
+				var zTree = $.fn.zTree.getZTreeObj("abTree");
+				var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID);
+				var abTree;
+				if (nodes) {
+					var f = function(n) {
+						var abNode = {
+							id : n.id,
+							name : n.name,
+							children : n.children ? n.children.map(f) : []
+						};
+						
+						return abNode;
 					};
 					
-					return abNode;
-				};
+					abTree = nodes.map(f);
+				} else {
+					abTree = [];
+				}
 				
-				abTree = nodes.map(f);
-			} else {
-				abTree = [];
-			}
-			
-			$updated.show();
-			if (TREE_USERID === USERID) {
+				$updated.show();
 				saveABTree(abTree, TREE_KEY).then(
 					function (ok) {
 						$updated.fadeOut('slow', function () {
@@ -1399,34 +1378,31 @@ $(function() {
 		}
 		
 		$('#editor[modified="1"]').each(function (index, element) {
-			var $editor = $('#editor'),
-				$files = $('#files');
-			
-			$updated.show();
-			$(element).attr('modified', 0);
-			
-			var promise;
 			if (USERID === TREE_USERID) {
-				promise = saveDocument('#editor');
-			} else {
-				promise = Promise.resolve(true);
+				var $editor = $('#editor'),
+					$files = $('#files');
+				
+				$updated.show();
+				$(element).attr('modified', 0);
+				
+				console.log('Saving! ', USERID, TREE_USERID);
+				
+				saveDocument('#editor').then(
+					function (ok) {
+						$updated.fadeOut('slow', function () {
+							console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
+							if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+								$(this).removeClass('pending');
+							}
+							
+							$(this).hide();
+						});
+					},
+					function (err) {
+						onError(err);
+					}
+				);
 			}
-			
-			promise.then(
-				function (ok) {
-					$updated.fadeOut('slow', function () {
-						console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
-						if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-							$(this).removeClass('pending');
-						}
-						
-						$(this).hide();
-					});
-				},
-				function (err) {
-					onError(err);
-				}
-			);
 		});
 	}, 3000);
 });

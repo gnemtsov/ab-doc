@@ -105,7 +105,7 @@ function genFileHTML(key, fileName, fileSize, finished) {
 }
 
 // Init editor and all it's stuff in #id
-function initQuill(id, guid, readOnly) {
+function initQuill(id, guid, ownerid, readOnly) {
 	/*var $updated = $('#tm_updated_' + tm_id),
 		$content = $(id),
 		$files = $('#m_files_' + tm_id),
@@ -114,28 +114,13 @@ function initQuill(id, guid, readOnly) {
 	
 	// if editor exists, save it's contents before loading new
 	if ($('#editor').attr('modified') !== 0) {
-		saveDocument('#editor');
+		if (USERID === $('#editor').attr('ownerid')) {
+			console.log('new editor. save old document.', USERID, TREE_USERID);
+			saveDocument('#editor');
+		}
 	}
 	
-	// remove old editor
-	//$('#editor-wrap').remove();
-	
-	// create new
-	/*$(id).append( // TODO: add translation
-		'<div id="editor-wrap">\
-			<div class="float-right" style="z-index: 10000; overflow: hidden;">\
-				<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">\
-					<div class="drop-files-here justify-content-center">\
-						!!!Dropzone!!!\
-						<img src="/img/icons/check.svg"></img>\
-						<input id="clip" name="clip" multiple="multiple" type="file">\
-					</div>\
-				</div>\
-				<ul id="files" class="files" waiting="0"></ul>\
-			</div>\
-			<div id="editor" class="message-content" waiting="0" modified="0"></div>\
-		</div>'
-	);*/
+	$('#editor').attr('ownerid', ownerid);
 	
 	var $content = $('#editor'),
 		$drop_zone = $('#dropzone'),
