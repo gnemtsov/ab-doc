@@ -1044,14 +1044,14 @@ window.onhashchange = function(event) {
 		
 		promise
 			.then( function(ok) {
-				var zTree = $.fn.zTree.getZTreeObj("abTree");
+				var zTree = $.fn.zTree.getZTreeObj('abTree');
 				var node = zTree.getNodesByParam('id', wantGUID)[0];
 				if (node) {
 					zTree.selectNode(node);
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-						initQuill('#document', node.id);
+						initQuill('#document', node.id, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}
@@ -1412,7 +1412,7 @@ $(function() {
 				promise = Promise.resolve(true);
 			}
 			
-			saveDocument('#editor').then(
+			promise.then(
 				function (ok) {
 					$updated.fadeOut('slow', function () {
 						console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')

@@ -105,7 +105,7 @@ function genFileHTML(key, fileName, fileSize, finished) {
 }
 
 // Init editor and all it's stuff in #id
-function initQuill(id, guid) {
+function initQuill(id, guid, readOnly) {
 	/*var $updated = $('#tm_updated_' + tm_id),
 		$content = $(id),
 		$files = $('#m_files_' + tm_id),
@@ -184,6 +184,9 @@ function initQuill(id, guid) {
 					toolbar: toolbar_options
 				},
 			};
+			if (readOnly) {
+				editor_options.readOnly = readOnly;
+			}
 
 			var editor = new Quill('#editor', editor_options);
 			$content.data('editor', editor);
