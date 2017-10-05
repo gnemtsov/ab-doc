@@ -223,6 +223,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 			});
 
 			editor.on('text-change', function () {
+				if (readOnly) {
+					return;
+				}
 				$content.attr("modified", 1);
 				$updated.html(_translatorData['edited'][LANG]);
 				$updated.addClass('pending');
@@ -232,6 +235,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 			$(editor.root).bind({
 				//вставка изображения из буфера обмена
 				paste: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
 					if (isFilePaste(e.originalEvent)) {
 						e.preventDefault();
 						e.stopPropagation();
@@ -296,11 +303,19 @@ function initQuill(id, guid, ownerid, readOnly) {
 				},
 				//вставка файлов путем перетаскивания
 				dragover: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
 					if ($("html").hasClass("ie")) {
 						e.preventDefault();
 					}
 				},
 				drop: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
 					console.log(e);
 					if ($content.attr('moving') !== '1') {
 						e.preventDefault();
@@ -424,14 +439,23 @@ function initQuill(id, guid, ownerid, readOnly) {
 					
 			//перемещение изображений
 			$(editor.root).on('dragstart', 'img', function (e) {
+				if (readOnly) {
+					return;
+				}
 				$content.attr('moving', 1);
 			});
 			$(editor.root).on('dragend', 'img', function (e) {
+				if (readOnly) {
+					return;
+				}
 				$content.attr('moving', 0);
 			});
 
 			//click по изображению
 			$(editor.root).on('mousedown', 'img', function (e) {
+				if (readOnly) {
+					return;
+				}
 				if(e.which === 1){
 					CaretBeforeElement(this);
 				}
@@ -448,9 +472,15 @@ function initQuill(id, guid, ownerid, readOnly) {
 			//загрузка файлов-приложений
 			$clip.bind({
 				click: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.stopPropagation();
 				},
 				change: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$drop_zone.data('files', this.files).trigger('drop');
@@ -459,28 +489,43 @@ function initQuill(id, guid, ownerid, readOnly) {
 			});    
 			$drop_zone.bind({
 				click: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).find('#clip').trigger('click');
 					return false;
 				},
 				dragenter: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).addClass('highlighted');
 					return false;
 				},
 				dragover: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).addClass('highlighted');
 					return false;
 				},
 				dragleave: function (e) {
+					if (readOnly) {
+						return;
+					}
 					$(this).removeClass('highlighted');
 					return false;
 				},
 				drop: function (e) {
+					if (readOnly) {
+						return;
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					
@@ -601,6 +646,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 			//удаление приложенных файлов
 			$files.on('click', 'span.remove', function () {
+				if (readOnly) {
+					return;
+				}
+				
 				var $li = $(this).closest('li');
 				var key = $li.attr('s3key');
 				
