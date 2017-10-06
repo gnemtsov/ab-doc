@@ -270,7 +270,26 @@
 			#updated {
 				margin-left: 12px;
 			}
+			
+			img.clip {
+				position: relative;
+				width: 120px;
+				height: 120px;
+				top: -60px;
+			}
+			
+			div.clip {
+				background-image: url(/img/icons/paperclip.svg);
+				position: relative;
+				width: 120px;
+				height: 120px;
+				top: -60px;
+			}
 
+			#dropzone.used {
+				background-color: #fff0e8;
+				border: 1px dashed #000000;
+			}
 		</style>
 		
 		<style type="text/css">
@@ -382,12 +401,13 @@
 				<div id="document" class="ab-opened">
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
-						<div id="dropzone-wrap" class="float-right" style="z-index: 10000; overflow: hidden;">
-							<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">
+						<div id="dropzone-wrap" class="float-right" style="z-index: 10000;">
+							<div id="dropzone" class="filedrag used" style="width: 300px; height: 300px;">
 								<div class="drop-files-here justify-content-center">
-									!!!Dropzone!!!
-									<img src="/img/icons/check.svg"></img>
-									<input id="clip" name="clip" multiple="multiple" type="file">
+									<!--img class="clip" src="/img/icons/paperclip.svg"></img-->
+									<div class="clip" style="z-index: 10010;">
+										<input id="clip" class="clip" name="clip" multiple="multiple" type="file">
+									</div>
 								</div>
 							</div>
 							<ul id="files" class="files" waiting="0"></ul>
