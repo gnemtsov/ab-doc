@@ -95,13 +95,16 @@ function saveDocument(id) {
 }
 
 // Returns HTML for file attachment
-function genFileHTML(key, fileName, fileSize, finished) {
-	var fname = '<td class="file-name" style="text-overflow: ellipsis; overflow: hidden; width: 20%;">' + (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) + '</td>',
-		fsize = '<td class="file-size">(' + GetSize(fileSize) + ')</td>',
-		progress = '<td class="file-progress">' + (finished ? '&nbsp;' : '<div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>') + '</td>',
-		remove_button = '<td class="remove-button"><span class="glyphicon glyphicon-remove ' + (finished ? 'remove' : 'abort') + '" aria-label="Del"></span></td>';
-
-	return $('<li s3key="' + key + '">').append('<table class="li-file"><tr>' + fname + fsize + progress + remove_button + '</tr></table>');
+function genFileHTML(key, iconURL, fileName, fileSize, finished) {
+	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
+		fname = '<div class="file-name">' +
+				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) +
+				'</div>',
+		fsize = '<div class="file-size">(' + GetSize(fileSize) + ')</div>',
+		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>',
+		remove_button = '<span class="glyphicon glyphicon-remove remove-button' + (finished ? 'remove' : 'abort') + '" aria-label="Del"></span>';
+	
+	return $('<li s3key="' + key + '">').append(ficon + fname + fsize + progress + remove_button);
 }
 
 // Init editor and all it's stuff in #id
@@ -144,7 +147,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return;
 					}
 					
-					var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
+					var $li = genFileHTML(f.Key, '/img/icons/book.svg', decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
 					$files.append($li);			
 				});				
 			});
@@ -533,7 +536,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					//console.log('drop', e);
 					//console.log($(this).data('files'));
 
-					var files = ( $drop_zone.data('files') ? $$drop_zone.data('files') : e.originalEvent.dataTransfer.files );
+					var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
 					$drop_zone.removeData('files');
 					$drop_zone.removeClass('highlighted');
 
@@ -542,7 +545,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						var fileGUID = GetGUID();
 						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
-						var $li = genFileHTML(key, file.name, file.size);
+						var $li = genFileHTML(key, '/img/icons/book.svg', file.name, file.size);
 
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);

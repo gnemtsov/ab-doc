@@ -188,7 +188,7 @@
 				width: 75%;
 				top: 0px;
 				bottom: 0px;
-				overflow: hidden;
+				overflow-x: hidden;
 				owerflow-y: auto;
 				padding: 30px 20px 20px 20px;
 			}
@@ -278,8 +278,8 @@
 				background-size: contain;
 				
 				position: absolute;
-				width: 120px;
-				height: 120px;
+				width: 96px;
+				height: 96px;
 				top: -60px;
 				left: 180px;
 			}
@@ -290,8 +290,24 @@
 			}
 
 			#dropzone.used {
-				background-color: #fff0e8;
+				background-color: #fff8f0;
 				border: 1px dashed #000000;
+			}
+			
+			img.file-icon {
+				width: 48px;
+				height: 48px;
+				float: left;
+			}
+			
+			.file-name {
+				width: 148px;
+				overflow: hidden;
+				display: inline-block;
+			}
+			
+			li {
+				clear: both;
 			}
 		</style>
 		
