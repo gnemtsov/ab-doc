@@ -280,8 +280,8 @@
 				position: absolute;
 				width: 96px;
 				height: 96px;
-				top: -60px;
-				left: 180px;
+				top: -50px;
+				left: 200px;
 			}
 
 			#dropzone {
@@ -298,16 +298,49 @@
 				width: 48px;
 				height: 48px;
 				float: left;
+				margin-top: 0px;
 			}
 			
 			.file-name {
-				width: 148px;
+				width: 228px;
 				overflow: hidden;
+				text-overflow: ellipsis;
+				display: inline-block;
+				vertical-align: top;
+			}
+			
+			.file-size {
+				/*width: 148px;*/
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: inline-block;
+				vertical-align: top;
+			}
+				
+			div.cross {
+				width: 12px;
+				height: 12px;
+				display: inline-block;
+				background-image: url(/img/icons/close.svg);
+				background-size: contain;
+				background-repeat: no-repeat;
+				margin-left: 8px;
+			}	
+					
+			ul.files li {
+				clear: both;
+				margin-top: 12px;
+			}
+			
+			.progress {
+				text-align: left;
+				width: 150px;
 				display: inline-block;
 			}
 			
-			li {
-				clear: both;
+			.progress-bar {
+				background-color: #ff8800;
+				padding-left: 4px;
 			}
 		</style>
 		

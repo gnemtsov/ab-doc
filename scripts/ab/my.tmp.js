@@ -100,11 +100,11 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 		fname = '<div class="file-name">' +
 				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) +
 				'</div>',
-		fsize = '<div class="file-size">(' + GetSize(fileSize) + ')</div>',
-		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>',
-		remove_button = '<span class="glyphicon glyphicon-remove remove-button' + (finished ? 'remove' : 'abort') + '" aria-label="Del"></span>';
+		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
+		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
+		remove_button = '<div class="cross" aria-label="Del"></div>';
 	
-	return $('<li s3key="' + key + '">').append(ficon + fname + fsize + progress + remove_button);
+	return $('<li s3key="' + key + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
 }
 
 // Init editor and all it's stuff in #id
@@ -492,7 +492,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				}
 			});    
 			$drop_zone.bind({
-				click: function (e) {
+				/*click: function (e) {
 					if (readOnly) {
 						return;
 					}
@@ -500,7 +500,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					e.stopPropagation();
 					$(this).find('#clip').trigger('click');
 					return false;
-				},
+				},*/
 				dragenter: function (e) {
 					if (readOnly) {
 						return;
@@ -647,9 +647,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 					return false;
 				}
 			});
+			
+			//test
+			$files.on('click', function () {
+				console.log('test');
+			});
 
 			//удаление приложенных файлов
-			$files.on('click', 'span.remove', function () {
+			$files.on('click', 'div.cross', function () {
 				if (readOnly) {
 					return;
 				}
@@ -659,7 +664,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				
 				console.log('Removing ', key);
 				
-				$(this).replaceWith('<img src="img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
+				$(this).replaceWith('<img src="/img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
 				$updated.show().addClass('pending');
 
@@ -680,6 +685,11 @@ function initQuill(id, guid, ownerid, readOnly) {
 						$(this).removeClass('pending');
 					}
 				});
+			});
+			
+			//showing and hiding cross
+			$files.on('', 'div.cross', function () {
+				
 			});
 		},
 		function (err) {
@@ -726,11 +736,11 @@ function GetGUID() {
 }
 
 function GetSize(bytes) {
-	if (bytes < 1024) { return bytes + ' b.'; }
-	else if (bytes < 1048576) { return (bytes / 1024).toFixed(2) + ' Kb.'; }
-	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(2) + ' Mb.'; }
+	if (bytes < 1024) { return bytes + ' b'; }
+	else if (bytes < 1048576) { return (bytes / 1024).toFixed(2) + ' Kb'; }
+	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(2) + ' Mb'; }
 	else if (bytes < 1099511627776) { return (bytes / 1073741824).toFixed(2) + ' Gb'; }
-	else { return (bytes / 1099511627776).toFixed(2) + ' Tb.'; }
+	else { return (bytes / 1099511627776).toFixed(2) + ' Tb'; }
 }
 
 function encodeRFC5987ValueChars(str) {
