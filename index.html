@@ -188,7 +188,8 @@
 				width: 75%;
 				top: 0px;
 				bottom: 0px;
-				overflow-y: auto;
+				overflow-x: hidden;
+				owerflow-y: auto;
 				padding: 30px 20px 20px 20px;
 			}
 			
@@ -270,7 +271,90 @@
 			#updated {
 				margin-left: 12px;
 			}
+			
+			div.clip {
+				background-image: url(/img/icons/paperclip.svg);
+				background-repeat: no-repeat;
+				background-size: contain;
+				
+				position: absolute;
+				width: 96px;
+				height: 96px;
+				top: -60px;
+				right: 20px;
+			}
 
+			#dropzone {
+				width: 136px;
+				border-style: none;
+			}
+
+			#dropzone.used {
+				width: 300px;
+				min-height: 300px;
+				
+				background-color: #fff8f0;
+				border: 1px dashed #C0C0C0;
+			}
+			
+			#dropzone.highlighted {
+				width: 300px;
+				min-height: 300px;
+				
+				background-color: #ffe0c0;
+				border: 1px dashed #000000;				
+			}
+			
+			
+			img.file-icon {
+				width: 48px;
+				height: 48px;
+				float: left;
+				margin-top: 0px;
+			}
+			
+			.file-name {
+				width: 228px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: inline-block;
+				vertical-align: top;
+			}
+			
+			.file-size {
+				/*width: 148px;*/
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: inline-block;
+				vertical-align: top;
+			}
+				
+			div.cross {
+				width: 12px;
+				height: 12px;
+				display: inline-block;
+				background-image: url(/img/icons/close.svg);
+				background-size: contain;
+				background-repeat: no-repeat;
+				margin-left: 8px;
+			}	
+					
+			ul.files li {
+				clear: both;
+				margin-top: 12px;
+			}
+			
+			.progress {
+				text-align: left;
+				width: 200px;
+				display: inline-block;
+			}
+			
+			.progress-bar {
+				color: #000000;
+				background-color: #ff8800;
+				padding-left: 4px;
+			}
 		</style>
 		
 		<style type="text/css">
@@ -382,15 +466,13 @@
 				<div id="document" class="ab-opened">
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
-						<div id="dropzone-wrap" class="float-right" style="z-index: 10000; overflow: hidden;">
-							<div id="dropzone" class="filedrag" style="width: 300px; height: 300px;">
-								<div class="drop-files-here justify-content-center">
-									!!!Dropzone!!!
-									<img src="/img/icons/check.svg"></img>
-									<input id="clip" name="clip" multiple="multiple" type="file">
+						<div id="dropzone-wrap" class="float-right" style="z-index: 10000;">
+							<div id="dropzone" class="filedrag" style="z-index: 10005;">
+								<div class="clip">
+									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 10010;">
 								</div>
+								<ul id="files" class="files" waiting="0"></ul>
 							</div>
-							<ul id="files" class="files" waiting="0"></ul>
 						</div>
 						<div id="editor" class="message-content" waiting="0" modified="0"></div>
 					</div>

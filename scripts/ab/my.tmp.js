@@ -95,13 +95,149 @@ function saveDocument(id) {
 }
 
 // Returns HTML for file attachment
-function genFileHTML(key, fileName, fileSize, finished) {
-	var fname = '<td class="file-name" style="text-overflow: ellipsis; overflow: hidden; width: 20%;">' + (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) + '</td>',
-		fsize = '<td class="file-size">(' + GetSize(fileSize) + ')</td>',
-		progress = '<td class="file-progress">' + (finished ? '&nbsp;' : '<div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>') + '</td>',
-		remove_button = '<td class="remove-button"><span class="glyphicon glyphicon-remove ' + (finished ? 'remove' : 'abort') + '" aria-label="Del"></span></td>';
+function genFileHTML(key, iconURL, fileName, fileSize, finished) {
+	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
+		fname = '<div class="file-name">' +
+				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) +
+				'</div>',
+		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
+		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
+		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
+	
+	return $('<li s3key="' + key + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
+}
 
-	return $('<li s3key="' + key + '">').append('<table class="li-file"><tr>' + fname + fsize + progress + remove_button + '</tr></table>');
+function mimeTypeToIconURL(type) {
+	if (typeof type === 'string') {
+		if (type.match('image.*')) {
+			return '/img/icons/photo.svg';
+		}
+		if (type.match('audio.*')) {
+			return '/img/icons/music.svg';
+		}
+		if (type.match('video.*')) {
+			return '/img/icons/video.svg';
+		}
+	}
+	return '/img/icons/portfolio.svg';
+}
+
+// mimeTypeByExtension is used only to detect audio, image and video.
+// It doesn't know about other types.
+// It returns type if it knows specified ext
+// And returns undefined otherwise
+function mimeTypeByExtension(ext) {
+	// Extenstion to MIME type
+	var em = {
+		"adp": "audio/adpcm",
+		"au": "audio/basic",
+		"mid": "audio/midi",
+		"mp4a": "audio/mp4",
+		"mpga": "audio/mpeg",
+		"mp3": "audio/mpeg",
+		"oga": "audio/ogg",
+		"uva": "audio/vnd.dece.audio",
+		"eol": "audio/vnd.digital-winds",
+		"dra": "audio/vnd.dra",
+		"dts": "audio/vnd.dts",
+		"dtshd": "audio/vnd.dts.hd",
+		"lvp": "audio/vnd.lucent.voice",
+		"pya": "audio/vnd.ms-playready.media.pya",
+		"ecelp4800": "audio/vnd.nuera.ecelp4800",
+		"ecelp7470": "audio/vnd.nuera.ecelp7470",
+		"ecelp9600": "audio/vnd.nuera.ecelp9600",
+		"rip": "audio/vnd.rip",
+		"weba": "audio/webm",
+		"aac": "audio/x-aac",
+		"aif": "audio/x-aiff",
+		"m3u": "audio/x-mpegurl",
+		"wax": "audio/x-ms-wax",
+		"wma": "audio/x-ms-wma",
+		"ram": "audio/x-pn-realaudio",
+		"rmp": "audio/x-pn-realaudio-plugin",
+		"wav": "audio/x-wav",
+		"bmp": "image/bmp",
+		"cgm": "image/cgm",
+		"g3": "image/g3fax",
+		"gif": "image/gif",
+		"ief": "image/ief",
+		"jpeg": "image/x-citrix-jpeg",
+		"jpg": "image/x-citrix-jpeg",
+		"ktx": "image/ktx",
+		"pjpeg": "image/pjpeg",
+		"png": "image/x-png",
+		"btif": "image/prs.btif",
+		"svg": "image/svg+xml",
+		"tiff": "image/tiff",
+		"psd": "image/vnd.adobe.photoshop",
+		"uvi": "image/vnd.dece.graphic",
+		"djvu": "image/vnd.djvu",
+		"sub": "image/vnd.dvb.subtitle",
+		"dwg": "image/vnd.dwg",
+		"dxf": "image/vnd.dxf",
+		"fbs": "image/vnd.fastbidsheet",
+		"fpx": "image/vnd.fpx",
+		"fst": "image/vnd.fst",
+		"mmr": "image/vnd.fujixerox.edmics-mmr",
+		"rlc": "image/vnd.fujixerox.edmics-rlc",
+		"mdi": "image/vnd.ms-modi",
+		"npx": "image/vnd.net-fpx",
+		"wbmp": "image/vnd.wap.wbmp",
+		"xif": "image/vnd.xiff",
+		"webp": "image/webp",
+		"ras": "image/x-cmu-raster",
+		"cmx": "image/x-cmx",
+		"fh": "image/x-freehand",
+		"ico": "image/x-icon",
+		"pcx": "image/x-pcx",
+		"pic": "image/x-pict",
+		"pnm": "image/x-portable-anymap",
+		"pbm": "image/x-portable-bitmap",
+		"pgm": "image/x-portable-graymap",
+		"ppm": "image/x-portable-pixmap",
+		"rgb": "image/x-rgb",
+		"xbm": "image/x-xbitmap",
+		"xpm": "image/x-xpixmap",
+		"xwd": "image/x-xwindowdump",
+		"3gp": "video/3gpp",
+		"3g2": "video/3gpp2",
+		"h261": "video/h261",
+		"h263": "video/h263",
+		"h264": "video/h264",
+		"jpgv": "video/jpeg",
+		"jpm": "video/jpm",
+		"mj2": "video/mj2",
+		"mp4": "video/mp4",
+		"mpeg": "video/mpeg",
+		"ogv": "video/ogg",
+		"ogg": "video/ogg",
+		"qt": "video/quicktime",
+		"uvh": "video/vnd.dece.hd",
+		"uvm": "video/vnd.dece.mobile",
+		"uvp": "video/vnd.dece.pd",
+		"uvs": "video/vnd.dece.sd",
+		"uvv": "video/vnd.dece.video",
+		"fvt": "video/vnd.fvt",
+		"mxu": "video/vnd.mpegurl",
+		"pyv": "video/vnd.ms-playready.media.pyv",
+		"uvu": "video/vnd.uvvu.mp4",
+		"viv": "video/vnd.vivo",
+		"webm": "video/webm",
+		"f4v": "video/x-f4v",
+		"fli": "video/x-fli",
+		"flv": "video/x-flv",
+		"m4v": "video/x-m4v",
+		"asf": "video/x-ms-asf",
+		"wm": "video/x-ms-wm",
+		"wmv": "video/x-ms-wmv",
+		"wmx": "video/x-ms-wmx",
+		"wvx": "video/x-ms-wvx",
+		"avi": "video/x-msvideo",
+		"movie": "video/x-sgi-movie"
+	};
+	
+	// it can return undefined
+	return em[ext];
 }
 
 // Init editor and all it's stuff in #id
@@ -133,6 +269,13 @@ function initQuill(id, guid, ownerid, readOnly) {
 	
 	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
 		.then( function(files) {
+			// if we have files, show dropzone, hide it otherwise
+			if (files.length > 0) {
+				$drop_zone.addClass('used');
+			} else {
+				$drop_zone.removeClass('used');
+			}
+			
 			files.forEach( function(f) {
 				var params = {
 					Bucket: STORAGE_BUCKET,
@@ -144,7 +287,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return;
 					}
 					
-					var $li = genFileHTML(f.Key, decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
+					console.log(f);
+					var cd = decodeURIComponent(data.ContentDisposition.substring(29));
+					var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
+					var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);
 					$files.append($li);			
 				});				
 			});
@@ -313,6 +459,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					}
 				},
 				drop: function (e) {
+					console.log('editor.root.drop');
 					if (readOnly) {
 						return;
 					}
@@ -430,6 +577,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 						//загрузить прочие файлы, как приложения
 						if(non_image_files.length > 0){
+							console.log('non_image_files drop');
 							$drop_zone.data('files', non_image_files).trigger('drop');                    
 						}
 
@@ -473,12 +621,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 			//загрузка файлов-приложений
 			$clip.bind({
 				click: function (e) {
+					console.log('clip click');
 					if (readOnly) {
 						return;
 					}
 					e.stopPropagation();
 				},
 				change: function (e) {
+					console.log('clip change');
 					if (readOnly) {
 						return;
 					}
@@ -488,8 +638,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 					return false;
 				}
 			});    
-			$drop_zone.bind({
+			$('div.clip').bind({
 				click: function (e) {
+					
+					$clip.trigger('click');
+				}
+			});
+			$drop_zone.bind({
+				/*click: function (e) {
 					if (readOnly) {
 						return;
 					}
@@ -497,7 +653,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					e.stopPropagation();
 					$(this).find('#clip').trigger('click');
 					return false;
-				},
+				},*/
 				dragenter: function (e) {
 					if (readOnly) {
 						return;
@@ -524,6 +680,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					return false;
 				},
 				drop: function (e) {
+					console.log('dropzone.drop');
 					if (readOnly) {
 						return;
 					}
@@ -533,16 +690,17 @@ function initQuill(id, guid, ownerid, readOnly) {
 					//console.log('drop', e);
 					//console.log($(this).data('files'));
 
-					var files = ( $drop_zone.data('files') ? $$drop_zone.data('files') : e.originalEvent.dataTransfer.files );
+					var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
 					$drop_zone.removeData('files');
 					$drop_zone.removeClass('highlighted');
+					$drop_zone.addClass('used');
 
 					var uploaders = new Array();
 					$.each(files, function (i, file) {
 						var fileGUID = GetGUID();
 						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
-						var $li = genFileHTML(key, file.name, file.size);
+						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size);
 
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);
@@ -560,12 +718,13 @@ function initQuill(id, guid, ownerid, readOnly) {
 						
 						//нужен promise, который вернёт key.
 						var uploaderPromise;
+						// TODO: rewrite to promise chain
 						var uploader = new Promise ( function(resolve, reject) {
 							readFilePromise.then(
 								function(blob) {						
 									var params = {
 										Body: blob,
-										ContentType: 'application/octet-stream',
+										ContentType: file.type,
 										ContentDisposition: file.name,
 										Key: key,
 										ACL: 'public-read'
@@ -603,7 +762,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 										return Promise.resolve("abort");
 									}
 
-									$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
+									// replace it with finished version
+									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, true));
+
+									/*$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
 									$li.find('span.abort').removeClass('abort').addClass('remove');
 									$updated.show();
 
@@ -617,7 +779,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 											$(this).removeClass('pending');
 										}
 										$(this).text("Update time").fadeIn('fast'); //TODO
-									});
+									});*/
 								},
 								function (Error) { console.log(Error); }
 							)
@@ -644,9 +806,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 					return false;
 				}
 			});
+			
+			//test
+			$files.on('click', function () {
+				console.log('test');
+			});
 
 			//удаление приложенных файлов
-			$files.on('click', 'span.remove', function () {
+			$files.on('click', 'div.cross', function () {
 				if (readOnly) {
 					return;
 				}
@@ -656,7 +823,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				
 				console.log('Removing ', key);
 				
-				$(this).replaceWith('<img src="img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
+				$(this).replaceWith('<img src="/img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
 				$updated.show().addClass('pending');
 
@@ -668,7 +835,12 @@ function initQuill(id, guid, ownerid, readOnly) {
 					console.log(err, data);
 				});
 				$li.fadeOut('slow', function () {
+					// removing file from list!
 					$(this).remove();
+					// if no files in the list, hide dropzone
+					if ($('#files li').length === 0) {
+						$drop_zone.removeClass('used');
+					}
 				});
 				$files.attr('waiting', Number($files.attr('waiting')) - 1);
 
@@ -677,6 +849,16 @@ function initQuill(id, guid, ownerid, readOnly) {
 						$(this).removeClass('pending');
 					}
 				});
+			});
+			
+			//showing and hiding cross
+			$('.files').on('mouseenter', 'li', function () {
+				console.log('enter');
+				$(this).find('div.cross').show();
+			});
+			$('.files').on('mouseleave', 'li', function () {
+				console.log('leave');
+				$(this).find('div.cross').hide();
 			});
 		},
 		function (err) {
@@ -723,11 +905,11 @@ function GetGUID() {
 }
 
 function GetSize(bytes) {
-	if (bytes < 1024) { return bytes + ' b.'; }
-	else if (bytes < 1048576) { return (bytes / 1024).toFixed(2) + ' Kb.'; }
-	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(2) + ' Mb.'; }
+	if (bytes < 1024) { return bytes + ' b'; }
+	else if (bytes < 1048576) { return (bytes / 1024).toFixed(2) + ' Kb'; }
+	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(2) + ' Mb'; }
 	else if (bytes < 1099511627776) { return (bytes / 1073741824).toFixed(2) + ' Gb'; }
-	else { return (bytes / 1099511627776).toFixed(2) + ' Tb.'; }
+	else { return (bytes / 1099511627776).toFixed(2) + ' Tb'; }
 }
 
 function encodeRFC5987ValueChars(str) {
