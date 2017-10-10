@@ -476,6 +476,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 			//загрузка файлов-приложений
 			$clip.bind({
 				click: function (e) {
+					console.log('clip click');
 					if (readOnly) {
 						return;
 					}
@@ -491,6 +492,11 @@ function initQuill(id, guid, ownerid, readOnly) {
 					return false;
 				}
 			});    
+			$('div.clip').bind({
+				click: function (e) {
+					$clip.trigger('click');
+				}
+			});
 			$drop_zone.bind({
 				/*click: function (e) {
 					if (readOnly) {

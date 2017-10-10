@@ -339,6 +339,7 @@
 			}
 			
 			.progress-bar {
+				color: #000000;
 				background-color: #ff8800;
 				padding-left: 4px;
 			}
@@ -454,9 +455,9 @@
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
 						<div id="dropzone-wrap" class="float-right" style="z-index: 10000;">
-							<div id="dropzone" class="filedrag used">
-								<div class="clip" style="z-index: 10010;">
-									<input id="clip" class="clip" name="clip" multiple="multiple" type="file">
+							<div id="dropzone" class="filedrag used" style="z-index: 10005;">
+								<div class="clip">
+									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 10010;">
 								</div>
 								<ul id="files" class="files" waiting="0"></ul>
 							</div>
