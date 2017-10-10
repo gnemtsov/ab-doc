@@ -107,6 +107,19 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 	return $('<li s3key="' + key + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
 }
 
+function mimeTypeToIconURL(type) {
+	if (type.match('image.*')) {
+		return '/img/icons/photo.svg';
+	}
+	if (type.match('audio.*')) {
+		return '/img/icons/music.svg';
+	}
+	if (type.match('video.*')) {
+		return '/img/icons/video.svg';
+	}
+	return '/img/icons/portfolio.svg';
+}
+
 // Init editor and all it's stuff in #id
 function initQuill(id, guid, ownerid, readOnly) {
 	/*var $updated = $('#tm_updated_' + tm_id),
@@ -551,7 +564,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						var fileGUID = GetGUID();
 						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
-						var $li = genFileHTML(key, '/img/icons/book.svg', file.name, file.size);
+						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size);
 
 						$files.append($li);
 						$files.attr('waiting', Number($files.attr('waiting')) + 1);
@@ -569,6 +582,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						
 						//нужен promise, который вернёт key.
 						var uploaderPromise;
+						// TODO: rewrite to promise chain
 						var uploader = new Promise ( function(resolve, reject) {
 							readFilePromise.then(
 								function(blob) {						
