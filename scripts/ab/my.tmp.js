@@ -159,6 +159,13 @@ function initQuill(id, guid, ownerid, readOnly) {
 	
 	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
 		.then( function(files) {
+			// if we have files, show dropzone, hide it otherwise
+			if (files.length > 0) {
+				$drop_zone.addClass('used');
+			} else {
+				$drop_zone.removeClass('used');
+			}
+			
 			files.forEach( function(f) {
 				var params = {
 					Bucket: STORAGE_BUCKET,
@@ -340,6 +347,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					}
 				},
 				drop: function (e) {
+					console.log('editor.root.drop');
 					if (readOnly) {
 						return;
 					}
@@ -457,6 +465,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 						//загрузить прочие файлы, как приложения
 						if(non_image_files.length > 0){
+							console.log('non_image_files drop');
 							$drop_zone.data('files', non_image_files).trigger('drop');                    
 						}
 
@@ -507,6 +516,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					e.stopPropagation();
 				},
 				change: function (e) {
+					console.log('clip change');
 					if (readOnly) {
 						return;
 					}
@@ -518,6 +528,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 			});    
 			$('div.clip').bind({
 				click: function (e) {
+					
 					$clip.trigger('click');
 				}
 			});
@@ -557,6 +568,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					return false;
 				},
 				drop: function (e) {
+					console.log('dropzone.drop');
 					if (readOnly) {
 						return;
 					}
@@ -569,6 +581,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
 					$drop_zone.removeData('files');
 					$drop_zone.removeClass('highlighted');
+					$drop_zone.addClass('used');
 
 					var uploaders = new Array();
 					$.each(files, function (i, file) {
@@ -637,7 +650,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 										return Promise.resolve("abort");
 									}
 
-									$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
+									// replace it with finished version
+									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, true));
+
+									/*$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
 									$li.find('span.abort').removeClass('abort').addClass('remove');
 									$updated.show();
 
@@ -651,7 +667,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 											$(this).removeClass('pending');
 										}
 										$(this).text("Update time").fadeIn('fast'); //TODO
-									});
+									});*/
 								},
 								function (Error) { console.log(Error); }
 							)
@@ -707,7 +723,12 @@ function initQuill(id, guid, ownerid, readOnly) {
 					console.log(err, data);
 				});
 				$li.fadeOut('slow', function () {
+					// removing file from list!
 					$(this).remove();
+					// if no files in the list, hide dropzone
+					if ($('#files li').length === 0) {
+						$drop_zone.removeClass('used');
+					}
 				});
 				$files.attr('waiting', Number($files.attr('waiting')) - 1);
 
