@@ -122,6 +122,14 @@ function mimeTypeToIconURL(type) {
 	return '/img/icons/portfolio.svg';
 }
 
+// TODO
+function mimeTypeByExtension(ext) {
+	// Extenstion to MIME type
+	var em = {
+		'mp3': 'audio/mpeg'
+	}
+}
+
 // Init editor and all it's stuff in #id
 function initQuill(id, guid, ownerid, readOnly) {
 	/*var $updated = $('#tm_updated_' + tm_id),

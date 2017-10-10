@@ -281,18 +281,23 @@
 				width: 96px;
 				height: 96px;
 				top: -50px;
-				left: 200px;
+				right: 20px;
 			}
 
 			#dropzone {
-				width: 300px;
-				min-height: 300px;
+				width: 136px;
+				border-style: none;
 			}
 
 			#dropzone.used {
+				width: 300px;
+				min-height: 300px;
+				
 				background-color: #fff8f0;
 				border: 1px dashed #000000;
 			}
+			
+			
 			
 			img.file-icon {
 				width: 48px;
@@ -455,7 +460,7 @@
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
 						<div id="dropzone-wrap" class="float-right" style="z-index: 10000;">
-							<div id="dropzone" class="filedrag used" style="z-index: 10005;">
+							<div id="dropzone" class="filedrag" style="z-index: 10005;">
 								<div class="clip">
 									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 10010;">
 								</div>
