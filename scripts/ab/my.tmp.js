@@ -108,14 +108,16 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 }
 
 function mimeTypeToIconURL(type) {
-	if (type.match('image.*')) {
-		return '/img/icons/photo.svg';
-	}
-	if (type.match('audio.*')) {
-		return '/img/icons/music.svg';
-	}
-	if (type.match('video.*')) {
-		return '/img/icons/video.svg';
+	if (typeof type === 'string') {
+		if (type.match('image.*')) {
+			return '/img/icons/photo.svg';
+		}
+		if (type.match('audio.*')) {
+			return '/img/icons/music.svg';
+		}
+		if (type.match('video.*')) {
+			return '/img/icons/video.svg';
+		}
 	}
 	return '/img/icons/portfolio.svg';
 }
@@ -160,7 +162,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return;
 					}
 					
-					var $li = genFileHTML(f.Key, '/img/icons/book.svg', decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
+					console.log(f);
+					var $li = genFileHTML(f.Key, mimeTypeToIconURL(f.ContentType), decodeURIComponent(data.ContentDisposition.substring(29)), f.Size, true);
 					$files.append($li);			
 				});				
 			});
@@ -588,7 +591,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 								function(blob) {						
 									var params = {
 										Body: blob,
-										ContentType: 'application/octet-stream',
+										ContentType: file.type,
 										ContentDisposition: file.name,
 										Key: key,
 										ACL: 'public-read'
