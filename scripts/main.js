@@ -365,7 +365,6 @@ function listS3Files(prefix) {
 	return promise;
 }
 
-
 // prefix should not end with "/"
 /*function loadTree(prefix, username, tree, callback, errCallback) {
 	withS3Files(prefix+"/", function(files) {
@@ -568,6 +567,18 @@ $(document).ready( function() {
 			})
 	});
 });
+
+
+// Returns Promise (size, error)
+function getUserDirectorySize(userId) {
+	return listS3Files(userId + '/')
+		.then( function(files) {
+			return files.reduce( function(acc, f) {
+				return acc + f.Size;
+			}, 0);
+		});
+}
+
 
 //------------------------------------------------
 //-----------  Signing in, signing up  -----------
