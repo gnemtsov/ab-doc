@@ -257,6 +257,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 		}
 	}
 	
+	// unbind all events from dropzone
+	$('#dropzone-wrap').children().unbind();
+	
 	$('#editor').attr('ownerid', ownerid);
 	
 	var $content = $('#editor'),
