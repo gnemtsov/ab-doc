@@ -278,7 +278,7 @@
 				background-size: contain;
 				
 				position: absolute;
-				width: 64px;
+				width: 48px;
 				height: 64px;
 				top: -20px;
 				right: 6px;
@@ -315,8 +315,16 @@
 			}
 			
 			
+			/*==================*/
+			/* dropzone's files */
+			/*==================*/
 			
-			.file-name {
+			ul.files li {
+				clear: both;
+				margin-top: 12px;
+			}
+			
+			ul.files .file-name {
 				width: 228px;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -325,28 +333,61 @@
 				vertical-align: top;
 			}
 			
-			.file-name * {
+			ul.files .file-name * {
 				display: inline-block;
 				vertical-align: top;
 				font-size: 16px;
 			}
 			
 			/* file name without extension */
-			.file-name .fn {
+			ul.files .file-name .fn {
 				max-width: 200px;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap; 
 			}		
 			
-			.file-size {
-				/*width: 148px;*/
+			ul.files .file-size {
 				overflow: hidden;
 				text-overflow: ellipsis;
 				display: inline-block;
 				vertical-align: top;
 			}
-				
+			
+			ul.files .progress {
+				text-align: left;
+				width: 200px;
+				display: inline-block;
+			}
+			
+			ul.files .progress-bar {
+				color: #000000;
+				background-color: #ffcc90;
+				padding-left: 4px;
+			}
+			
+			/* first file */
+			ul.files li:first-child {
+				width: 250px;
+			}
+			
+			ul.files *:first-child .file-name {
+				width: 172px;
+			}
+			
+			ul.files *:first-child .file-name .fn {
+				max-width: 144px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap; 
+			}	
+						
+			ul.files *:first-child .progress {
+				width: 160px;
+			}			
+			
+			
+			
 			div.cross {
 				width: 12px;
 				height: 12px;
@@ -358,22 +399,8 @@
 				margin-top: 4px;
 			}	
 					
-			ul.files li {
-				clear: both;
-				margin-top: 12px;
-			}
 			
-			.progress {
-				text-align: left;
-				width: 200px;
-				display: inline-block;
-			}
 			
-			.progress-bar {
-				color: #000000;
-				background-color: #ffcc90;
-				padding-left: 4px;
-			}
 		</style>
 		
 		<style type="text/css">
