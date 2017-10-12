@@ -569,6 +569,11 @@ $(document).ready( function() {
 });
 
 
+
+//------------------------------------------------
+//---------- Size indicator and limit ------------
+//------------------------------------------------
+
 // Returns Promise (size, error)
 function getUserDirectorySize(userId) {
 	return listS3Files(userId + '/')
@@ -579,6 +584,11 @@ function getUserDirectorySize(userId) {
 		});
 }
 
+// GUI-only
+// filled - [0.0, 1.0]
+function updateIndicator(filled) {
+	
+}
 
 //------------------------------------------------
 //-----------  Signing in, signing up  -----------
