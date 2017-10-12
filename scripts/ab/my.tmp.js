@@ -23,7 +23,8 @@ function s3Uploader(params, onprogress) {
 		var progressPercents = progress.loaded * 100.0/ progress.total;
 		
 		if (onprogress instanceof Function) {
-			onprogress.call(this, Math.round(progressPercents));
+			//onprogress.call(this, Math.round(progressPercents));
+			onprogress.call(this, progressPercents);
 		}		
 	});
 
@@ -759,10 +760,13 @@ function initQuill(id, guid, ownerid, readOnly) {
 										ACL: 'public-read'
 									};
 									
+									var oldPercents = 0;
 									uploaderPromise = s3Uploader(params, function (percents) {
-										var oldPercents = parseInt($li.find('.progress-bar').css('width'), 10)
+										//console.log(oldPercents, ' ->', percents);
 										if (percents > oldPercents) {
+											//console.log('updating progress bar..');
 											$li.find('.progress-bar').css('width', percents + '%');
+											oldPercents = percents;
 										}
 									})
 									
