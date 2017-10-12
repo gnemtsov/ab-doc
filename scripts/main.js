@@ -133,6 +133,11 @@ var _translatorData = {
 		"ru": "Отмена",
 		"en": "Cancel"
 	},
+	
+	"emptyDropzoneMessage" :{
+		"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
+		"en": "Drop your files here, you can place pictures right in the text"
+	}
 }
 
 // ====================

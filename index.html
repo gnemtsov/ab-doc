@@ -285,9 +285,11 @@
 			}
 
 			#dropzone {
-				width: 136px;
+				width: 78px;
 				border-style: none;
 				background-color: #ffffff;
+				padding-left: 8px;
+				margin-bottom: 8px;
 			}
 
 			#dropzone.used {
@@ -306,6 +308,11 @@
 				background-color: #ffffff;		
 			}
 			
+			#dropzone.highlighted ul:empty::after {
+				content: attr(data-empty-message);
+				position: relative;
+				top: 120px;
+			}
 			
 			img.file-icon {
 				width: 38px;
@@ -365,6 +372,7 @@
 				color: #000000;
 				background-color: #ffd098;
 				padding-left: 4px;
+				white-space: nowrap; 
 			}
 			
 			/* first file */
@@ -519,7 +527,7 @@
 								<div class="clip">
 									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 1010;">
 								</div>
-								<ul id="files" class="files" waiting="0"></ul>
+								<ul id="files" class="files" waiting="0" attr-translate="data-empty-message" data-translate="emptyDropzoneMessage"></ul>
 							</div>
 						</div>
 						<div id="editor" class="message-content" waiting="0" modified="0"></div>
