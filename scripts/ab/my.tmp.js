@@ -296,6 +296,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 		$updated = $('#updated');
 		
 	$files.html('');
+	$drop_zone.removeClass('highlighted').removeClass('used');
 	
 	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
 		.then( function(files) {
@@ -406,6 +407,29 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$content.attr("modified", 1);
 				$updated.html(_translatorData['edited'][LANG]);
 				$updated.addClass('pending');
+			});
+			
+			console.log(editor);
+			
+			// unbind old
+			$('#document').unbind('drop');
+			$('#document').unbind('dragover');
+			$('#document').unbind('dragenter');
+			$('#document').unbind('dragleave');
+			// $(editor.root) is small. Let #document handle drop events too.
+			$('#document').bind({
+				drop: function(e) {
+					$(editor.root).trigger(e);
+				},
+				dragover: function (e) {
+					$(editor.root).trigger(e);
+				},
+				dragenter: function (e) {
+					$(editor.root).trigger(e);
+				},
+				dragleave: function (e) {
+					$(editor.root).trigger(e);
+				}
 			});
 			
 			//обработчики событий в редакторе
