@@ -94,11 +94,31 @@ function saveDocument(id) {
 	return s3Uploader(params);
 }
 
+// returns {n: "name", e: ".ext"}
+function splitNameAndExtension(fileName) {
+	console.log(fileName);
+	var s = fileName.split('.');
+	
+	if (s.length > 1) {
+		return {
+			e: '.' + s.pop(), // removes extension from s
+			n: s.join('.') // joins the rest of s
+		};
+	} else {
+		return {
+			n: s[0],
+			e: ''
+		};
+	};
+}
+
 // Returns HTML for file attachment
 function genFileHTML(key, iconURL, fileName, fileSize, finished) {
+	var x = splitNameAndExtension(fileName);
+	console.log(x);
 	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
-		fname = '<div class="file-name">' +
-				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) +
+		fname = '<div class="file-name" data-extension="' + x.e + '">' +
+				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '" data-extension="' + x.e + '">' + x.n + '</a>' : fileName) +
 				'</div>',
 		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',

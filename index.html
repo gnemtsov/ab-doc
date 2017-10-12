@@ -313,11 +313,29 @@
 				margin-top: 0px;
 			}
 			
+			
+			
 			.file-name {
 				width: 228px;
 				overflow: hidden;
 				text-overflow: ellipsis;
+				white-space: nowrap; 
 				display: inline-block;
+				vertical-align: top;
+			}
+			
+			.file-name a {
+				max-width: 200px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap; 
+				display: inline-block;
+				position: relative;
+			}			
+			
+			/* always show extension */
+			.file-name:after {
+				content: attr(data-extension);
 				vertical-align: top;
 			}
 			
