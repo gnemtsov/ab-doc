@@ -117,8 +117,14 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 	var x = splitNameAndExtension(fileName);
 	console.log(x);
 	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
-		fname = '<div class="file-name" data-extension="' + x.e + '">' +
-				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '" data-extension="' + x.e + '">' + x.n + '</a>' : fileName) +
+		fname = '<div class="file-name">' +
+				(finished ? 
+					'<a class="fn" href="' + AWS_CDN_ENDPOINT + key + '">' + x.n + '</a>' +
+					'<a class="fe" href="' + AWS_CDN_ENDPOINT + key + '">' + x.e + '</a>'
+					:
+					'<span class="fn">' + x.n + '</span>' +
+					'<span class="fe">' + x.e + '</span>'
+				) +
 				'</div>',
 		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
