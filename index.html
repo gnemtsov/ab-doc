@@ -437,6 +437,41 @@
 			}
 			
 			@keyframes spin  { to { transform: translateY( -15.0em); } }
+			
+			.small-preloader {
+				width: 80px;
+				text-align: center;
+			}
+
+			.small-preloader > div {
+				width: 18px;
+				height: 18px;
+				background-color: #333;
+
+				border-radius: 100%;
+				display: inline-block;
+				animation: sk-bouncedelay 0.9s infinite ease-in-out both;
+			}
+
+			.small-preloader .bounce1 {
+				animation-delay: -0.30s;
+			}
+
+			.small-preloader .bounce2 {
+				animation-delay: -0.15s;
+			}
+
+			@keyframes sk-bouncedelay {
+				0%{ 
+					transform: scale(0);
+				}
+				50% { 
+					transform: scale(1.0);
+				}
+				100% { 
+					transform: scale(0.0);
+				}
+			}
 		</style>
 		
 		<style type="text/css">
