@@ -7,7 +7,7 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   id="i-close"
+   id="i-paperclip"
    viewBox="0 0 32 32"
    width="32"
    height="32"
@@ -17,7 +17,7 @@
    stroke-linejoin="round"
    stroke-width="2"
    version="1.1"
-   sodipodi:docname="fat-cross.svg"
+   sodipodi:docname="paperclip2.svg"
    inkscape:version="0.92.1 r15371">
   <metadata
      id="metadata9">
@@ -27,7 +27,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -47,14 +47,14 @@
      id="namedview5"
      showgrid="false"
      inkscape:zoom="7.375"
-     inkscape:cx="-7.0508475"
+     inkscape:cx="16"
      inkscape:cy="16"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="i-close" />
+     inkscape:current-layer="i-paperclip" />
   <path
-     d="M2 30 L30 2 M30 30 L2 2"
+     d="M10 9 L10 24 C10 28 13 30 16 30 19 30 22 28 22 24 L22 6 C22 3 20 2 18 2 16 2 14 3 14 6 L14 23 C14 24 15 25 16 25 17 25 18 24 18 23 L18 9"
      id="path2"
-     style="stroke:#300000;stroke-opacity:1;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none" />
+     style="stroke:#b2b2b2;stroke-opacity:1" />
 </svg>
