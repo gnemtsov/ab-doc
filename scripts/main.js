@@ -239,58 +239,26 @@ function getObjectS3Params(params, errCallback) {
 	});
 }
 
-/*function removeTreeS3(treeNode, errCallback) {
-	var params = {
-		Bucket: "ab-doc-storage",
-		Key: buildPath(treeNode)
-	};
-	//console.log(treeNode.getPath());
-	s3.deleteObject(params, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}
-	});
-	
-	if(treeNode.isParent) {
-		treeNode.children.map(removeTreeS3);
-	}
-}
-
-function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
-	// If trying to move to the same location.
-	if (oldPrefix === newPrefix) {
-		return;
-	}
-
-	withS3Files(oldPrefix, function(files) {
-		// Copy each file to new location and remove old.
-		files.map( function(f) {
-			var oldKey = f.Key;
-			var newKey = newPrefix + f.Key.slice(oldPrefix.length);
-			var copyParams = {
-				Bucket: "ab-doc-storage",
-				CopySource: "/ab-doc-storage/" + oldKey,
-				Key: newKey
+function deleteRecursiveS3(key) {
+	return listS3Files(key)
+		.then( function(files) {
+			var params = {
+				Bucket = STORAGE_BUCKET;
+				Delete: {
+					Objects: []
+				}
 			};
 			
-			//console.log(newKey);
-			s3.copyObject(copyParams, function(err, data) {
-				if (err && (errCallback instanceof Function)) {
-					errCallback(err);
-				}
-				var deleteParams = {
-					Bucket: "ab-doc-storage",
-					Key: oldKey
-				};
-				s3.deleteObject(deleteParams, function(err, data) {
-					if (err && (errCallback instanceof Function)) {
-						errCallback(err);
-					}
-				});	
-			});	
+			files.forEach( function(f) {
+				params.Delete.Objects.push(f.Key);
+			});
+			
+			return Promise.resolve(params);
+		})
+		.then( function(params) {
+			return s3.deleteObjects(params).promise();
 		});
-	}, errCallback);
-}*/
+}
 
 // Loads list of files with specified prefix and passes each one to callback
 // Old. Use listS3Files instead
