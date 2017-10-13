@@ -1736,10 +1736,20 @@ function beforeRemove(treeId, treeNode) {
 	
 	var tree = $.fn.zTree.getZTreeObj(treeId);
 	$('#buttonDelete').click( function() {
-		deleteRecursiveS3(USERID + '/' + treeNode.id)
-			.catch( function(err) {
-				onError(err);
-			});
+		
+		// recursively go through all children
+		var f = function(n) {
+			if (n.children) {
+				n.children.map(f)
+			}
+			
+			deleteRecursiveS3(USERID + '/' + n.id)
+				.catch( function(err) {
+					onError(err);
+				});
+		};
+		f(treeNode);
+
 		tree.removeNode(treeNode, false);
 		$updated.addClass('pending');
 		$updated.show();
