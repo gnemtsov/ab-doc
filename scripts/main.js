@@ -554,27 +554,6 @@ $(document).ready( function() {
 });
 
 
-
-//------------------------------------------------
-//---------- Size indicator and limit ------------
-//------------------------------------------------
-
-// Returns Promise (size, error)
-function getUserDirectorySize(userId) {
-	return listS3Files(userId + '/')
-		.then( function(files) {
-			return files.reduce( function(acc, f) {
-				return acc + f.Size;
-			}, 0);
-		});
-}
-
-// GUI-only
-// filled - [0.0, 1.0]
-function updateIndicator(filled) {
-	
-}
-
 //------------------------------------------------
 //-----------  Signing in, signing up  -----------
 //------------------------------------------------
@@ -1813,4 +1792,44 @@ function onRename(event, treeId, treeNode, isCancel) {
 		$updated.show();
 		TREE_MODIFIED = true;
 	}
+}
+
+
+//------------------------------------------------
+//---------- Size indicator and limit ------------
+//------------------------------------------------
+
+// This section will be moved upper later.
+
+// Returns Promise (size, error)
+function getDirectorySize(key) {
+	return listS3Files(key + '/')
+		.then( function(files) {
+			return files.reduce( function(acc, f) {
+				return acc + f.Size;
+			}, 0);
+		});
+}
+
+// GUI-only
+// filled - [0.0, 1.0]
+function updateIndicator(filled) {
+	
+}
+
+var USER_USED_SPACE = 0,
+	USER_USED_SPACE_DELTA = 0,
+	MAX_USED_SPACE = 500 * 1024 * 1024; // 500 Mb
+
+function updateUsedSpace() {
+	// update variables, do nothing on error
+	getDirectorySize(USERID)
+		.then( function(size) {
+			USER_USED_SPACE = size;
+			USER_USED_SPACE_DELTA = 0;
+		});
+}
+
+function canUpload(size) {
+	return USER_USED_SPACE + USER_USED_SPACE_DELTA + size <= MAX_USED_SPACE;
 }
