@@ -273,88 +273,144 @@
 			}
 			
 			div.clip {
-				background-image: url(/img/icons/paperclip.svg);
+				background-image: url(/img/icons/paperclip2.svg);
 				background-repeat: no-repeat;
 				background-size: contain;
 				
 				position: absolute;
-				width: 96px;
-				height: 96px;
-				top: -60px;
-				right: 20px;
+				width: 48px;
+				height: 64px;
+				top: -20px;
+				right: 6px;
 			}
 
 			#dropzone {
-				width: 136px;
+				width: 78px;
 				border-style: none;
+				background-color: #ffffff;
+				padding-left: 8px;
+				margin-bottom: 8px;
 			}
 
 			#dropzone.used {
 				width: 300px;
 				min-height: 300px;
-				
-				background-color: #fff8f0;
+
 				border: 1px dashed #C0C0C0;
+				background-color: #ffffff;
 			}
 			
 			#dropzone.highlighted {
 				width: 300px;
 				min-height: 300px;
-				
-				background-color: #ffe0c0;
-				border: 1px dashed #000000;				
+
+				border: 1px dashed #000000;		
+				background-color: #ffffff;		
 			}
 			
+			#dropzone.highlighted ul:empty::after {
+				content: attr(data-empty-message);
+				position: relative;
+				top: 120px;
+			}
 			
 			img.file-icon {
-				width: 48px;
-				height: 48px;
+				width: 38px;
+				height: 38px;
 				float: left;
-				margin-top: 0px;
+				margin-top: 4px;
 			}
 			
-			.file-name {
-				width: 228px;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				display: inline-block;
-				vertical-align: top;
-			}
 			
-			.file-size {
-				/*width: 148px;*/
-				overflow: hidden;
-				text-overflow: ellipsis;
-				display: inline-block;
-				vertical-align: top;
-			}
-				
-			div.cross {
-				width: 12px;
-				height: 12px;
-				display: inline-block;
-				background-image: url(/img/icons/close.svg);
-				background-size: contain;
-				background-repeat: no-repeat;
-				margin-left: 8px;
-			}	
-					
+			/*==================*/
+			/* dropzone's files */
+			/*==================*/
+			
 			ul.files li {
 				clear: both;
 				margin-top: 12px;
+				height: 46px;
 			}
 			
-			.progress {
+			ul.files .file-name {
+				width: 228px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap; 
+				display: inline-block;
+				vertical-align: top;
+			}
+			
+			ul.files .file-name * {
+				display: inline-block;
+				vertical-align: top;
+				font-size: 16px;
+			}
+			
+			/* file name without extension */
+			ul.files .file-name .fn {
+				max-width: 200px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap; 
+			}		
+			
+			ul.files .file-size {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: inline-block;
+				vertical-align: top;
+			}
+			
+			ul.files .progress {
 				text-align: left;
 				width: 200px;
 				display: inline-block;
 			}
 			
-			.progress-bar {
+			ul.files .progress-bar {
 				color: #000000;
-				background-color: #ff8800;
+				background-color: #ffd098;
 				padding-left: 4px;
+				white-space: nowrap; 
 			}
+			
+			/* first file */
+			
+			ul.files li:first-child {
+				width: 250px;
+			}
+			
+			ul.files *:first-child .file-name {
+				width: 172px;
+			}
+			
+			ul.files *:first-child .file-name .fn {
+				max-width: 144px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap; 
+			}	
+						
+			ul.files *:first-child .progress {
+				width: 160px;
+			}			
+			
+			
+			
+			div.cross {
+				width: 12px;
+				height: 12px;
+				display: inline-block;
+				background-image: url(/img/icons/fat-cross.svg);
+				background-size: contain;
+				background-repeat: no-repeat;
+				margin-left: 8px;
+				margin-top: 4px;
+			}	
+					
+			
+			
 		</style>
 		
 		<style type="text/css">
@@ -381,6 +437,42 @@
 			}
 			
 			@keyframes spin  { to { transform: translateY( -15.0em); } }
+			
+			.small-preloader {
+				width: 80px;
+				text-align: center;
+			}
+
+			.small-preloader > div {
+				width: 8px;
+				height: 8px;
+				margin: 1px;
+				background-color: #606060;
+
+				border-radius: 100%;
+				display: inline-block;
+				animation: sk-bouncedelay 0.9s infinite ease-in-out both;
+			}
+
+			.small-preloader .bounce1 {
+				animation-delay: -0.30s;
+			}
+
+			.small-preloader .bounce2 {
+				animation-delay: -0.15s;
+			}
+
+			@keyframes sk-bouncedelay {
+				0%{ 
+					transform: scale(0);
+				}
+				50% { 
+					transform: scale(1.0);
+				}
+				100% { 
+					transform: scale(0.0);
+				}
+			}
 		</style>
 		
 		<style type="text/css">
@@ -466,12 +558,12 @@
 				<div id="document" class="ab-opened">
 					<h2 id="selectedDoc"></h2>
 					<div id="editor-wrap">
-						<div id="dropzone-wrap" class="float-right" style="z-index: 10000;">
-							<div id="dropzone" class="filedrag" style="z-index: 10005;">
+						<div id="dropzone-wrap" class="float-right" style="z-index: 1000;">
+							<div id="dropzone" class="filedrag" style="z-index: 1005;">
 								<div class="clip">
-									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 10010;">
+									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 1010;">
 								</div>
-								<ul id="files" class="files" waiting="0"></ul>
+								<ul id="files" class="files" waiting="0" attr-translate="data-empty-message" data-translate="emptyDropzoneMessage"></ul>
 							</div>
 						</div>
 						<div id="editor" class="message-content" waiting="0" modified="0"></div>

@@ -23,7 +23,8 @@ function s3Uploader(params, onprogress) {
 		var progressPercents = progress.loaded * 100.0/ progress.total;
 		
 		if (onprogress instanceof Function) {
-			onprogress.call(this, Math.round(progressPercents));
+			//onprogress.call(this, Math.round(progressPercents));
+			onprogress.call(this, progressPercents);
 		}		
 	});
 
@@ -94,11 +95,37 @@ function saveDocument(id) {
 	return s3Uploader(params);
 }
 
+// returns {n: "name", e: ".ext"}
+function splitNameAndExtension(fileName) {
+	console.log(fileName);
+	var s = fileName.split('.');
+	
+	if (s.length > 1) {
+		return {
+			e: '.' + s.pop(), // removes extension from s
+			n: s.join('.') // joins the rest of s
+		};
+	} else {
+		return {
+			n: s[0],
+			e: ''
+		};
+	};
+}
+
 // Returns HTML for file attachment
 function genFileHTML(key, iconURL, fileName, fileSize, finished) {
+	var x = splitNameAndExtension(fileName);
+	console.log(x);
 	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
 		fname = '<div class="file-name">' +
-				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' + fileName + '</a>' : fileName) +
+				(finished ? 
+					'<a class="fn" href="' + AWS_CDN_ENDPOINT + key + '">' + x.n + '</a>' +
+					'<a class="fe" href="' + AWS_CDN_ENDPOINT + key + '">' + x.e + '</a>'
+					:
+					'<span class="fn">' + x.n + '</span>' +
+					'<span class="fe">' + x.e + '</span>'
+				) +
 				'</div>',
 		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
@@ -258,7 +285,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 	}
 	
 	// unbind all events from dropzone
-	$('#dropzone-wrap').children().unbind();
+	$('#dropzone-wrap').find('*').unbind();
 	
 	$('#editor').attr('ownerid', ownerid);
 	
@@ -269,6 +296,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 		$updated = $('#updated');
 		
 	$files.html('');
+	$drop_zone.removeClass('highlighted').removeClass('used');
 	
 	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
 		.then( function(files) {
@@ -381,6 +409,29 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$updated.addClass('pending');
 			});
 			
+			console.log(editor);
+			
+			// unbind old
+			$('#document').unbind('drop');
+			$('#document').unbind('dragover');
+			$('#document').unbind('dragenter');
+			$('#document').unbind('dragleave');
+			// $(editor.root) is small. Let #document handle drop events too.
+			$('#document').bind({
+				drop: function(e) {
+					$(editor.root).trigger(e);
+				},
+				dragover: function (e) {
+					$(editor.root).trigger(e);
+				},
+				dragenter: function (e) {
+					$(editor.root).trigger(e);
+				},
+				dragleave: function (e) {
+					$(editor.root).trigger(e);
+				}
+			});
+			
 			//обработчики событий в редакторе
 			$(editor.root).bind({
 				//вставка изображения из буфера обмена
@@ -460,6 +511,30 @@ function initQuill(id, guid, ownerid, readOnly) {
 					if ($("html").hasClass("ie")) {
 						e.preventDefault();
 					}
+					
+					$drop_zone.addClass('highlighted');
+				},
+				dragenter: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
+					if ($("html").hasClass("ie")) {
+						e.preventDefault();
+					}
+					
+					$drop_zone.addClass('highlighted');
+				},
+				dragleave: function (e) {
+					if (readOnly) {
+						return;
+					}
+					
+					if ($("html").hasClass("ie")) {
+						e.preventDefault();
+					}
+					
+					$drop_zone.removeClass('highlighted');
 				},
 				drop: function (e) {
 					console.log('editor.root.drop');
@@ -583,9 +658,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 							console.log('non_image_files drop');
 							$drop_zone.data('files', non_image_files).trigger('drop');                    
 						}
-
 					}
-
 				}
 			});
 					
@@ -733,10 +806,13 @@ function initQuill(id, guid, ownerid, readOnly) {
 										ACL: 'public-read'
 									};
 									
+									var oldPercents = 0;
 									uploaderPromise = s3Uploader(params, function (percents) {
-										var oldPercents = parseInt($li.find('.progress-bar').css('width'), 10)
+										//console.log(oldPercents, ' ->', percents);
 										if (percents > oldPercents) {
+											//console.log('updating progress bar..');
 											$li.find('.progress-bar').css('width', percents + '%');
+											oldPercents = percents;
 										}
 									})
 									
@@ -767,22 +843,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 									// replace it with finished version
 									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, true));
-
-									/*$li.find('td.file-name').html('<a href="' + AWS_CDN_ENDPOINT + key + '">' + file.name + '</a>');
-									$li.find('span.abort').removeClass('abort').addClass('remove');
-									$updated.show();
-
-									// Тут было updateMessageFiles для записи в БД
-									// Мы не решили в БД буем хранить или в json-файле. 
-									// Пока будет простообновление UI
-
-									$li.find('td.file-progress').html('&nbsp;');
-									$updated.fadeOut('slow', function () {
-										if ($content.attr('modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-											$(this).removeClass('pending');
-										}
-										$(this).text("Update time").fadeIn('fast'); //TODO
-									});*/
 								},
 								function (Error) { console.log(Error); }
 							)
@@ -826,7 +886,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				
 				console.log('Removing ', key);
 				
-				$(this).replaceWith('<img src="/img/ajax-loader.gif" style="margin: -5px -1px 0px 0px;">');
+				$li.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
 				$updated.show().addClass('pending');
 
