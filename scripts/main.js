@@ -240,24 +240,36 @@ function getObjectS3Params(params, errCallback) {
 }
 
 function deleteRecursiveS3(key) {
+	console.log('deleteRecursiveS3', key);
 	return listS3Files(key)
 		.then( function(files) {
 			var params = {
-				Bucket = STORAGE_BUCKET;
+				Bucket: STORAGE_BUCKET,
 				Delete: {
 					Objects: []
 				}
 			};
 			
-			files.forEach( function(f) {
-				params.Delete.Objects.push(f.Key);
-			});
+			if (files.length > 0) {
+				files.forEach( function(f) {
+					params.Delete.Objects.push({Key: f.Key});
+				});
+				
+				console.log(params);
+				
+				return Promise.resolve(params);
+			}
 			
-			return Promise.resolve(params);
+			return Promise.reject('nothing to delete');
 		})
-		.then( function(params) {
-			return s3.deleteObjects(params).promise();
-		});
+		.then(
+			function(params) {
+				return s3.deleteObjects(params).promise();
+			},
+			function(err) {
+				return Promise.resolve('nothing to delete'); // It's ok
+			}
+		);
 }
 
 // Loads list of files with specified prefix and passes each one to callback
@@ -1724,6 +1736,10 @@ function beforeRemove(treeId, treeNode) {
 	
 	var tree = $.fn.zTree.getZTreeObj(treeId);
 	$('#buttonDelete').click( function() {
+		deleteRecursiveS3(USERID + '/' + treeNode.id)
+			.catch( function(err) {
+				onError(err);
+			});
 		tree.removeNode(treeNode, false);
 		$updated.addClass('pending');
 		$updated.show();
