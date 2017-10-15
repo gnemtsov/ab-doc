@@ -146,7 +146,7 @@ function mimeTypeToIconURL(type) {
 			return '/img/icons/video.svg';
 		}
 	}
-	return '/img/icons/portfolio.svg';
+	return '/img/icons/file-attachment.svg';
 }
 
 // mimeTypeByExtension is used only to detect audio, image and video.
@@ -188,6 +188,7 @@ function mimeTypeByExtension(ext) {
 		"g3": "image/g3fax",
 		"gif": "image/gif",
 		"ief": "image/ief",
+		"jpe": "image/x-citrix-jpeg",
 		"jpeg": "image/x-citrix-jpeg",
 		"jpg": "image/x-citrix-jpeg",
 		"ktx": "image/ktx",
