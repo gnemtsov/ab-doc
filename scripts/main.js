@@ -410,6 +410,7 @@ $(document).ready( function() {
 		})
 		.then( function() {
 			window.onhashchange();
+			updateUsedSpace();
 		})
 		.catch( function(err) {
 			switch(err.name) {
@@ -1319,7 +1320,7 @@ $(function () {
 });
 
 //-------------------------------------------------
-//----------- Timer (tree and document) -----------
+//------ Timer (tree, document, used space) -------
 //-------------------------------------------------
 
 $(function() {
@@ -1328,6 +1329,7 @@ $(function() {
 		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
 		
+		// TREE
 		if (TREE_MODIFIED) {
 			if (TREE_USERID === USERID) {
 				var zTree = $.fn.zTree.getZTreeObj("abTree");
@@ -1364,6 +1366,7 @@ $(function() {
 			TREE_MODIFIED = false;
 		}
 		
+		// EDITOR
 		$('#editor[modified="1"]').each(function (index, element) {
 			if (USERID === TREE_USERID) {
 				var $editor = $('#editor'),
@@ -1392,6 +1395,14 @@ $(function() {
 			}
 		});
 	}, 3000);
+	
+	// USED SPACE
+	// Update it less frequently	
+	setInterval(function () {
+		if (USER_USED_SPACE_CHANGED) {
+			updateUsedSpace();
+		}
+	}, 12000);
 });
 
 //---------------------------------------
@@ -1819,7 +1830,8 @@ function updateIndicator(filled) {
 
 var USER_USED_SPACE = 0,
 	USER_USED_SPACE_DELTA = 0,
-	MAX_USED_SPACE = 500 * 1024 * 1024; // 500 Mb
+	MAX_USED_SPACE = 500 * 1024 * 1024, // 500 Mb
+	USER_USED_SPACE_CHANGED = false;
 
 function updateUsedSpace() {
 	// update variables, do nothing on error
@@ -1827,9 +1839,21 @@ function updateUsedSpace() {
 		.then( function(size) {
 			USER_USED_SPACE = size;
 			USER_USED_SPACE_DELTA = 0;
+			USER_USED_SPACE_CHANGED = false;
+			console.log('Synchronized USER_USED_SPACE ', USER_USED_SPACE/1000000, 'Mb');
 		});
+}
+
+function getUsedSpace() {
+	return USER_USED_SPACE + USER_USED_SPACE_DELTA;
 }
 
 function canUpload(size) {
 	return USER_USED_SPACE + USER_USED_SPACE_DELTA + size <= MAX_USED_SPACE;
+}
+
+function updateUsedSpaceDelta(d) {
+	USER_USED_SPACE_DELTA += d;
+	USER_USED_SPACE_CHANGED = true;
+	console.log('Updated USER_USED_SPACE_DELTA ', USER_USED_SPACE_DELTA);
 }

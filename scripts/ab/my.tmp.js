@@ -131,7 +131,7 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
 	
-	return $('<li s3key="' + key + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
+	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
 }
 
 function mimeTypeToIconURL(type) {
@@ -491,7 +491,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 										delta.ops.push( { "retain": 1, attributes: { width: this.naturalWidth, height: this.naturalHeight } } );
 										editor.updateContents(delta, 'user');
 									});
-
+									
+									updateUsedSpaceDelta(blob.byteLength);
 								},
 								function (error) {
 									console.log(params, error);
@@ -600,6 +601,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 										
 										s3Uploader(params).then(
 											function(key) {
+												updateUsedSpaceDelta(blob.byteLength);
 												resolve(key);
 											},
 											function(err) {
@@ -722,15 +724,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 				}
 			});
 			$drop_zone.bind({
-				/*click: function (e) {
-					if (readOnly) {
-						return;
-					}
-					e.preventDefault();
-					e.stopPropagation();
-					$(this).find('#clip').trigger('click');
-					return false;
-				},*/
 				dragenter: function (e) {
 					if (readOnly) {
 						return;
@@ -763,9 +756,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 					}
 					e.preventDefault();
 					e.stopPropagation();
-					
-					//console.log('drop', e);
-					//console.log($(this).data('files'));
 
 					var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
 					$drop_zone.removeData('files');
@@ -819,6 +809,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 									
 									uploaderPromise.then(
 										function(key) {
+											updateUsedSpaceDelta(blob.byteLength);
 											resolve(key);
 										},
 										function(err) {
@@ -884,6 +875,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				
 				var $li = $(this).closest('li');
 				var key = $li.attr('s3key');
+				var size = parseFloat($li.attr('data-size'));
 				
 				console.log('Removing ', key);
 				
@@ -895,9 +887,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 				s3.deleteObject({
 					Bucket: STORAGE_BUCKET,
 					Key: key
-				}, function(err, data) {
-					console.log(err, data);
+				}).promise()
+				.then( function(data) {
+					updateUsedSpaceDelta(-size);
+				})
+				.catch( function(err) {
+					// TODO: couldn't delete file. Error message or something.
 				});
+				
 				$li.fadeOut('slow', function () {
 					// removing file from list!
 					$(this).remove();
