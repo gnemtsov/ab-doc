@@ -1402,7 +1402,7 @@ $(function() {
 		if (USER_USED_SPACE_CHANGED) {
 			updateUsedSpace();
 		}
-	}, 12000);
+	}, 5000);
 });
 
 //---------------------------------------
@@ -1734,6 +1734,9 @@ function beforeRemove(treeId, treeNode) {
 			}
 			
 			deleteRecursiveS3(USERID + '/' + n.id)
+				.then( function(ok) {
+					USER_USED_SPACE_CHANGED = true;
+				})
 				.catch( function(err) {
 					onError(err);
 				});
@@ -1823,9 +1826,42 @@ function getDirectorySize(key) {
 }
 
 // GUI-only
-// filled - [0.0, 1.0]
-function updateIndicator(filled) {
+function updateIndicator() {
+	var f = Math.min(1.0, (USER_USED_SPACE + USER_USED_SPACE_DELTA) / MAX_USED_SPACE);
 	
+	var canvas = $('#sizeIndicator')[0],
+		ctx = canvas.getContext('2d'),
+		w = canvas.width,
+		h = canvas.height;
+	
+	var topLX = w*0.05, topRX = w*0.95,
+		topLY = h*0.05, topRY = h*0.05,
+		botLX = w*0.10, botRX = w*0.90,
+		botLY = h*0.95, botRY = h*0.95,
+		edgeLX = topLX*f + botLX*(1.0 - f),
+		edgeRX = topRX*f + botRX*(1.0 - f),
+		edgeLY = topLY*f + botLY*(1.0 - f),
+		edgeRY = topRY*f + botRY*(1.0 - f);
+	
+	ctx.clearRect(0, 0, w, h);
+	
+	ctx.lineWidth = 0;
+	ctx.fillStyle = '#DD6600';
+	ctx.beginPath();
+	ctx.moveTo(edgeLX, edgeLY);
+	ctx.lineTo(botLX, botLY);
+	ctx.lineTo(botRX, botRY);
+	ctx.lineTo(edgeRX, edgeRY);
+	ctx.fill();
+	
+	ctx.lineWidth = 1.75;
+	ctx.strokeStyle = '#FFFFFF';
+	ctx.beginPath();
+	ctx.moveTo(topLX, topLY);
+	ctx.lineTo(botLX, botLY);
+	ctx.lineTo(botRX, botRY);
+	ctx.lineTo(topRX, topRY);
+	ctx.stroke();
 }
 
 var USER_USED_SPACE = 0,
@@ -1840,12 +1876,9 @@ function updateUsedSpace() {
 			USER_USED_SPACE = size;
 			USER_USED_SPACE_DELTA = 0;
 			USER_USED_SPACE_CHANGED = false;
+			updateIndicator();
 			console.log('Synchronized USER_USED_SPACE ', USER_USED_SPACE/1000000, 'Mb');
 		});
-}
-
-function getUsedSpace() {
-	return USER_USED_SPACE + USER_USED_SPACE_DELTA;
 }
 
 function canUpload(size) {
@@ -1855,5 +1888,5 @@ function canUpload(size) {
 function updateUsedSpaceDelta(d) {
 	USER_USED_SPACE_DELTA += d;
 	USER_USED_SPACE_CHANGED = true;
-	console.log('Updated USER_USED_SPACE_DELTA ', USER_USED_SPACE_DELTA);
+	updateIndicator();
 }

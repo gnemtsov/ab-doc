@@ -424,9 +424,10 @@
 			}	
 					
 			
+			/* canvas looks weird when setting size with css*/
 			#sizeIndicator {
-				width: 32px;
-				height: 32px;
+				width: 24px;
+				height: 24px;
 			}
 		</style>
 		
@@ -521,9 +522,9 @@
 	</head>
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
-			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></img></a>
-			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated"></img>
-			<canvas class="authenticated-mode" id="sizeIndicator"></canvas>
+			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></a>
+			<canvas class="authenticated-mode" id="sizeIndicator" width="24" height="24"></canvas>
+			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated">
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 			</button>
