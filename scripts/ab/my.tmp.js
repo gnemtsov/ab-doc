@@ -10,8 +10,9 @@ function isFilePaste(event) {
 }
 
 // s3 file uploader
+// set updateFlag to true to update size indicator
 // Returns Promise(key) with abort() method.
-function s3Uploader(params, onprogress) {
+function s3Uploader(params, onprogress, updateFlag) {
 	//console.log(params);
 	
 	if (params.ContentDisposition) {
@@ -29,21 +30,38 @@ function s3Uploader(params, onprogress) {
 	});
 
 	var reqPromise = request.promise();
+	var promise = reqPromise
+		.then( function (data) {
+			return Promise.resolve(params.Key);
+		});
 
-	var promise = new Promise( function (resolve, reject) {
-		reqPromise.then(
-			function (data) {
-				resolve(params.Key);
-			},
-			function (err) {
-				reject(err);
+	
+	// Body can be File or ArrayBuffer. Maybe this line should be rewritten....
+	var size = (params.Body.size) ? (params.Body.size) : (params.Body.byteLength);
+	// update pending used space
+	console.log('Body: ', params.Body, 'size: ', size);
+	if (updateFlag) {
+		updateUsedSpacePending(size);
+	}
+	promise
+		.then(function(ok) {
+			if (updateFlag) {
+				updateUsedSpacePending(-size);
+				updateUsedSpaceDelta(size);
 			}
-		);
-	});
-
+		});
+	promise
+		.catch(function(err) {
+			if (updateFlag) {
+				updateUsedSpacePending(-size);
+			}
+		});
 	promise.abort = function () {
 		request.abort();
 		console.log('Upload aborted');
+		if (updateFlag) {
+			updateUsedSpacePending(-size);
+		}
 	};
 	
 	return promise;
@@ -131,7 +149,7 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
 	
-	return $('<li s3key="' + key + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
+	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
 }
 
 function mimeTypeToIconURL(type) {
@@ -449,6 +467,12 @@ function initQuill(id, guid, ownerid, readOnly) {
 						var blob = item.getAsFile();
 						console.log('paste', item);
 						if (item.kind === "file" && item.type === "image/png" && blob !== null) {
+							// exit if we don't have enough space
+							if (!canUpload(blob.size)) {
+								console.log('No space left', blob);
+								onWarning(_translatorData['noSpace'][LANG]);
+								return;
+							}
 
 							$updated.addClass('pending');
 							$updated.show();
@@ -471,7 +495,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 								console.log(p, '%');
 							}
 
-							s3Uploader(params, onprogress).then(
+							s3Uploader(params, onprogress, true).then(
 								function (key) {
 									console.log(key);
 									var delta = { ops: [] };
@@ -491,7 +515,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 										delta.ops.push( { "retain": 1, attributes: { width: this.naturalWidth, height: this.naturalHeight } } );
 										editor.updateContents(delta, 'user');
 									});
-
 								},
 								function (error) {
 									console.log(params, error);
@@ -564,13 +587,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 								non_image_files.push(f);
 								continue;
 							}
-
-							$updated.addClass('pending');
-							$updated.show();
-							$content.attr('waiting', Number($content.attr('waiting')) + 1);
-							editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 							
 							var _f = f; // f changes on each iteration
+							console.log(_f);
 							
 							var readFilePromise = new Promise ( function(resolve, reject) {
 								var fr = new FileReader();
@@ -582,37 +601,28 @@ function initQuill(id, guid, ownerid, readOnly) {
 							});
 							
 							//загружаем картинку в S3 и добавляем promise в массив uploaders
-							
-							//нужен promise, который вернёт key.
-							var uploader = new Promise ( function(resolve, reject) {
-								readFilePromise.then(
-									function(blob) {
-										var picGUID = GetGUID(),
-											key = USERID + '/' + guid + '/' + picGUID + '.png';	
-																	
-										var params = {
-											Body: blob,
-											ContentType: _f.type,
-											ContentDisposition: _f.name,
-											Key: key,
-											ACL: 'public-read'
-										};
-										
-										s3Uploader(params).then(
-											function(key) {
-												resolve(key);
-											},
-											function(err) {
-												reject(err);
-											}
-										);
-									},
-									function(err) {
-										reject(err);
+							var uploader = readFilePromise
+								.then( function(blob) {
+									if (!canUpload(blob.byteLength)) {
+										console.log('No space left', blob);
+										onWarning(_translatorData['noSpace'][LANG]);
+										return Promise.reject('No space left');
 									}
-								);
-							});
-							
+									
+									$updated.addClass('pending');
+									$updated.show();
+									$content.attr('waiting', Number($content.attr('waiting')) + 1);
+									editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
+									
+									return s3Uploader({
+										Body: blob,
+										ContentType: _f.type,
+										ContentDisposition: _f.name,
+										Key: ownerid + '/' + guid + '/' + GetGUID(),
+										ACL: 'public-read'										
+									}, undefined, true)
+								});
+								
 							uploaders.push(uploader);
 						}
 
@@ -722,15 +732,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 				}
 			});
 			$drop_zone.bind({
-				/*click: function (e) {
-					if (readOnly) {
-						return;
-					}
-					e.preventDefault();
-					e.stopPropagation();
-					$(this).find('#clip').trigger('click');
-					return false;
-				},*/
 				dragenter: function (e) {
 					if (readOnly) {
 						return;
@@ -763,9 +764,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 					}
 					e.preventDefault();
 					e.stopPropagation();
-					
-					//console.log('drop', e);
-					//console.log($(this).data('files'));
 
 					var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
 					$drop_zone.removeData('files');
@@ -779,11 +777,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size);
 
-						$files.append($li);
-						$files.attr('waiting', Number($files.attr('waiting')) + 1);
-						$updated.addClass('pending');
-						$updated.show();
-
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
 							fr.onload = function(event) {
@@ -796,9 +789,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 						//нужен promise, который вернёт key.
 						var uploaderPromise;
 						// TODO: rewrite to promise chain
-						var uploader = new Promise ( function(resolve, reject) {
-							readFilePromise.then(
-								function(blob) {						
+						var uploader = readFilePromise
+								.then( function(blob) {						
 									var params = {
 										Body: blob,
 										ContentType: file.type,
@@ -806,6 +798,17 @@ function initQuill(id, guid, ownerid, readOnly) {
 										Key: key,
 										ACL: 'public-read'
 									};
+									
+									if (!canUpload(blob.byteLength)) {
+										console.log('No space left', blob);
+										onWarning(_translatorData['noSpace'][LANG]);
+										return Promise.reject('No space left');
+									}
+
+									$files.append($li);
+									$files.attr('waiting', Number($files.attr('waiting')) + 1);
+									$updated.addClass('pending');
+									$updated.show();
 									
 									var oldPercents = 0;
 									uploaderPromise = s3Uploader(params, function (percents) {
@@ -815,22 +818,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 											$li.find('.progress-bar').css('width', percents + '%');
 											oldPercents = percents;
 										}
-									})
-									
-									uploaderPromise.then(
-										function(key) {
-											resolve(key);
-										},
-										function(err) {
-											reject(err);
-										}
-									);
-								},
-								function(err) {
-									reject(err);
-								}
-							);
-						});
+									}, true);
+									return uploaderPromise;
+								})
+								.catch( function(err) {
+									if (err !== 'No space left') {
+										onError(err);
+									}
+								});
 						uploader.abort = function () {
 							uploaderPromise.abort();
 						}
@@ -884,6 +879,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				
 				var $li = $(this).closest('li');
 				var key = $li.attr('s3key');
+				var size = parseFloat($li.attr('data-size'));
 				
 				console.log('Removing ', key);
 				
@@ -895,9 +891,14 @@ function initQuill(id, guid, ownerid, readOnly) {
 				s3.deleteObject({
 					Bucket: STORAGE_BUCKET,
 					Key: key
-				}, function(err, data) {
-					console.log(err, data);
+				}).promise()
+				.then( function(data) {
+					updateUsedSpaceDelta(-size);
+				})
+				.catch( function(err) {
+					// TODO: couldn't delete file. Error message or something.
 				});
+				
 				$li.fadeOut('slow', function () {
 					// removing file from list!
 					$(this).remove();

@@ -424,7 +424,16 @@
 			}	
 					
 			
+			/* canvas looks weird when setting size with css*/
+			#sizeIndicator {
+				width: 24px;
+				height: 24px;
+			}
 			
+			#updated {
+				width: 24px;
+				height: 24px;
+			}
 		</style>
 		
 		<style type="text/css">
@@ -518,8 +527,9 @@
 	</head>
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
-			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></img></a>
-			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated"></img>
+			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></a>
+			<canvas class="authenticated-mode" id="sizeIndicator" width="24" height="24"></canvas>
+			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated">
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 			</button>
@@ -548,14 +558,15 @@
 		</nav>
 
 		<div class="container-fluid">
-			<div class="row justify-content-center">
-				<div class="col-4">
-					<div class="alert alert-danger collapse" role="alert" id="alertError">
-						<span id="spanSomethingWentWrong" data-translate="somethingWentWrong"></span>
-						<a href="/index.html" id="linkReturn" data-translate="return"></a>
-					</div>
-				</div>		
-			</div>
+			<!--div class="row justify-content-center">
+				<div class="alert alert-danger collapse col-4" role="alert" id="alertError" style="z-index: 1045;">
+					<span id="spanSomethingWentWrong" data-translate="somethingWentWrong"></span>
+					<a href="/index.html" id="linkReturn" data-translate="return"></a>
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>	
+			</div-->
 
 			<div class="row preloader-container justify-content-center">
 				<span class="preloader"></span>

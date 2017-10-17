@@ -137,6 +137,10 @@ var _translatorData = {
 	"emptyDropzoneMessage" :{
 		"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
 		"en": "Drop your files here, you can place pictures right in the text"
+	},
+	"noSpace": {
+		"ru": "Недостаточно места для загрузки файла",
+		"en": "No space left to upload this file"
 	}
 }
 
@@ -239,58 +243,38 @@ function getObjectS3Params(params, errCallback) {
 	});
 }
 
-/*function removeTreeS3(treeNode, errCallback) {
-	var params = {
-		Bucket: "ab-doc-storage",
-		Key: buildPath(treeNode)
-	};
-	//console.log(treeNode.getPath());
-	s3.deleteObject(params, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}
-	});
-	
-	if(treeNode.isParent) {
-		treeNode.children.map(removeTreeS3);
-	}
-}
-
-function moveTreeS3(tree, oldPrefix, newPrefix, errCallback) {
-	// If trying to move to the same location.
-	if (oldPrefix === newPrefix) {
-		return;
-	}
-
-	withS3Files(oldPrefix, function(files) {
-		// Copy each file to new location and remove old.
-		files.map( function(f) {
-			var oldKey = f.Key;
-			var newKey = newPrefix + f.Key.slice(oldPrefix.length);
-			var copyParams = {
-				Bucket: "ab-doc-storage",
-				CopySource: "/ab-doc-storage/" + oldKey,
-				Key: newKey
+function deleteRecursiveS3(key) {
+	console.log('deleteRecursiveS3', key);
+	return listS3Files(key)
+		.then( function(files) {
+			var params = {
+				Bucket: STORAGE_BUCKET,
+				Delete: {
+					Objects: []
+				}
 			};
 			
-			//console.log(newKey);
-			s3.copyObject(copyParams, function(err, data) {
-				if (err && (errCallback instanceof Function)) {
-					errCallback(err);
-				}
-				var deleteParams = {
-					Bucket: "ab-doc-storage",
-					Key: oldKey
-				};
-				s3.deleteObject(deleteParams, function(err, data) {
-					if (err && (errCallback instanceof Function)) {
-						errCallback(err);
-					}
-				});	
-			});	
-		});
-	}, errCallback);
-}*/
+			if (files.length > 0) {
+				files.forEach( function(f) {
+					params.Delete.Objects.push({Key: f.Key});
+				});
+				
+				console.log(params);
+				
+				return Promise.resolve(params);
+			}
+			
+			return Promise.reject('nothing to delete');
+		})
+		.then(
+			function(params) {
+				return s3.deleteObjects(params).promise();
+			},
+			function(err) {
+				return Promise.resolve('nothing to delete'); // It's ok
+			}
+		);
+}
 
 // Loads list of files with specified prefix and passes each one to callback
 // Old. Use listS3Files instead
@@ -370,7 +354,6 @@ function listS3Files(prefix) {
 	return promise;
 }
 
-
 // prefix should not end with "/"
 /*function loadTree(prefix, username, tree, callback, errCallback) {
 	withS3Files(prefix+"/", function(files) {
@@ -395,13 +378,43 @@ function listS3Files(prefix) {
 
 // zTree /\
 
+function _errorPopover(c) {
+	$('nav').popover({
+		content: c,
+		container: 'nav',
+		animation: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		template: '\
+			<div class="popover bg-danger" role="tooltip">\
+				<div class="popover-body text-light"></div>\
+			</div>'
+	});
+}
+
 function onError(err) {
-	if (err) {
+	/*if (err) {
 		console.log("Error!", err);
 	}
 	$('.preloader-container').hide();
 	$('#alertError').show();
-	return;
+	return;*/
+	
+	$('.preloader-container').hide();
+	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 5000);
+}
+
+function onWarning(msg) {
+	$('.preloader-container').hide();
+	_errorPopover(msg);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 2500);
 }
 
 var s3;
@@ -431,6 +444,7 @@ $(document).ready( function() {
 		})
 		.then( function() {
 			window.onhashchange();
+			updateUsedSpace();
 		})
 		.catch( function(err) {
 			switch(err.name) {
@@ -573,6 +587,7 @@ $(document).ready( function() {
 			})
 	});
 });
+
 
 //------------------------------------------------
 //-----------  Signing in, signing up  -----------
@@ -1339,7 +1354,7 @@ $(function () {
 });
 
 //-------------------------------------------------
-//----------- Timer (tree and document) -----------
+//------ Timer (tree, document, used space) -------
 //-------------------------------------------------
 
 $(function() {
@@ -1348,6 +1363,7 @@ $(function() {
 		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
 		
+		// TREE
 		if (TREE_MODIFIED) {
 			if (TREE_USERID === USERID) {
 				var zTree = $.fn.zTree.getZTreeObj("abTree");
@@ -1384,6 +1400,7 @@ $(function() {
 			TREE_MODIFIED = false;
 		}
 		
+		// EDITOR
 		$('#editor[modified="1"]').each(function (index, element) {
 			if (USERID === TREE_USERID) {
 				var $editor = $('#editor'),
@@ -1412,6 +1429,14 @@ $(function() {
 			}
 		});
 	}, 3000);
+	
+	// USED SPACE
+	// Update it less frequently	
+	setInterval(function () {
+		if (USER_USED_SPACE_CHANGED) {
+			updateUsedSpace();
+		}
+	}, 5000);
 });
 
 //---------------------------------------
@@ -1735,6 +1760,23 @@ function beforeRemove(treeId, treeNode) {
 	
 	var tree = $.fn.zTree.getZTreeObj(treeId);
 	$('#buttonDelete').click( function() {
+		
+		// recursively go through all children
+		var f = function(n) {
+			if (n.children) {
+				n.children.map(f)
+			}
+			
+			deleteRecursiveS3(USERID + '/' + n.id)
+				.then( function(ok) {
+					USER_USED_SPACE_CHANGED = true;
+				})
+				.catch( function(err) {
+					onError(err);
+				});
+		};
+		f(treeNode);
+
 		tree.removeNode(treeNode, false);
 		$updated.addClass('pending');
 		$updated.show();
@@ -1798,4 +1840,104 @@ function onRename(event, treeId, treeNode, isCancel) {
 		$updated.show();
 		TREE_MODIFIED = true;
 	}
+}
+
+
+//------------------------------------------------
+//---------- Size indicator and limit ------------
+//------------------------------------------------
+
+// This section will be moved upper later.
+
+// Returns Promise (size, error)
+function getDirectorySize(key) {
+	return listS3Files(key + '/')
+		.then( function(files) {
+			return files.reduce( function(acc, f) {
+				return acc + f.Size;
+			}, 0);
+		});
+}
+
+// GUI-only
+function updateIndicator() {
+	var f = Math.min(1.0, (USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING) / MAX_USED_SPACE);
+	
+	var canvas = $('#sizeIndicator')[0],
+		ctx = canvas.getContext('2d'),
+		w = canvas.width,
+		h = canvas.height;
+	
+	var topLX = w*0.05, topRX = w*0.95,
+		topLY = h*0.05, topRY = h*0.05,
+		botLX = w*0.10, botRX = w*0.90,
+		botLY = h*0.95, botRY = h*0.95,
+		edgeLX = topLX*f + botLX*(1.0 - f),
+		edgeRX = topRX*f + botRX*(1.0 - f),
+		edgeLY = topLY*f + botLY*(1.0 - f),
+		edgeRY = topRY*f + botRY*(1.0 - f);
+	
+	ctx.clearRect(0, 0, w, h);
+	
+	ctx.lineWidth = 0;
+	ctx.fillStyle = '#DD6600';
+	ctx.beginPath();
+	ctx.moveTo(edgeLX, edgeLY);
+	ctx.lineTo(botLX, botLY);
+	ctx.lineTo(botRX, botRY);
+	ctx.lineTo(edgeRX, edgeRY);
+	ctx.fill();
+	
+	ctx.lineWidth = 1.75;
+	ctx.strokeStyle = '#FFFFFF';
+	ctx.beginPath();
+	ctx.moveTo(topLX, topLY);
+	ctx.lineTo(botLX, botLY);
+	ctx.lineTo(botRX, botRY);
+	ctx.lineTo(topRX, topRY);
+	ctx.stroke();
+}
+
+var USER_USED_SPACE = 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
+	USER_USED_SPACE_DELTA = 0, // Temporary value. It is changed every time we finish file upload or delete file.
+								// It's erased after calculating USER_USED_SPACE
+	USER_USED_SPACE_PENDING = 0, // Size of uploads in progress.
+								// It is changed every time upload is started, finished or aborted.
+								// It is NOT erased after calculating USER_USED_SPACE
+	MAX_USED_SPACE = 500 * 1024 * 1024, // 500 Mb
+	USER_USED_SPACE_CHANGED = false;
+
+function updateUsedSpace() {
+	// update variables, do nothing on error
+	getDirectorySize(USERID)
+		.then( function(size) {
+			USER_USED_SPACE = size;
+			USER_USED_SPACE_DELTA = 0;
+			USER_USED_SPACE_CHANGED = false;
+			updateIndicator();
+			console.log('Synchronized USER_USED_SPACE ', USER_USED_SPACE/1000000, 'Mb');
+		});
+}
+
+function canUpload(size) {
+	return USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING + size <= MAX_USED_SPACE;
+}
+
+function updateUsedSpaceDelta(d) {
+	if (typeof(d) !== 'number') {
+		console.log('updateUsedSpaceDelta wrong d:', d);
+		return;
+	}
+	USER_USED_SPACE_DELTA += d;
+	USER_USED_SPACE_CHANGED = true;
+	updateIndicator();
+}
+
+function updateUsedSpacePending(p) {
+	if (typeof(p) !== 'number') {
+		console.log('updateUsedSpacePending wrong p:', p);
+		return;
+	}
+	USER_USED_SPACE_PENDING += p
+	updateIndicator();
 }
