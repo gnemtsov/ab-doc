@@ -137,6 +137,10 @@ var _translatorData = {
 	"emptyDropzoneMessage" :{
 		"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
 		"en": "Drop your files here, you can place pictures right in the text"
+	},
+	"noSpace": {
+		"ru": "Недостаточно места для загрузки файла",
+		"en": "No space left to upload this file"
 	}
 }
 
@@ -381,6 +385,10 @@ function onError(err) {
 	$('.preloader-container').hide();
 	$('#alertError').show();
 	return;
+}
+
+function onWarning(msg) {
+	$('#alertError').show();
 }
 
 var s3;

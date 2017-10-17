@@ -449,6 +449,11 @@ function initQuill(id, guid, ownerid, readOnly) {
 						var blob = item.getAsFile();
 						console.log('paste', item);
 						if (item.kind === "file" && item.type === "image/png" && blob !== null) {
+							// exit if we don't have enough space
+							if (!canUpload(blob.size)) {
+								console.log('No space left', blob);
+								return;
+							}
 
 							$updated.addClass('pending');
 							$updated.show();
@@ -492,7 +497,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 										editor.updateContents(delta, 'user');
 									});
 									
-									updateUsedSpaceDelta(blob.byteLength);
+									updateUsedSpaceDelta(blob.size);
 								},
 								function (error) {
 									console.log(params, error);
@@ -565,13 +570,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 								non_image_files.push(f);
 								continue;
 							}
-
-							$updated.addClass('pending');
-							$updated.show();
-							$content.attr('waiting', Number($content.attr('waiting')) + 1);
-							editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 							
 							var _f = f; // f changes on each iteration
+							console.log(_f);
 							
 							var readFilePromise = new Promise ( function(resolve, reject) {
 								var fr = new FileReader();
@@ -583,38 +584,34 @@ function initQuill(id, guid, ownerid, readOnly) {
 							});
 							
 							//загружаем картинку в S3 и добавляем promise в массив uploaders
-							
-							//нужен promise, который вернёт key.
-							var uploader = new Promise ( function(resolve, reject) {
-								readFilePromise.then(
-									function(blob) {
-										var picGUID = GetGUID(),
-											key = USERID + '/' + guid + '/' + picGUID + '.png';	
-																	
-										var params = {
-											Body: blob,
-											ContentType: _f.type,
-											ContentDisposition: _f.name,
-											Key: key,
-											ACL: 'public-read'
-										};
-										
-										s3Uploader(params).then(
-											function(key) {
-												updateUsedSpaceDelta(blob.byteLength);
-												resolve(key);
-											},
-											function(err) {
-												reject(err);
-											}
-										);
-									},
-									function(err) {
-										reject(err);
+							var _blob; // кривой код
+							var uploader = readFilePromise
+								.then( function(blob) {
+									if (!canUpload(blob.byteLength)) {
+										console.log('No space left', blob);
+										onWarning(_translatorData['noSpace'][LANG]);
+										return Promise.reject('No space left');
 									}
-								);
-							});
-							
+									
+									$updated.addClass('pending');
+									$updated.show();
+									$content.attr('waiting', Number($content.attr('waiting')) + 1);
+									editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
+									
+									_blob = blob;
+									return s3Uploader({
+										Body: blob,
+										ContentType: _f.type,
+										ContentDisposition: _f.name,
+										Key: ownerid + '/' + guid + '/' + GetGUID(),
+										ACL: 'public-read'										
+									})
+								})
+								.then( function(key) {
+									updateUsedSpaceDelta(_blob.byteLength);
+									return Promise.resolve(key);									
+								});
+								
 							uploaders.push(uploader);
 						}
 
