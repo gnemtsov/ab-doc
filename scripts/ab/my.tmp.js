@@ -40,23 +40,28 @@ function s3Uploader(params, onprogress, updateFlag) {
 	var size = (params.Body.size) ? (params.Body.size) : (params.Body.byteLength);
 	// update pending used space
 	console.log('Body: ', params.Body, 'size: ', size);
-	updateUsedSpacePending(size);
+	if (updateFlag) {
+		updateUsedSpacePending(size);
+	}
 	promise
 		.then(function(ok) {
-			console.log('size ', size);
-			updateUsedSpacePending(-size);
-			updateUsedSpaceDelta(size);
+			if (updateFlag) {
+				updateUsedSpacePending(-size);
+				updateUsedSpaceDelta(size);
+			}
 		});
 	promise
 		.catch(function(err) {
-			console.log('size ', size);
-			updateUsedSpacePending(-size);
+			if (updateFlag) {
+				updateUsedSpacePending(-size);
+			}
 		});
 	promise.abort = function () {
 		request.abort();
 		console.log('Upload aborted');
-		console.log('size ', size);
-		updateUsedSpacePending(-size);
+		if (updateFlag) {
+			updateUsedSpacePending(-size);
+		}
 	};
 	
 	return promise;
@@ -490,7 +495,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 								console.log(p, '%');
 							}
 
-							s3Uploader(params, onprogress).then(
+							s3Uploader(params, onprogress, true).then(
 								function (key) {
 									console.log(key);
 									var delta = { ops: [] };
@@ -615,7 +620,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 										ContentDisposition: _f.name,
 										Key: ownerid + '/' + guid + '/' + GetGUID(),
 										ACL: 'public-read'										
-									})
+									}, undefined, true)
 								});
 								
 							uploaders.push(uploader);
@@ -813,7 +818,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 											$li.find('.progress-bar').css('width', percents + '%');
 											oldPercents = percents;
 										}
-									});
+									}, true);
 									return uploaderPromise;
 								})
 								.catch( function(err) {
