@@ -1835,7 +1835,7 @@ function getDirectorySize(key) {
 
 // GUI-only
 function updateIndicator() {
-	var f = Math.min(1.0, (USER_USED_SPACE + USER_USED_SPACE_DELTA) / MAX_USED_SPACE);
+	var f = Math.min(1.0, (USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING) / MAX_USED_SPACE);
 	
 	var canvas = $('#sizeIndicator')[0],
 		ctx = canvas.getContext('2d'),
@@ -1872,8 +1872,12 @@ function updateIndicator() {
 	ctx.stroke();
 }
 
-var USER_USED_SPACE = 0,
-	USER_USED_SPACE_DELTA = 0,
+var USER_USED_SPACE = 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
+	USER_USED_SPACE_DELTA = 0, // Temporary value. It is changed every time we finish file upload or delete file.
+								// It's erased after calculating USER_USED_SPACE
+	USER_USED_SPACE_PENDING = 0, // Size of uploads in progress.
+								// It is changed every time upload is started, finished or aborted.
+								// It is NOT erased after calculating USER_USED_SPACE
 	MAX_USED_SPACE = 500 * 1024 * 1024, // 500 Mb
 	USER_USED_SPACE_CHANGED = false;
 
@@ -1890,11 +1894,16 @@ function updateUsedSpace() {
 }
 
 function canUpload(size) {
-	return USER_USED_SPACE + USER_USED_SPACE_DELTA + size <= MAX_USED_SPACE;
+	return USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING + size <= MAX_USED_SPACE;
 }
 
 function updateUsedSpaceDelta(d) {
 	USER_USED_SPACE_DELTA += d;
 	USER_USED_SPACE_CHANGED = true;
+	updateIndicator();
+}
+
+function updateUsedSpacePending(p) {
+	USER_USED_SPACE_PENDING += p
 	updateIndicator();
 }

@@ -29,21 +29,29 @@ function s3Uploader(params, onprogress) {
 	});
 
 	var reqPromise = request.promise();
+	var promise = reqPromise
+		.then( function (data) {
+			return Promise.resolve(params.Key);
+		});
 
-	var promise = new Promise( function (resolve, reject) {
-		reqPromise.then(
-			function (data) {
-				resolve(params.Key);
-			},
-			function (err) {
-				reject(err);
-			}
-		);
-	});
-
+	
+	// Body can be File or ArrayBuffer. Maybe this line should be rewritten....
+	var size = params.Body.size ? params.Body.size : params.Body.byteLength;
+	// update pending used space
+	updateUsedSpacePending(size);
+	promise
+		.then(function(ok) {
+			updateUsedSpacePending(-size);
+			updateUsedSpaceDelta(size);
+		});
+	promise
+		.catch(function(err) {
+			updateUsedSpacePending(-size);
+		});
 	promise.abort = function () {
 		request.abort();
 		console.log('Upload aborted');
+		updateUsedSpacePending(-size);
 	};
 	
 	return promise;
@@ -452,6 +460,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 							// exit if we don't have enough space
 							if (!canUpload(blob.size)) {
 								console.log('No space left', blob);
+								onWarning(_translatorData['noSpace'][LANG]);
 								return;
 							}
 
@@ -496,8 +505,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 										delta.ops.push( { "retain": 1, attributes: { width: this.naturalWidth, height: this.naturalHeight } } );
 										editor.updateContents(delta, 'user');
 									});
-									
-									updateUsedSpaceDelta(blob.size);
 								},
 								function (error) {
 									console.log(params, error);
@@ -584,7 +591,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 							});
 							
 							//загружаем картинку в S3 и добавляем promise в массив uploaders
-							var _blob; // кривой код
 							var uploader = readFilePromise
 								.then( function(blob) {
 									if (!canUpload(blob.byteLength)) {
@@ -598,7 +604,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 									$content.attr('waiting', Number($content.attr('waiting')) + 1);
 									editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 									
-									_blob = blob;
 									return s3Uploader({
 										Body: blob,
 										ContentType: _f.type,
@@ -606,10 +611,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 										Key: ownerid + '/' + guid + '/' + GetGUID(),
 										ACL: 'public-read'										
 									})
-								})
-								.then( function(key) {
-									updateUsedSpaceDelta(_blob.byteLength);
-									return Promise.resolve(key);									
 								});
 								
 							uploaders.push(uploader);
@@ -783,9 +784,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 						//нужен promise, который вернёт key.
 						var uploaderPromise;
 						// TODO: rewrite to promise chain
-						var uploader = new Promise ( function(resolve, reject) {
-							readFilePromise.then(
-								function(blob) {						
+						var uploader = readFilePromise
+								.then( function(blob) {						
 									var params = {
 										Body: blob,
 										ContentType: file.type,
@@ -802,23 +802,12 @@ function initQuill(id, guid, ownerid, readOnly) {
 											$li.find('.progress-bar').css('width', percents + '%');
 											oldPercents = percents;
 										}
-									})
-									
-									uploaderPromise.then(
-										function(key) {
-											updateUsedSpaceDelta(blob.byteLength);
-											resolve(key);
-										},
-										function(err) {
-											reject(err);
-										}
-									);
-								},
-								function(err) {
-									reject(err);
-								}
-							);
-						});
+									});
+									return uploaderPromise;
+								})
+								.catch( function(err) {
+									onError(err);
+								});
 						uploader.abort = function () {
 							uploaderPromise.abort();
 						}
