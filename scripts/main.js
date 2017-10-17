@@ -378,17 +378,43 @@ function listS3Files(prefix) {
 
 // zTree /\
 
+function _errorPopover(c) {
+	$('nav').popover({
+		content: c,
+		container: 'nav',
+		animation: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		template: '\
+			<div class="popover bg-danger" role="tooltip">\
+				<div class="popover-body text-light"></div>\
+			</div>'
+	});
+}
+
 function onError(err) {
-	if (err) {
+	/*if (err) {
 		console.log("Error!", err);
 	}
 	$('.preloader-container').hide();
 	$('#alertError').show();
-	return;
+	return;*/
+	
+	$('.preloader-container').hide();
+	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 5000);
 }
 
 function onWarning(msg) {
-	$('#alertError').show();
+	$('.preloader-container').hide();
+	_errorPopover(msg);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 2500);
 }
 
 var s3;
