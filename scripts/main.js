@@ -1898,12 +1898,20 @@ function canUpload(size) {
 }
 
 function updateUsedSpaceDelta(d) {
+	if (typeof(d) !== 'number') {
+		console.log('updateUsedSpaceDelta wrong d:', d);
+		return;
+	}
 	USER_USED_SPACE_DELTA += d;
 	USER_USED_SPACE_CHANGED = true;
 	updateIndicator();
 }
 
 function updateUsedSpacePending(p) {
+	if (typeof(p) !== 'number') {
+		console.log('updateUsedSpacePending wrong p:', p);
+		return;
+	}
 	USER_USED_SPACE_PENDING += p
 	updateIndicator();
 }

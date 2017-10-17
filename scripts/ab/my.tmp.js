@@ -10,8 +10,9 @@ function isFilePaste(event) {
 }
 
 // s3 file uploader
+// set updateFlag to true to update size indicator
 // Returns Promise(key) with abort() method.
-function s3Uploader(params, onprogress) {
+function s3Uploader(params, onprogress, updateFlag) {
 	//console.log(params);
 	
 	if (params.ContentDisposition) {
@@ -36,21 +37,25 @@ function s3Uploader(params, onprogress) {
 
 	
 	// Body can be File or ArrayBuffer. Maybe this line should be rewritten....
-	var size = params.Body.size ? params.Body.size : params.Body.byteLength;
+	var size = (params.Body.size) ? (params.Body.size) : (params.Body.byteLength);
 	// update pending used space
+	console.log('Body: ', params.Body, 'size: ', size);
 	updateUsedSpacePending(size);
 	promise
 		.then(function(ok) {
+			console.log('size ', size);
 			updateUsedSpacePending(-size);
 			updateUsedSpaceDelta(size);
 		});
 	promise
 		.catch(function(err) {
+			console.log('size ', size);
 			updateUsedSpacePending(-size);
 		});
 	promise.abort = function () {
 		request.abort();
 		console.log('Upload aborted');
+		console.log('size ', size);
 		updateUsedSpacePending(-size);
 	};
 	
@@ -767,11 +772,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size);
 
-						$files.append($li);
-						$files.attr('waiting', Number($files.attr('waiting')) + 1);
-						$updated.addClass('pending');
-						$updated.show();
-
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
 							fr.onload = function(event) {
@@ -794,6 +794,17 @@ function initQuill(id, guid, ownerid, readOnly) {
 										ACL: 'public-read'
 									};
 									
+									if (!canUpload(blob.byteLength)) {
+										console.log('No space left', blob);
+										onWarning(_translatorData['noSpace'][LANG]);
+										return Promise.reject('No space left');
+									}
+
+									$files.append($li);
+									$files.attr('waiting', Number($files.attr('waiting')) + 1);
+									$updated.addClass('pending');
+									$updated.show();
+									
 									var oldPercents = 0;
 									uploaderPromise = s3Uploader(params, function (percents) {
 										//console.log(oldPercents, ' ->', percents);
@@ -806,7 +817,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 									return uploaderPromise;
 								})
 								.catch( function(err) {
-									onError(err);
+									if (err !== 'No space left') {
+										onError(err);
+									}
 								});
 						uploader.abort = function () {
 							uploaderPromise.abort();
