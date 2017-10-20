@@ -443,7 +443,7 @@ $(document).ready( function() {
 			return initTree();
 		})
 		.then( function() {
-			window.onhashchange();
+			routerOpen();
 			updateUsedSpace();
 		})
 		.catch( function(err) {
@@ -503,7 +503,7 @@ $(document).ready( function() {
 				return initTree();
 			})
 			.then( function() {
-				window.onhashchange();
+				window.routerOpen();
 			})
 			.catch( function (err) {
 				console.log(err);
@@ -553,7 +553,7 @@ $(document).ready( function() {
 				return initTree();
 			})
 			.then( function() {
-				window.onhashchange();
+				routerOpen();
 			})
 			.catch( function (err) {
 				console.log(err.name, 'Here!');
@@ -1012,11 +1012,12 @@ function findOwner(guid) {
 //--------------- Routing ---------------
 //---------------------------------------
 
-window.onhashchange = function(event) {
-	console.log('onhashchange', event);
+function routerOpen(wantGUID) {
+	if (!wantGUID) {
+		wantGUID = window.location.pathname.slice(1); // drop first '/'
+	}
+	
 	if (TREE_READY) {
-		var wantGUID = window.location.href.split('#/')[1];
-		
 		var ok = false;
 		var zTree = $.fn.zTree.getZTreeObj("abTree");
 		var node = zTree.getNodesByParam('id', wantGUID)[0];
@@ -1045,6 +1046,7 @@ window.onhashchange = function(event) {
 		
 		promise
 			.then( function(ok) {
+				history.pushState(null, null, '/' + wantGUID);
 				var zTree = $.fn.zTree.getZTreeObj('abTree');
 				var node = zTree.getNodesByParam('id', wantGUID)[0];
 				if (node) {
@@ -1068,7 +1070,9 @@ window.onhashchange = function(event) {
 					tmp = initTree();
 				}
 				tmp.then( function(ok) {
-					window.location.hash = '/' + ROOT_DOC_GUID;	
+					setTimeout(function() {
+						routerOpen(ROOT_DOC_GUID);
+					}, 0);
 				})
 				.catch( function(err) {
 					onError(err);
@@ -1644,7 +1648,7 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	// my!
 	tree.lastClicked = treeNode;
 	
-	window.location.hash = '/' + treeNode.id;
+	routerOpen(treeNode.id);
 }
 
 function showRemoveBtn(id, node) {
