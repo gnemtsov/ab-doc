@@ -9,30 +9,39 @@ var MAX_USED_SPACE = 510 * 1024 * 1024; // Additional 10 Mb here.
 
 // Gets a PUT event and 
 exports.handler = (event, context, callback) => {
-	var key = event.Records[0].s3.object.key;
+	var key = decodeURIComponent(event.Records[0].s3.object.key);
+	//var msg = '';
 	
-	console.log('We have ', key, ' in ', BUCKET);
+	//msg += 'We have ' + key + ' in ' + BUCKET + '\n';
 	
 	var ks = key.split('/');
 	if (ks.length > 1) {
 		var userId = ks[0];
 		
-		console.log('Checking size of ', userId);
+		//msg += 'Checking size of ' + userId + '\n';
 	    exports.getDirectorySize(userId, BUCKET)
 	        .then( (size) => {
-				console.log('Size is ', size);
+				//msg += 'Size is ' + size + '\n';
         		if (size > MAX_USED_SPACE) {
-					console.log('Deleting ', key);
+					//msg += 'Deleting ' + key + '\n';
         			return s3.deleteObject({
         				Bucket: BUCKET,
         				Key: key
         			}).promise();
         		}
+        		return Promise.resolve();
 	        })
-        	.then( (ok) => {console.log('Ok');})
-        	.catch( (err) => {console.log('Error!', err);});
+        	//.then( (ok) => {msg += 'Ok\n';})
+        	//.catch( (err) => {msg += 'Error!\n';})
+        	/*.then( () => {
+                return s3.putObject({
+            	    Bucket: BUCKET,
+            	    Key: 'log-' + Date.now() + '.txt',
+            	    Body: msg
+            	}).promise();
+        	});*/
 	}
-	
+
 	callback(null);
 };
 
