@@ -115,7 +115,7 @@ function saveDocument(id) {
 
 // returns {n: "name", e: ".ext"}
 function splitNameAndExtension(fileName) {
-	console.log(fileName);
+	//console.log(fileName);
 	var s = fileName.split('.');
 	
 	if (s.length > 1) {
@@ -134,7 +134,7 @@ function splitNameAndExtension(fileName) {
 // Returns HTML for file attachment
 function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 	var x = splitNameAndExtension(fileName);
-	console.log(x);
+	//console.log(x);
 	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
 		fname = '<div class="file-name">' +
 				(finished ? 
@@ -317,6 +317,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 	$files.html('');
 	$drop_zone.removeClass('highlighted').removeClass('used');
 	
+	var toSort = [];
 	listS3Files(TREE_USERID + '/' + guid + '/attachments/')
 		.then( function(files) {
 			// if we have files, show dropzone, hide it otherwise
@@ -326,24 +327,40 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$drop_zone.removeClass('used');
 			}
 			
+			var p = [];
 			files.forEach( function(f) {
 				var params = {
 					Bucket: STORAGE_BUCKET,
 					Key: f.Key
 				};
-				s3.headObject(params, function(err, data) {
+				p.push( s3.headObject(params, function(err, data) {
 					if (err) {
 						onError(err);
 						return;
 					}
 					
-					console.log(f);
 					var cd = decodeURIComponent(data.ContentDisposition.substring(29));
 					var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-					var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);
-					$files.append($li);			
-				});				
+					var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
+					toSort.push({cd: cd, li: $li});	
+				}).promise().catch(function(){
+				}));			
 			});
+			Promise.all(p)
+				.then( function() {
+					toSort.sort( function(x, y) {
+						if (x.cd < y.cd) {
+							return -1;
+						}
+						if (x.cd > y.cd) {
+							return 1;
+						}
+						return 0;
+					});
+					toSort.forEach(function(x) {
+						$files.append(x.li);
+					});
+				});
 		})
 		.catch( function(err) {
 			onError(err);
