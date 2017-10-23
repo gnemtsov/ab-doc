@@ -1,36 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-]>
-<svg version="1.1" id="i-file" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32px" height="32px"
-	 viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve">
-<switch>
-	<foreignObject requiredExtensions="&ns_ai;" x="0" y="0" width="1" height="1">
-		<i:pgfRef  xlink:href="#adobe_illustrator_pgf">
-		</i:pgfRef>
-	</foreignObject>
-	<g i:extraneous="self">
-		<path fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3.688,2v28H29V10l-8-8
-			H3.688z M21,2v8h8"/>
-		
-			<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8.25" y1="20.5" x2="24.438" y2="20.5"/>
-		
-			<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8.25" y1="16" x2="24.438" y2="16"/>
-		
-			<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8.25" y1="25" x2="24.438" y2="25"/>
-	</g>
-</switch>
-<i:pgf  id="adobe_illustrator_pgf">
-	<![CDATA[
+
+<svg
+   xmlns:i="&amp;ns_ai;"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="i-file"
+   x="0px"
+   y="0px"
+   width="32px"
+   height="32px"
+   viewBox="0 0 32 32"
+   enable-background="new 0 0 32 32"
+   xml:space="preserve"
+   sodipodi:docname="file-attachment.svg"
+   inkscape:version="0.92.1 r15371"><metadata
+     id="metadata19"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs17" /><sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="968"
+     id="namedview15"
+     showgrid="false"
+     inkscape:zoom="7.375"
+     inkscape:cx="16"
+     inkscape:cy="16"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="i-file" /><switch
+     id="switch12"
+     transform="translate(-0.388)"><foreignObject
+       requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"
+       x="0"
+       y="0"
+       width="1"
+       height="1"><i:pgfRef
+         xlink:href="#adobe_illustrator_pgf" /></foreignObject><g
+       i:extraneous="self"
+       id="g10"><path
+         d="M 3.688,2 V 30 H 29 V 10 L 21,2 Z M 21,2 v 8 h 8"
+         id="path2"
+         inkscape:connector-curvature="0"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" /><line
+         x1="8.25"
+         y1="20.5"
+         x2="24.438"
+         y2="20.5"
+         id="line4"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" /><line
+         x1="8.25"
+         y1="16"
+         x2="24.438"
+         y2="16"
+         id="line6"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" /><line
+         x1="8.25"
+         y1="25"
+         x2="24.438"
+         y2="25"
+         id="line8"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" /></g></switch><i:pgf
+     id="adobe_illustrator_pgf"><![CDATA[
 	eJztvelyM7uSGDi/TwTfgaQW7mRVcadW7pRESZQoUbsoLiWJ4qoieZb+4bDbP2yHJ2ZeYMIOv0G7
 w9ceR7t7XuE7bzQAakMtqEKR/Nrt5d44+sgqMBNIJBKZiUzkjqfRjOT70y4fiUcZt+uXnZ2iwHcW
 UyHnRo/dJ6PRcr4Q4CP/dcDNpqIMbJU/ybSlli1emA+mkxx6J76twN/7q/xU+Bj8EXD7A/DhzWAx
@@ -103,8 +150,7 @@ yBdpYz/DHQe3YswMI9AIGsCqj3FP8WFDn1RebumGRr7RKcomVf91Y/A7P2rwwjvfM5y4GJxiE9xe
 UnxtKLYfWvtgfAbGA+8rYLU0wQoW001NupOCzqE8PIPKa/UBg0vL3CnDkJrdGPUVpYnVkVQKeVHM
 esQQ/UTmuKQ2emR23hczBlNN19HIkl9RQ2CkgH30w0oOwHbz4WAGDNCJlWoD2wlAvApzHnbRSl/C
 +yh71R3s5fJP8J6TegQdTar3WrsATqddmMhiyv6AIeFUiYlbej6D3LxcTM94Qa8QSw==
-	]]>
-	<![CDATA[
+	]]><![CDATA[
 	fIyFdmkhignyRuYvj7t8X/QR6jYw6KUW+N4AU/4T6iuU1oBh062n+rRn5j2BCCeAwqYM2+z8yp8D
 1XMwG/F53eTsmTAhlnuiy2qApBbTHSAp5ZeuX2LwBf4IMne+WTw5ySRLPJx5BDl0mHxLh45a3RgT
 C51HQkefizj8xCX2r3Jx5cWV8gm92Isf3SwKpfdsdVjbuj7olN6Zh0PlLRc6uE59egLx2oEnEvNd
@@ -177,8 +223,7 @@ f4n6RPYm6xeZPDc6jxG+PD7h9TaVtilXS/OA8vYOLz+ro1anXdrqL8uV7Pbxa+XmsFFGuXwAzWbS
 8mkVqDXS+axz+Vx46uI66XzWuXwuberi6ul81rl80ra2fjqfdS4fYuhNpPNZ5/JJo3GWzqcNgLZI
 wFP8B8oRnp3CR84D+6boE42DGHTLLlb8fGqtuUthCSX9KcDKgbdPJa1izK3jIG74HMWvW5wUPpW0
 DqkVSCXntxnSfIyhbBqjzCof0DLkz/Sk0AKaXZQXYYSGjBWKJD7qERocXWsQvm2duA==
-	]]>
-	<![CDATA[
+	]]><![CDATA[
 	KvYJi0+z6Jado8uiTzOdDu00f8+B2HmFF5ut7XAE3b9cWMeXSIYHRYhJeZ0DPo0Chca3tnsLDO55
 Szc483Ae27Q7p/ElZn4BmHbn2NNsHFIpSmlG2aXd0ceXkEUnoI1JiMlKVgpiaNpEMZoAr8MuN9Wp
 FcjD7LJJxKSTX11uaetMoc577XjbXvvJME16NUjoinVGpSNHG3RbclYOYo1HheBo0/oaoRIc1npU
@@ -251,8 +296,7 @@ K7zaoRIGt27BQ5lVzasdOo22IxY8XOVWqxUKHhIHt4lbrdSCh2vFQNEXPLROAHRt4FYrVPBwA7da
 0RQ8pMv3XLvgoUogM6eHGUOvVPDw0LLaIWZ4rFfw0GFC2aoFD/Vsoa12aAiAWbXgofXgXJb1PR0U
 PLSudmjh63RW8NB6SKKqvoGCh7bBsJspeGhdFEySaesXPLRexoqqrk+Bclrw0Hrn0+tpKxc81IQ/
 Gaodmto3qxQ8tI7LwsKu1yt4SJFKsomCh9bVDpX9Zt2Chw7rFK5a8FALRV/t0OggXg==
-	]]>
-	<![CDATA[
+	]]><![CDATA[
 	seAhOVxNQrOZgofW5zGSTFu/4KFldowYq76pbDVytUPcIlir4KH1OQ/SBTZR8NA6xJvouXVa8JCU
 jIYfRayZcgGg2YgRjRSwSbngrQoeOpAC6xQ8VNjNtNqhwWezasFDayguYp3C9VMusGqH66WS3BIt
 dN1pM11oL0XBQ+sYWpdyv4CyHlcreGh984hqeKxZ8FBJ/DLN2HbhSUv0KVDGgocUMm0TBQ+tqx2u
@@ -325,8 +369,7 @@ bajc9Cyqg6YMZQmjOVFhUACARDPAQMXu6WEYAaDq3PiyUOeGdmXANGTHndCdRompx+sMBBWNNKxv
 OBr6gaCEtlU6oWwEh9XPdVlr5CECQFKAAkajNbFe59aLXDyKeJiuAwMAeJ6tLWwabYLAomWLRlcQ
 TzxsYDxaweDntlMa3JakgATjqPg91cD4XJW1ZADDperuXhXG1GNPCXGBKFLAAEPwyjAexioMpnb+
 0NOoUs8K+zxgnWUqL7VrHac9tG0YxW5cD10bASQRzRIGL6zH7g+fc5XTVlz7D0MaLg==
-	]]>
-	<![CDATA[
+	]]><![CDATA[
 	0XKaAcZkueZABA92sLLiQJZe2k6onKbrx+PWlh01ufmz2gmPr/WpqdfZ7WJ8pdukaYnR5b8ddQKe
 ERj68bkma3WHcx1bmG/SVjPSnSwohJhOguk26e73cjUhBo2ympgTBJM4s1jctv8pmIBEC7f79zAa
 uw5PUi5lK7umphjeQ7MvZTC2F8cZpISqaTtqQhnb2R4/w2SwM2CUPiRdUvYqrAyAEo8iUvJa8nkO
@@ -382,6 +425,4 @@ TUfZTDrpZhOJaNI9xp+wKfCkDp4kuKjxa1z+Goc/FH9eNwAET+baNmPla9wcYBMM/ZZEzrQ7djJZ
 uP3NVrXd/OzM+Js/ZryehCWZAoxMAY6Nwi5xKRF9OpqNS99FhHKDOCP3UG6CnmgbgX90jdATsVG9
 IHETYC7ESxGofu80Oh/8jdAB8w+Y62Pe+ZV3dyaT6aKz4GfglftD4OeLqcC755/T3+AT+CPlB4BV
 L4FN8v8Dk4UjDw==
-	]]>
-</i:pgf>
-</svg>
+	]]></i:pgf></svg>
