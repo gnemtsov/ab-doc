@@ -141,6 +141,18 @@ var _translatorData = {
 	"noSpace": {
 		"ru": "Недостаточно места для загрузки файла",
 		"en": "No space left to upload this file"
+	},
+	"areYouSure": {
+		"ru": "Вы уверены?",
+		"en": "Are you sure?"
+	},
+	"yes": {
+		"ru": "да",
+		"en": "yes"
+	},
+	"no": {
+		"ru": "нет",
+		"en": "no"
 	}
 }
 

@@ -145,8 +145,12 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
-	
-	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
+		question = '<div class="file-question" style="display: none;">' +
+					_translatorData['areYouSure'][LANG] + ' ' +
+					'<a href="#" class="yes">' + _translatorData['yes'][LANG] + '</a> ' + 
+					'<a href="#" class="no">' + _translatorData['no'][LANG] + '</a>' + 
+					'</div>';
+	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button + question);
 }
 
 function mimeTypeToIconURL(type) {
@@ -892,6 +896,25 @@ function initQuill(id, guid, ownerid, readOnly) {
 				}
 				
 				var $li = $(this).closest('li');
+				$li.find('div.cross').hide();
+				$li.find('.progress').hide();
+				$li.find('.file-size').hide();
+				$li.find('.file-question').show();
+			});
+
+			$files.on('click', 'a.no', function () {
+				if (readOnly) {
+					return;
+				}
+				
+				var $li = $(this).closest('li');
+				$li.find('.file-question').hide();
+				$li.find('.progress').show();
+				$li.find('.file-size').show();
+			});
+			
+			$files.on('click', 'a.yes', function () {
+				var $li = $(this).closest('li');
 				var key = $li.attr('s3key');
 				var size = parseFloat($li.attr('data-size'));
 				
@@ -933,11 +956,17 @@ function initQuill(id, guid, ownerid, readOnly) {
 			//showing and hiding cross
 			$('.files').on('mouseenter', 'li', function () {
 				console.log('enter');
-				$(this).find('div.cross').show();
+				// Show/hide cross(trash) icon only when delete question is hidden
+				if (! $(this).find('.file-question').is(':visible')) {
+					$(this).find('div.cross').show();
+				}
 			});
 			$('.files').on('mouseleave', 'li', function () {
 				console.log('leave');
-				$(this).find('div.cross').hide();
+				// Show/hide cross(trash) icon only when delete question is hidden
+				if (! $(this).find('.file-question').is(':visible')) {
+					$(this).find('div.cross').hide();
+				}
 			});
 		},
 		function (err) {
