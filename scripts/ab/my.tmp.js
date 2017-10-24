@@ -137,19 +137,20 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 	//console.log(x);
 	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
 		fname = '<div class="file-name">' +
-				(finished ? 
-					'<a class="fn" href="' + AWS_CDN_ENDPOINT + key + '">' + x.n + '</a>' +
-					'<a class="fe" href="' + AWS_CDN_ENDPOINT + key + '">' + x.e + '</a>'
-					:
-					'<span class="fn">' + x.n + '</span>' +
-					'<span class="fe">' + x.e + '</span>'
-				) +
+				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
+				'<span class="fn">' + x.n + '</span>' +
+				'<span class="fe">' + x.e + '</span>' +
+				(finished ? '</a>' : '') +
 				'</div>',
 		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
-	
-	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button);
+		question = '<div class="file-question" style="display: none;">' +
+					_translatorData['areYouSure'][LANG] + ' ' +
+					'<a href="#" class="yes">' + _translatorData['yes'][LANG] + '</a> ' + 
+					'<a href="#" class="no">' + _translatorData['no'][LANG] + '</a>' + 
+					'</div>';
+	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button + question);
 }
 
 function mimeTypeToIconURL(type) {
@@ -315,6 +316,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 		$updated = $('#updated');
 		
 	$files.html('');
+	console.log('Cleared attachments list');
 	$drop_zone.removeClass('highlighted').removeClass('used');
 	
 	var toSort = [];
@@ -327,27 +329,29 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$drop_zone.removeClass('used');
 			}
 			
+			console.log('Processing attached files', files);
+			
 			var p = [];
 			files.forEach( function(f) {
 				var params = {
 					Bucket: STORAGE_BUCKET,
 					Key: f.Key
 				};
-				p.push( s3.headObject(params, function(err, data) {
-					if (err) {
+				p.push( s3.headObject(params).promise()
+					.then( function(data) {
+						var cd = decodeURIComponent(data.ContentDisposition.substring(29));
+						var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
+						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
+						toSort.push({cd: cd, li: $li});						
+					})
+					.catch( function(err) {
 						onError(err);
-						return;
-					}
-					
-					var cd = decodeURIComponent(data.ContentDisposition.substring(29));
-					var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-					var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
-					toSort.push({cd: cd, li: $li});	
-				}).promise().catch(function(){
-				}));			
+					})
+				);
 			});
 			Promise.all(p)
 				.then( function() {
+					console.log('Sorting', toSort);
 					toSort.sort( function(x, y) {
 						if (x.cd < y.cd) {
 							return -1;
@@ -358,6 +362,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return 0;
 					});
 					toSort.forEach(function(x) {
+						console.log('Adding attachment ', x.li);
 						$files.append(x.li);
 					});
 				});
@@ -895,12 +900,32 @@ function initQuill(id, guid, ownerid, readOnly) {
 				}
 				
 				var $li = $(this).closest('li');
+				$li.find('div.cross').hide();
+				$li.find('.progress').hide();
+				$li.find('.file-size').hide();
+				$li.find('.file-question').show();
+			});
+
+			$files.on('click', 'a.no', function () {
+				if (readOnly) {
+					return;
+				}
+				
+				var $li = $(this).closest('li');
+				$li.find('.file-question').hide();
+				$li.find('.progress').show();
+				$li.find('.file-size').show();
+			});
+			
+			$files.on('click', 'a.yes', function () {
+				var $li = $(this).closest('li');
 				var key = $li.attr('s3key');
 				var size = parseFloat($li.attr('data-size'));
 				
 				console.log('Removing ', key);
 				
-				$li.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
+				$li.find('.file-question')
+					.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 				$files.attr('waiting', Number($files.attr('waiting')) + 1);
 				$updated.show().addClass('pending');
 
@@ -936,11 +961,17 @@ function initQuill(id, guid, ownerid, readOnly) {
 			//showing and hiding cross
 			$('.files').on('mouseenter', 'li', function () {
 				console.log('enter');
-				$(this).find('div.cross').show();
+				// Show/hide cross(trash) icon only when delete question is hidden
+				if (! $(this).find('.file-question').is(':visible')) {
+					$(this).find('div.cross').show();
+				}
 			});
 			$('.files').on('mouseleave', 'li', function () {
 				console.log('leave');
-				$(this).find('div.cross').hide();
+				// Show/hide cross(trash) icon only when delete question is hidden
+				if (! $(this).find('.file-question').is(':visible')) {
+					$(this).find('div.cross').hide();
+				}
 			});
 		},
 		function (err) {
