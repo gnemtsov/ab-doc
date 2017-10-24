@@ -316,6 +316,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 		$updated = $('#updated');
 		
 	$files.html('');
+	console.log('Cleared attachments list');
 	$drop_zone.removeClass('highlighted').removeClass('used');
 	
 	var toSort = [];
@@ -328,27 +329,29 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$drop_zone.removeClass('used');
 			}
 			
+			console.log('Processing attached files', files);
+			
 			var p = [];
 			files.forEach( function(f) {
 				var params = {
 					Bucket: STORAGE_BUCKET,
 					Key: f.Key
 				};
-				p.push( s3.headObject(params, function(err, data) {
-					if (err) {
+				p.push( s3.headObject(params).promise()
+					.then( function(data) {
+						var cd = decodeURIComponent(data.ContentDisposition.substring(29));
+						var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
+						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
+						toSort.push({cd: cd, li: $li});						
+					})
+					.catch( function(err) {
 						onError(err);
-						return;
-					}
-					
-					var cd = decodeURIComponent(data.ContentDisposition.substring(29));
-					var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-					var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
-					toSort.push({cd: cd, li: $li});	
-				}).promise().catch(function(){
-				}));			
+					})
+				);
 			});
 			Promise.all(p)
 				.then( function() {
+					console.log('Sorting', toSort);
 					toSort.sort( function(x, y) {
 						if (x.cd < y.cd) {
 							return -1;
@@ -359,6 +362,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return 0;
 					});
 					toSort.forEach(function(x) {
+						console.log('Adding attachment ', x.li);
 						$files.append(x.li);
 					});
 				});
