@@ -131,8 +131,12 @@ function splitNameAndExtension(fileName) {
 	};
 }
 
+var tmp;
+
 // Returns HTML for file attachment
 function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
+	tmp = modified;
+	console.log(modified);
 	var x = splitNameAndExtension(fileName);
 	//console.log(x);
 	var ficon = (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
@@ -144,7 +148,7 @@ function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
 				'<span class="fe">' + x.e + '</span>' +
 				(finished ? '</a>' : '') +
 				'</div>',
-		fmodified = (modified ? modified.getYear() + '-' + modified.getMonth() + '-' + modified.getDay() : ''),
+		fmodified = (modified ? modified.getFullYear() + '-' + (modified.getMonth() + 1) + '-' + modified.getDate() : ''),
 		fbottom = '<div class="file-size">' + GetSize(fileSize) + ' ' + fmodified + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
@@ -342,9 +346,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 				};
 				p.push( s3.headObject(params).promise()
 					.then( function(data) {
+						console.log(f.LastModified);
 						var cd = decodeURIComponent(data.ContentDisposition.substring(29));
 						var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, new Date(f.LastModified), true);	
+						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, f.LastModified, true);	
 						toSort.push({cd: cd, li: $li});						
 					})
 					.catch( function(err) {
