@@ -135,7 +135,9 @@ function splitNameAndExtension(fileName) {
 function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 	var x = splitNameAndExtension(fileName);
 	//console.log(x);
-	var ficon = '<img class="file-icon" src="' + iconURL + '"></img>',
+	var ficon = (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
+				'<img class="file-icon" src="' + iconURL + '"></img>' + 
+				(finished ? '</a>' : ''),
 		fname = '<div class="file-name">' +
 				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
 				'<span class="fn">' + x.n + '</span>' +
