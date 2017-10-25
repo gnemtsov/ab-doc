@@ -132,7 +132,7 @@ function splitNameAndExtension(fileName) {
 }
 
 // Returns HTML for file attachment
-function genFileHTML(key, iconURL, fileName, fileSize, finished) {
+function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
 	var x = splitNameAndExtension(fileName);
 	//console.log(x);
 	var ficon = (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
@@ -144,7 +144,8 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 				'<span class="fe">' + x.e + '</span>' +
 				(finished ? '</a>' : '') +
 				'</div>',
-		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
+		fmodified = (modified ? modified.getYear() + '-' + modified.getMonth() + '-' + modified.getDay() : ''),
+		fbottom = '<div class="file-size">' + GetSize(fileSize) + ' ' + fmodified + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
 		question = '<div class="file-question" style="display: none;">' +
@@ -152,7 +153,7 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 					'<a href="#" class="yes">' + _translatorData['yes'][LANG] + '</a> ' + 
 					'<a href="#" class="no">' + _translatorData['no'][LANG] + '</a>' + 
 					'</div>';
-	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button + question);
+	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fbottom : progress) + remove_button + question);
 }
 
 function mimeTypeToIconURL(type) {
@@ -343,7 +344,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					.then( function(data) {
 						var cd = decodeURIComponent(data.ContentDisposition.substring(29));
 						var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
+						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, new Date(f.LastModified), true);	
 						toSort.push({cd: cd, li: $li});						
 					})
 					.catch( function(err) {
@@ -862,7 +863,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 									}
 
 									// replace it with finished version
-									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, true));
+									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, undefined, true));
 								},
 								function (Error) { console.log(Error); }
 							)
