@@ -405,12 +405,9 @@ function _errorPopover(c) {
 }
 
 function onError(err) {
-	/*if (err) {
+	if (err) {
 		console.log("Error!", err);
 	}
-	$('.preloader-container').hide();
-	$('#alertError').show();
-	return;*/
 	
 	$('.preloader-container').hide();
 	_errorPopover(_translatorData['somethingWentWrong'][LANG]);

@@ -132,7 +132,7 @@ function splitNameAndExtension(fileName) {
 }
 
 // Returns HTML for file attachment
-function genFileHTML(key, iconURL, fileName, fileSize, finished) {
+function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
 	var x = splitNameAndExtension(fileName);
 	//console.log(x);
 	var ficon = (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
@@ -144,7 +144,13 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 				'<span class="fe">' + x.e + '</span>' +
 				(finished ? '</a>' : '') +
 				'</div>',
-		fsize = '<div class="file-size">' + GetSize(fileSize) + '</div>',
+		fmodified = (modified ?
+			modified.getFullYear().toString().slice(2) + '-' + (modified.getMonth() + 1) + '-' + modified.getDate() + ' ' +
+			modified.getHours().toString().padStart(2, '0') + ':' + modified.getMinutes().toString().padStart(2, '0') + ':' + modified.getSeconds().toString().padStart(2, '0')
+				: 
+			''),
+		fbottom = '<div class="file-size">' + GetSize(fileSize) + '</div> ' + 
+				'<div class="file-modified">' + fmodified + '</div>',
 		progress = finished ? '' : '<div class="progress"><div class="progress-bar" style="width: 0%;">' + GetSize(fileSize) + '</div></div>',
 		remove_button = '<div class="cross" aria-label="Del" style="display: none;"></div>';
 		question = '<div class="file-question" style="display: none;">' +
@@ -152,7 +158,7 @@ function genFileHTML(key, iconURL, fileName, fileSize, finished) {
 					'<a href="#" class="yes">' + _translatorData['yes'][LANG] + '</a> ' + 
 					'<a href="#" class="no">' + _translatorData['no'][LANG] + '</a>' + 
 					'</div>';
-	return $('<li s3key="' + key + '" data-size="' + fileSize + '">').append(ficon + fname + (finished ? fsize : progress) + remove_button + question);
+	return $('<li s3key="' + key + '" data-size="' + fileSize + '" data-modified="' + modified + '">').append(ficon + fname + (finished ? fbottom : progress) + remove_button + question);
 }
 
 function mimeTypeToIconURL(type) {
@@ -341,9 +347,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 				};
 				p.push( s3.headObject(params).promise()
 					.then( function(data) {
+						console.log(f.LastModified);
 						var cd = decodeURIComponent(data.ContentDisposition.substring(29));
 						var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, true);	
+						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, f.LastModified, true);	
 						toSort.push({cd: cd, li: $li});						
 					})
 					.catch( function(err) {
@@ -796,10 +803,11 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 					var uploaders = new Array();
 					$.each(files, function (i, file) {
+						console.log(file);
 						var fileGUID = GetGUID();
 						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
-						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size);
+						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date());
 
 						var readFilePromise = new Promise ( function(resolve, reject) {
 							var fr = new FileReader();
@@ -862,7 +870,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 									}
 
 									// replace it with finished version
-									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, true));
+									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date(), true));
 								},
 								function (Error) { console.log(Error); }
 							)
@@ -905,6 +913,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$li.find('div.cross').hide();
 				$li.find('.progress').hide();
 				$li.find('.file-size').hide();
+				$li.find('.file-modified').hide();
 				$li.find('.file-question').show();
 			});
 
@@ -917,6 +926,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 				$li.find('.file-question').hide();
 				$li.find('.progress').show();
 				$li.find('.file-size').show();
+				$li.find('.file-modified').show();
 			});
 			
 			$files.on('click', 'a.yes', function () {
@@ -1021,10 +1031,10 @@ function GetGUID() {
 
 function GetSize(bytes) {
 	if (bytes < 1024) { return bytes + ' b'; }
-	else if (bytes < 1048576) { return (bytes / 1024).toFixed(2) + ' Kb'; }
-	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(2) + ' Mb'; }
-	else if (bytes < 1099511627776) { return (bytes / 1073741824).toFixed(2) + ' Gb'; }
-	else { return (bytes / 1099511627776).toFixed(2) + ' Tb'; }
+	else if (bytes < 1048576) { return (bytes / 1024).toFixed(1) + ' Kb'; }
+	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(1) + ' Mb'; }
+	else if (bytes < 1099511627776) { return (bytes / 1073741824).toFixed(1) + ' Gb'; }
+	else { return (bytes / 1099511627776).toFixed(1) + ' Tb'; }
 }
 
 function encodeRFC5987ValueChars(str) {
