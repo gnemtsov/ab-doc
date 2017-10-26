@@ -1954,3 +1954,10 @@ function updateUsedSpacePending(p) {
 	USER_USED_SPACE_PENDING += p
 	updateIndicator();
 }
+
+
+
+
+window.onbeforeunload = function() {
+	
+}
