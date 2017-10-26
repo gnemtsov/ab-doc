@@ -134,14 +134,14 @@ function splitNameAndExtension(fileName) {
 // Returns HTML for file attachment
 function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
 	var x = splitNameAndExtension(fileName);
-	//console.log(x);
 	var ficon = (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
 				'<img class="file-icon" src="' + iconURL + '"></img>' + 
 				(finished ? '</a>' : ''),
+		feLen = Math.min(x.e.length, 12),
 		fname = '<div class="file-name">' +
 				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
-				'<span class="fn">' + x.n + '</span>' +
-				'<span class="fe">' + x.e + '</span>' +
+				'<span class="fn" style="max-width: calc(180px - ' + feLen + 'ch);">' + x.n + '</span>' +
+				'<span class="fe" style="max-width: ' + feLen + 'ch;">' + x.e + '</span>' +
 				(finished ? '</a>' : '') +
 				'</div>',
 		fmodified = (modified ?
