@@ -369,11 +369,19 @@
 			
 			/* file name without extension */
 			ul.files .file-name .fn {
-				max-width: 180px;
+				max-width: 160px;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap; 
 			}		
+
+			/* file extension */
+			ul.files .file-name .fe {
+				max-width: 50px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap; 
+			}	
 			
 			ul.files .file-size {
 				overflow: hidden;
@@ -381,6 +389,17 @@
 				text-overflow: ellipsis;
 				display: inline-block;
 				vertical-align: top;
+			}
+
+			ul.files .file-modified {
+				overflow: hidden;
+				height: 20px;
+				text-overflow: ellipsis;
+				display: inline-block;
+				vertical-align: top;
+				color: #777;
+				margin-top: 3px;
+				font-size: 12px;
 			}
 			
 			ul.files .progress {
