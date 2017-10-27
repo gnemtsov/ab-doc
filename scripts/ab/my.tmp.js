@@ -21,12 +21,12 @@ function s3Uploader(params, onprogress, updateFlag) {
 	
 	var request = createObjectS3Params(params);
 	request.on('httpUploadProgress', function (progress, response) {
-		var progressPercents = progress.loaded * 100.0/ progress.total;
+		var progressPercents = progress.loaded * 100.0 / progress.total;
 		
 		if (onprogress instanceof Function) {
 			//onprogress.call(this, Math.round(progressPercents));
 			onprogress.call(this, progressPercents);
-		}		
+		}	
 	});
 
 	var reqPromise = request.promise();
