@@ -469,16 +469,24 @@ function initQuill(id, guid, ownerid, readOnly) {
 			// $(editor.root) is small. Let #document handle drop events too.
 			$('#document').bind({
 				drop: function(e) {
+					console.log('Document drop');
 					$(editor.root).trigger(e);
 				},
 				dragover: function (e) {
-					$(editor.root).trigger(e);
+					console.log('Document dragover');
+					$drop_zone.addClass('highlighted');
 				},
 				dragenter: function (e) {
-					$(editor.root).trigger(e);
+					console.log('Document dragenter');
+					$drop_zone.addClass('highlighted');
 				},
 				dragleave: function (e) {
-					$(editor.root).trigger(e);
+					console.log('Document dragleave');
+					console.log($(e.relatedTarget).parents('#document'));
+					if ($(e.relatedTarget).parents('#document').length < 1) {
+						$drop_zone.removeClass('highlighted');
+					}
+					console.log(e);
 				}
 			});
 			
@@ -558,42 +566,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 
 				},
 				//вставка файлов путем перетаскивания
-				dragover: function (e) {
-					if (readOnly) {
-						return;
-					}
-					
-					console.log('Editor dragover');
-					if ($("html").hasClass("ie")) {
-						e.preventDefault();
-					}
-					
-					$drop_zone.addClass('highlighted');
-				},
-				dragenter: function (e) {
-					if (readOnly) {
-						return;
-					}
-					
-					console.log('Editor dragenter');
-					if ($("html").hasClass("ie")) {
-						e.preventDefault();
-					}
-					
-					$drop_zone.addClass('highlighted');
-				},
-				dragleave: function (e) {
-					if (readOnly) {
-						return;
-					}
-					
-					console.log('Editor dragleave');
-					if ($("html").hasClass("ie")) {
-						e.preventDefault();
-					}
-					
-					$drop_zone.removeClass('highlighted');
-				},
 				drop: function (e) {
 					console.log('editor.root.drop');
 					if (readOnly) {
@@ -769,7 +741,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					console.log('Dropzone dragenter');
 					e.preventDefault();
 					e.stopPropagation();
-					$(this).addClass('highlighted');
+					//$(this).addClass('highlighted');
 					return false;
 				},
 				dragover: function (e) {
@@ -780,7 +752,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					console.log('Dropzone dragover');
 					e.preventDefault();
 					e.stopPropagation();
-					$(this).addClass('highlighted');
+					//$(this).addClass('highlighted');
 					return false;
 				},
 				dragleave: function (e) {
@@ -789,7 +761,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 					}
 					
 					console.log('Dropzone dragleave');
-					$(this).removeClass('highlighted');
+					//$(this).removeClass('highlighted');
 					return false;
 				},
 				drop: function (e) {
