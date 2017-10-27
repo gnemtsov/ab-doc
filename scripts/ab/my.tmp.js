@@ -21,12 +21,12 @@ function s3Uploader(params, onprogress, updateFlag) {
 	
 	var request = createObjectS3Params(params);
 	request.on('httpUploadProgress', function (progress, response) {
-		var progressPercents = progress.loaded * 100.0/ progress.total;
+		var progressPercents = progress.loaded * 100.0 / progress.total;
 		
 		if (onprogress instanceof Function) {
 			//onprogress.call(this, Math.round(progressPercents));
 			onprogress.call(this, progressPercents);
-		}		
+		}	
 	});
 
 	var reqPromise = request.promise();
@@ -563,6 +563,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return;
 					}
 					
+					console.log('Editor dragover');
 					if ($("html").hasClass("ie")) {
 						e.preventDefault();
 					}
@@ -574,6 +575,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return;
 					}
 					
+					console.log('Editor dragenter');
 					if ($("html").hasClass("ie")) {
 						e.preventDefault();
 					}
@@ -585,6 +587,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 						return;
 					}
 					
+					console.log('Editor dragleave');
 					if ($("html").hasClass("ie")) {
 						e.preventDefault();
 					}
@@ -622,20 +625,11 @@ function initQuill(id, guid, ownerid, readOnly) {
 							var _f = f; // f changes on each iteration
 							console.log(_f);
 							
-							var readFilePromise = new Promise ( function(resolve, reject) {
-								var fr = new FileReader();
-									fr.onload = function(event) {
-										resolve(event.target.result);
-									};
-									fr.onerror = reject;
-									fr.readAsArrayBuffer(_f);
-							});
-							
 							//загружаем картинку в S3 и добавляем promise в массив uploaders
-							var uploader = readFilePromise
-								.then( function(blob) {
-									if (!canUpload(blob.byteLength)) {
-										console.log('No space left', blob);
+							var uploader = Promise.resolve()
+								.then( function() {
+									if (!canUpload(_f.size)) {
+										console.log('No space left', _f);
 										onWarning(_translatorData['noSpace'][LANG]);
 										return Promise.reject('No space left');
 									}
@@ -646,7 +640,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 									editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 									
 									return s3Uploader({
-										Body: blob,
+										Body: _f,
 										ContentType: _f.type,
 										ContentDisposition: _f.name,
 										Key: ownerid + '/' + guid + '/' + GetGUID(),
@@ -709,12 +703,16 @@ function initQuill(id, guid, ownerid, readOnly) {
 				if (readOnly) {
 					return;
 				}
+				
+				console.log('Editor.root dragstart');
 				$content.attr('moving', 1);
 			});
 			$(editor.root).on('dragend', 'img', function (e) {
 				if (readOnly) {
 					return;
 				}
+				
+				console.log('Editor.root dragend');
 				$content.attr('moving', 0);
 			});
 
@@ -767,6 +765,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 					if (readOnly) {
 						return;
 					}
+					
+					console.log('Dropzone dragenter');
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).addClass('highlighted');
@@ -776,6 +776,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 					if (readOnly) {
 						return;
 					}
+					
+					console.log('Dropzone dragover');
 					e.preventDefault();
 					e.stopPropagation();
 					$(this).addClass('highlighted');
@@ -785,6 +787,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 					if (readOnly) {
 						return;
 					}
+					
+					console.log('Dropzone dragleave');
 					$(this).removeClass('highlighted');
 					return false;
 				},
@@ -808,31 +812,22 @@ function initQuill(id, guid, ownerid, readOnly) {
 						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
 						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date());
-
-						var readFilePromise = new Promise ( function(resolve, reject) {
-							var fr = new FileReader();
-							fr.onload = function(event) {
-								resolve(event.target.result);
-							};
-							fr.onerror = reject;
-							fr.readAsArrayBuffer(file);
-						});
 						
 						//нужен promise, который вернёт key.
 						var uploaderPromise;
-						// TODO: rewrite to promise chain
-						var uploader = readFilePromise
-								.then( function(blob) {						
+						// TODO: rewrite!!!!!!
+						var uploader = Promise.resolve()
+								.then( function() {						
 									var params = {
-										Body: blob,
+										Body: file,
 										ContentType: file.type,
 										ContentDisposition: file.name,
 										Key: key,
 										ACL: 'public-read'
 									};
 									
-									if (!canUpload(blob.byteLength)) {
-										console.log('No space left', blob);
+									if (!canUpload(file.size)) {
+										console.log('No space left', file);
 										onWarning(_translatorData['noSpace'][LANG]);
 										return Promise.reject('No space left');
 									}
@@ -858,7 +853,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 										onError(err);
 									}
 								});
-						uploader.abort = function () {
+								
+						uploader.abort = function() {
 							uploaderPromise.abort();
 						}
 						

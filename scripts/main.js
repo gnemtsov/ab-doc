@@ -224,7 +224,7 @@ function createObjectS3(path, body, errCallback) {
 function createObjectS3Params(params, errCallback) {
 	params.Bucket = STORAGE_BUCKET;
 	
-	return s3.putObject(params, function(err, data) {
+	return s3.upload(params, {partSize: 6 * 1024 * 1024, queueSize: 2}, function(err, data) {
 		if (err && (errCallback instanceof Function)) {
 			errCallback(err);
 		}
