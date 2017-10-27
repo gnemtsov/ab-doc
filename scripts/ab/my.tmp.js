@@ -626,10 +626,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 							console.log(_f);
 							
 							//загружаем картинку в S3 и добавляем promise в массив uploaders
-							var uploader = Promise.resolve()
-								.then( function() {
-									if (!canUpload(_f.size)) {
-										console.log('No space left', _f);
+							var uploader = Promise.resolve(_f)
+								.then( function(f) {
+									if (!canUpload(f.size)) {
+										console.log('No space left', f);
 										onWarning(_translatorData['noSpace'][LANG]);
 										return Promise.reject('No space left');
 									}
@@ -640,9 +640,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 									editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
 									
 									return s3Uploader({
-										Body: _f,
-										ContentType: _f.type,
-										ContentDisposition: _f.name,
+										Body: f,
+										ContentType: f.type,
+										ContentDisposition: f.name,
 										Key: ownerid + '/' + guid + '/' + GetGUID(),
 										ACL: 'public-read'										
 									}, undefined, true)

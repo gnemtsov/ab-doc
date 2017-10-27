@@ -1959,5 +1959,7 @@ function updateUsedSpacePending(p) {
 
 
 window.onbeforeunload = function() {
-	
+	if (TREE_MODIFIED || ((USERID === TREE_USERID) && ($('#editor[modified="1"]').length > 0))) {
+		return '';
+	}
 }
