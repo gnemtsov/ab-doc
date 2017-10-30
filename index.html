@@ -672,7 +672,7 @@
 							<p id="pDeleteMessage"></p>
 						</div>
 						<div class="modal-footer">
-							<button id = "buttonDelete" type="button" class="btn btn-primary" data-dismiss="modal" data-translate="ok"></button>
+							<button id = "buttonDelete" type="submit" class="btn btn-primary" data-dismiss="modal" data-translate="ok"></button>
 							<button type="button" class="btn btn-secondary" data-dismiss="modal" data-translate="cancel"></button>
 						</div>
 					</div>
@@ -691,28 +691,30 @@
 						</div>
 						<div class="modal-body">
 							<div class="container-fluid">
-								<div class="row">
-									<div class="form-group">
-										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
-									</div>							
-									<div class="form-group input-group">
-										<span class="input-group-addon" data-translate="email"></span>
-										<input id="signInEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+								<form>
+									<div class="row">
+										<div class="form-group">
+											<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
+										</div>							
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="email"></span>
+											<input id="signInEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="password"></span>
+											<input id="signInPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+										</div>
+										<div class="form-group input-group" id="divSignInConfirmationCode">
+											<span class="input-group-addon" data-translate="confirmationCode"></span>
+											<input id="signInConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-btn">
+												<button id="btnSignIn" class="btn btn-secondary" type="submit" data-translate="enter"></button>
+											</span>
+										</div>
 									</div>
-									<div class="form-group input-group">
-										<span class="input-group-addon" data-translate="password"></span>
-										<input id="signInPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
-									</div>
-									<div class="form-group input-group" id="divSignInConfirmationCode">
-										<span class="input-group-addon" data-translate="confirmationCode"></span>
-										<input id="signInConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
-									</div>
-									<div class="form-group input-group">
-										<span class="input-group-btn">
-											<button id="btnSignIn" class="btn btn-secondary" type="button" data-translate="enter"></button>
-										</span>
-									</div>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -730,34 +732,36 @@
 							</button>
 						</div>
 						<div class="modal-body">
-							<div class="container-fluid">
-								<div class="row">
-									<div class="form-group">
-										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignUpError"></div>
-									</div>							
-									<div class="form-group input-group">
-										<span class="input-group-addon" data-translate="email"></span>
-										<input id="signUpEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
-									</div>
-									<div class="form-group input-group">
-										<span class="input-group-addon" data-translate="password"></span>
-										<input id="signUpPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
-									</div>
-									<div class="form-group input-group">
-										<span class="input-group-addon" data-translate="password"></span>
-										<input id="signUpRepeatPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="repeatPassword"></input>
-									</div>
-									<div class="form-group input-group" id="divSignUpConfirmationCode">
-										<span class="input-group-addon" data-translate="confirmationCode"></span>
-										<input id="signUpConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
-									</div>
-									<div class="form-group input-group">
-										<span class="input-group-btn">
-											<button id="btnSignUp" class="btn btn-secondary" type="button" data-translate="signUp2"></button>
-										</span>
+							<form>
+								<div class="container-fluid">
+									<div class="row">
+										<div class="form-group">
+											<div class="alert alert-danger collapse col-12" role="alert" id="alertSignUpError"></div>
+										</div>							
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="email"></span>
+											<input id="signUpEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="password"></span>
+											<input id="signUpPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="password"></span>
+											<input id="signUpRepeatPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="repeatPassword"></input>
+										</div>
+										<div class="form-group input-group" id="divSignUpConfirmationCode">
+											<span class="input-group-addon" data-translate="confirmationCode"></span>
+											<input id="signUpConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-btn">
+												<button id="btnSignUp" class="btn btn-secondary" type="submit" data-translate="signUp2"></button>
+											</span>
+										</div>
 									</div>
 								</div>
-							</div>
+							</form>
 						</div>
 					</div>
 				</div>

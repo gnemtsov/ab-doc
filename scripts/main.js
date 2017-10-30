@@ -596,6 +596,10 @@ $(document).ready( function() {
 			})
 	});
 	
+	$('#modalDelete').on('shown.bs.modal', function() {
+		$('#buttonDelete').focus();
+	});
+	
 	// Disabling smoothing on all canvases
 	/*$('canvas').each( function() {
 		var ctx = this.getContext('2d');
