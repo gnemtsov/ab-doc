@@ -595,8 +595,22 @@ $(document).ready( function() {
 				}
 			})
 	});
+	
+	// Disabling smoothing on all canvases
+	/*$('canvas').each( function() {
+		var ctx = this.getContext('2d');
+		setProperty(ctx, 'imageSmoothingEnabled', false);
+		setProperty(ctx, 'mozImageSmoothingEnabled', false);
+		setProperty(ctx, 'oImageSmoothingEnabled', false);
+		setProperty(ctx, 'webkitImageSmoothingEnabled', false);
+	});*/
 });
 
+function setProperty(obj, p, val) {
+	if (obj[p] !== undefined) {
+		obj[p] = val;
+	}
+}
 
 //------------------------------------------------
 //-----------  Signing in, signing up  -----------
@@ -1881,14 +1895,19 @@ function updateIndicator() {
 		w = canvas.width,
 		h = canvas.height;
 	
-	var topLX = w*0.05, topRX = w*0.95,
-		topLY = h*0.05, topRY = h*0.05,
-		botLX = w*0.10, botRX = w*0.90,
-		botLY = h*0.95, botRY = h*0.95,
+	var topLX = w*0.08, topRX = w*0.92,
+		topLY = h*0.08, topRY = h*0.08,
+		botLX = w*0.15, botRX = w*0.85,
+		botLY = h*0.92, botRY = h*0.92,
 		edgeLX = topLX*f + botLX*(1.0 - f),
 		edgeRX = topRX*f + botRX*(1.0 - f),
 		edgeLY = topLY*f + botLY*(1.0 - f),
 		edgeRY = topRY*f + botRY*(1.0 - f);
+	
+	/*setProperty(ctx, 'imageSmoothingEnabled', false);
+	setProperty(ctx, 'mozImageSmoothingEnabled', false);
+	setProperty(ctx, 'oImageSmoothingEnabled', false);
+	setProperty(ctx, 'webkitImageSmoothingEnabled', false);*/
 	
 	ctx.clearRect(0, 0, w, h);
 	
@@ -1901,7 +1920,8 @@ function updateIndicator() {
 	ctx.lineTo(edgeRX, edgeRY);
 	ctx.fill();
 	
-	ctx.lineWidth = 1.75;
+	ctx.lineWidth = 2.00;
+	
 	ctx.strokeStyle = '#FFFFFF';
 	ctx.beginPath();
 	ctx.moveTo(topLX, topLY);
