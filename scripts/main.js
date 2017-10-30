@@ -1546,6 +1546,7 @@ function beforeDrop (treeId, treeNodes, targetNode, moveType) {
 }
 
 function beforeEditName(treeId, treeNode) {
+	console.log('beforeEditName');
 	if (TREE_READONLY) {
 		return false;
 	}
@@ -1728,7 +1729,12 @@ function addHoverDom(treeId, treeNode) {
 			}
 			i++;
 		}
-		zTree.addNodes(treeNode, {id: GetGUID(), name: name, files: []});
+		var guid = GetGUID();
+		var newNode = {id: guid, name: name, files: []};
+		zTree.addNodes(treeNode, newNode);
+		
+		routerOpen(guid);
+		zTree.editName(newNode);
 		
 		$updated.addClass('pending');
 		$updated.show();
