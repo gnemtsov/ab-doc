@@ -1866,8 +1866,13 @@ function beforeRemove(treeId, treeNode) {
 				});
 		};
 		f(treeNode);
-
-		tree.removeNode(treeNode, false);
+	
+		var $node = $('#' + treeNode.tId + '_a');
+		$node.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
+		$node.fadeOut('slow', function () {
+			tree.removeNode(treeNode, false);
+		});
+		
 		$updated.addClass('pending');
 		$updated.show();
 		TREE_MODIFIED = true;
