@@ -5,6 +5,10 @@ var _translatorData = {
 		"ru": "Вход",
 		"en": "Sign in"
 	},
+	"welcomeMessage": {
+		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
+		"en": 'Please <a class="link-sign-in" href="#">login</a> or <a class="link-sign-up" href="#">register</a> to start working.'
+	},
 	"email": {
 		"ru": "Почта",
 		"en": "Email"
@@ -109,8 +113,8 @@ var _translatorData = {
 		"en": "edited"
 	},
 	"typeYourText": {
-		"ru": "ваш текст...",
-		"en": "type your text..."
+		"ru": "Напишите что-нибудь удивительное...",
+		"en": "Compose something awesome..."
 	},
 	
 	"deleteTitle": {
@@ -486,13 +490,15 @@ $(document).ready( function() {
 		return true;	
 	});
 	
-	$('.link-sign-in').click( function() {
+	$('body').on('click', 'a.link-sign-in', function (e) {
 		// Signing in
+		e.preventDefault();
 		$('#modalSignIn').modal('show');
 	});
 	
-	$('.link-sign-up').click( function() {
+	$('body').on('click', 'a.link-sign-up', function (e) {
 		// Signing up
+		e.preventDefault();
 		$('#modalSignUp').modal('show');
 	});
 	

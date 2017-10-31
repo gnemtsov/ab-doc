@@ -61,11 +61,15 @@
 				height: 100%;
 				overflow: hidden;
 			}
-			
+
 			a.navbar-brand img{
 				height: 42px;
 			}
 			
+			.form-control{
+			    line-height: 1.5;
+			}
+											
 			.node_name {
 				font-size: 15px;
 				margin-left: 4px;
@@ -97,7 +101,9 @@
 				height: 20px !important;
 				margin: 2px 2px 0px 0px !important;
 			}
-			
+			.ztree li span {
+				margin-right: 10px;
+			}			
 			span.remove {
 				width: 24px;
 				height: 24px;
@@ -448,14 +454,14 @@
 			
 			
 			div.cross {
-				width: 18px;
-				height: 18px;
+				width: 16px;
+				height: 16px;
 				display: inline-block;
 				background-image: url(/img/icons/trash.svg);
 				background-size: contain;
 				background-repeat: no-repeat;
 				margin-left: 8px;
-				margin-top: 1px;
+				margin-top: 2px;
 				cursor: pointer;
 			}	
 			
@@ -487,10 +493,7 @@
 			button, select {
 				cursor: pointer;
 			}
-			
-			span.input-group-addon {
-				width: 150px;
-			}
+
 		</style>
 		
 		<style type="text/css">
@@ -589,18 +592,15 @@
 			
 			.nav-item > select.form-control {
 				font-size: 14px;
-				height: 28px !important;
 				padding: 4px;
-				/*it doesn't work ---> vertical-align: middle;*/
 				margin-top: 4px;
 			}
-			
-			
+
 		</style>
 	</head>
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
-			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></a>
+			<a class="navbar-brand" href="/"><img src="/img/Logo.png"></a>
 			<canvas class="authenticated-mode" id="sizeIndicator" width="24" height="24"></canvas>
 			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated">
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -612,7 +612,7 @@
 						<span class="navbar-text" id="username">Name</span>
 					</li>
 					<li class="nav-item">
-						<select class="form-control" id="selectLang">
+						<select class="form-control" id="selectLang" size="1">
 							<option value="ru">Ру</option>
 							<option value="en">En</option>
 						</select>
@@ -642,12 +642,12 @@
 			</div-->
 
 			<div class="row preloader-container justify-content-center">
-				<div class="big-preloader" style="margin-top: 80px;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+				<div class="big-preloader" style="margin-top: 120px;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 			</div>
  			
- 			<div class="row unauthenticated-mode" style="margin-top: 40px;">
+ 			<div class="row unauthenticated-mode" style="margin-top: 120px;">
 				<div class="col-12">
-					<h2 class="text-center">Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.</h2>
+					<h2 class="text-center" data-translate="welcomeMessage"></h2>
 				</div>
  			</div>
  			
@@ -686,7 +686,7 @@
 							<p id="pDeleteMessage"></p>
 						</div>
 						<div class="modal-footer">
-							<button id = "buttonDelete" type="submit" class="btn btn-primary" data-dismiss="modal" data-translate="ok"></button>
+							<button id = "buttonDelete" type="submit" class="btn btn-danger" data-dismiss="modal" data-translate="ok"></button>
 							<button type="button" class="btn btn-secondary" data-dismiss="modal" data-translate="cancel"></button>
 						</div>
 					</div>
@@ -723,7 +723,7 @@
 									</div>
 									<div class="form-group input-group">
 										<span class="input-group-btn">
-											<button id="btnSignIn" class="btn btn-secondary" type="submit" data-translate="enter"></button>
+											<button id="btnSignIn" class="btn btn-success" type="submit" data-translate="enter"></button>
 											<div id="preloaderSignIn" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 										</span>
 									</div>
@@ -768,7 +768,7 @@
 									</div>
 									<div class="form-group input-group">
 										<span class="input-group-btn">
-											<button id="btnSignUp" class="btn btn-secondary" type="submit" data-translate="signUp2"></button>
+											<button id="btnSignUp" class="btn btn-success" type="submit" data-translate="signUp2"></button>
 											<div id="preloaderSignUp" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 										</span>
 									</div>
