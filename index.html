@@ -487,6 +487,10 @@
 			button, select {
 				cursor: pointer;
 			}
+			
+			span.input-group-addon {
+				width: 150px;
+			}
 		</style>
 		
 		<style type="text/css">
@@ -614,13 +618,13 @@
 						</select>
 					</li>
 					<li class="nav-item authenticated-mode">
-						<a class="navbar-text" id="linkSignOut" data-translate="exit" href="#"></a>
+						<a class="navbar-text link-sign-out" data-translate="exit" href="#"></a>
 					</li>
 					<li class="nav-item unauthenticated-mode">
-						<a class="navbar-text" id="linkSignIn" data-translate="enter" href="#"></a>
+						<a class="navbar-text link-sign-in" data-translate="enter" href="#"></a>
 					</li>
 					<li class="nav-item unauthenticated-mode">
-						<a class="navbar-text" id="linkSignUp" data-translate="signUp" href="#"></a>
+						<a class="navbar-text link-sign-up" data-translate="signUp" href="#"></a>
 					</li>
 				</ul>
 			</div>
@@ -630,7 +634,7 @@
 			<!--div class="row justify-content-center">
 				<div class="alert alert-danger collapse col-4" role="alert" id="alertError" style="z-index: 1045;">
 					<span id="spanSomethingWentWrong" data-translate="somethingWentWrong"></span>
-					<a href="/index.html" id="linkReturn" data-translate="return"></a>
+					<a href="/index.html" class="link-return" data-translate="return"></a>
 					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -641,7 +645,13 @@
 				<div class="big-preloader" style="margin-top: 80px;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 			</div>
  			
- 			<div class="row app-container">
+ 			<div class="row unauthenticated-mode" style="margin-top: 40px;">
+				<div class="col-12">
+					<h2 class="text-center">Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.</h2>
+				</div>
+ 			</div>
+ 			
+ 			<div class="row app-container authenticated-mode">
 				<div id="ztree-div" class="ab-opened">
 					<ul id="abTree" class="ztree"></ul>
 				</div>

@@ -449,7 +449,7 @@ var $updated;
 $(document).ready( function() {
 	$('.app-container').hide();
 	
-	SetUnknownMode();
+	setUnknownMode();
 	
 	initS3()
 		.then( function(ok) {
@@ -462,36 +462,36 @@ $(document).ready( function() {
 		.catch( function(err) {
 			switch(err.name) {
 				case 'NotSignedIn':
-					SetUnauthenticatedMode();
+					setUnauthenticatedMode();
 					break;
 				default:
 					onError(err);
 			}
 		});
 	
-	$('#linkSignOut').click( function() {
+	$('.link-sign-out').click( function() {
 		if (COGNITO_USER) {
 			COGNITO_USER.signOut();
 		}
 		//window.location.replace('/login.html');
-		SetUnauthenticatedMode();
+		setUnauthenticatedMode();
 		return true;	
 	});	
-	$('#linkReturn').click( function() {
+	$('.link-return').click( function() {
 		if (COGNITO_USER) {
 			COGNITO_USER.signOut();
 		}
 		//window.location.replace('/login.html');
-		SetUnauthenticatedMode();
+		setUnauthenticatedMode();
 		return true;	
 	});
 	
-	$('#linkSignIn').click( function() {
+	$('.link-sign-in').click( function() {
 		// Signing in
 		$('#modalSignIn').modal('show');
 	});
 	
-	$('#linkSignUp').click( function() {
+	$('.link-sign-up').click( function() {
 		// Signing up
 		$('#modalSignUp').modal('show');
 	});
@@ -509,7 +509,7 @@ $(document).ready( function() {
 				return initS3();
 			})
 			.then( function() {
-				SetAuthenticatedMode();
+				setAuthenticatedMode();
 				return initTree();
 			})
 			.then( function() {
@@ -571,7 +571,7 @@ $(document).ready( function() {
 				return initS3();
 			})
 			.then( function() {
-				SetAuthenticatedMode();
+				setAuthenticatedMode();
 				return initTree();
 			})
 			.then( function() {
@@ -808,7 +808,7 @@ function initS3() {
 		var cognitoUser = USER_POOL.getCurrentUser();
 		COGNITO_USER = cognitoUser;
 		if(!cognitoUser) {
-			//SetUnauthenticatedMode();
+			//setUnauthenticatedMode();
 			//console.log('Not signed in');
 			reject(ABError('NotSignedIn'));
 			return;
@@ -908,7 +908,7 @@ function initRootDoc(srcLocation, dstKey) {
 function initTree() {
 	TREE_READONLY = TREE_USERID !== USERID;
 	var promise = new Promise( function(resolve, reject) {
-		SetAuthenticatedMode();
+		setAuthenticatedMode();
 		// Trying to load tree
 		loadABTree(TREE_KEY).then(
 			function(abTree) {
@@ -947,7 +947,7 @@ function initTree() {
 			
 			$.fn.zTree.init($("#abTree"), settings, zNodes);
 			
-			SetAuthenticatedMode();
+			setAuthenticatedMode();
 			
 			TREE_READY = true;
 			
@@ -985,7 +985,7 @@ $(function() {
 //------------------------------------------------
 
 // Changes UI for using in authenticated mode (tree + doc)
-function SetAuthenticatedMode() {
+function setAuthenticatedMode() {
 	// TODO
 	console.log('authenticated');
 	
@@ -999,7 +999,7 @@ function SetAuthenticatedMode() {
 }
 
 // Changes UI for using in unauthenticated mode (only doc)
-function SetUnauthenticatedMode() {
+function setUnauthenticatedMode() {
 	console.log('unauthenticated');
 	
 	$('.preloader-container').hide();
@@ -1009,7 +1009,7 @@ function SetUnauthenticatedMode() {
 	$('.authenticated-mode').hide();
 }
 
-function SetUnknownMode() {
+function setUnknownMode() {
 	console.log('unknown');
 	
 	$('.authenticated-mode').hide();
