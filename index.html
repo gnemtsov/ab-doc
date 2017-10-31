@@ -526,12 +526,28 @@
 				animation: sk-bouncedelay 0.9s infinite ease-in-out both;
 			}
 
-			.small-preloader .bounce1 {
+			.small-preloader .bounce1, .big-preloader .bounce1{
 				animation-delay: -0.30s;
 			}
 
-			.small-preloader .bounce2 {
+			.small-preloader .bounce2, .big-preloader .bounce1 {
 				animation-delay: -0.15s;
+			}
+
+			.big-preloader {
+				width: 80px;
+				text-align: center;
+			}
+
+			.big-preloader > div {
+				width: 16px;
+				height: 16px;
+				margin: 2px;
+				background-color: #606060;
+
+				border-radius: 100%;
+				display: inline-block;
+				animation: sk-bouncedelay 0.9s infinite ease-in-out both;
 			}
 
 			@keyframes sk-bouncedelay {
@@ -618,7 +634,7 @@
 			</div-->
 
 			<div class="row preloader-container justify-content-center">
-				<span class="preloader"></span>
+				<div class="big-preloader" style="margin-top: 80px;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 			</div>
  			
  			<div class="row app-container">
@@ -656,7 +672,7 @@
 							<p id="pDeleteMessage"></p>
 						</div>
 						<div class="modal-footer">
-							<button id = "buttonDelete" type="button" class="btn btn-primary" data-dismiss="modal" data-translate="ok"></button>
+							<button id = "buttonDelete" type="submit" class="btn btn-primary" data-dismiss="modal" data-translate="ok"></button>
 							<button type="button" class="btn btn-secondary" data-dismiss="modal" data-translate="cancel"></button>
 						</div>
 					</div>
@@ -675,7 +691,7 @@
 						</div>
 						<div class="modal-body">
 							<div class="container-fluid">
-								<div class="row">
+								<form>
 									<div class="form-group">
 										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
 									</div>							
@@ -693,10 +709,11 @@
 									</div>
 									<div class="form-group input-group">
 										<span class="input-group-btn">
-											<button id="btnSignIn" class="btn btn-secondary" type="button" data-translate="enter"></button>
+											<button id="btnSignIn" class="btn btn-secondary" type="submit" data-translate="enter"></button>
+											<div id="preloaderSignIn" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 										</span>
 									</div>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -715,7 +732,7 @@
 						</div>
 						<div class="modal-body">
 							<div class="container-fluid">
-								<div class="row">
+								<form>
 									<div class="form-group">
 										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignUpError"></div>
 									</div>							
@@ -737,10 +754,11 @@
 									</div>
 									<div class="form-group input-group">
 										<span class="input-group-btn">
-											<button id="btnSignUp" class="btn btn-secondary" type="button" data-translate="signUp2"></button>
+											<button id="btnSignUp" class="btn btn-secondary" type="submit" data-translate="signUp2"></button>
+											<div id="preloaderSignUp" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 										</span>
 									</div>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>

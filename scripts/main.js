@@ -66,6 +66,10 @@ var _translatorData = {
 		"ru": "Пользователь с таким именем уже существует.",
 		"en": "This username is already taken."
 	},
+	"alertExpiredCode": {
+		"ru": "Код подтверждения устарел. Вам был выслан новый.",
+		"en": "Your confirmation code is expired. New confirmation code was sent to you."
+	},
 	"repeatPassword": {
 		"ru": "Повторите пароль",
 		"en": "Repeat password"
@@ -492,10 +496,10 @@ $(document).ready( function() {
 		$('#modalSignUp').modal('show');
 	});
 	
-	//$('#username').text(cognitoUser.username);
-	
 	$('#btnSignIn').click( function() {
 		$('#alertSignInError').hide();
+		$('#btnSignIn').prop('disabled', true);
+		$('#preloaderSignIn').show();
 		var code;
 		if ($('#signInConfirmationCode').is(':visible')) {
 			code = $('#signInConfirmationCode').val();
@@ -506,13 +510,13 @@ $(document).ready( function() {
 			})
 			.then( function() {
 				SetAuthenticatedMode();
-				$('#modalSignIn').modal('hide');
-			})
-			.then( function() {
 				return initTree();
 			})
 			.then( function() {
 				window.routerOpen();
+				$('#btnSignIn').prop('disabled', false);
+				$('#preloaderSignIn').hide();
+				$('#modalSignIn').modal('hide');
 			})
 			.catch( function (err) {
 				console.log(err);
@@ -532,14 +536,26 @@ $(document).ready( function() {
 						$('#alertSignInError').html(_translatorData['alertWrongCode'][LANG]);
 						$('#alertSignInError').show();
 						break;
+					case 'ExpiredCodeException':
+						$('#alertSignInError').html(_translatorData['alertExpiredCode'][LANG]);
+						$('#alertSignInError').show();
+						resendConfirmationCode($('#signInEmail').val())
+							.catch( function(err) {
+								onError(err);
+							});
+						break;						
 					default:
 						onError(err);
 				}
+				$('#btnSignIn').prop('disabled', false);
+				$('#preloaderSignIn').hide();
 			})
 	});
 	
 	$('#btnSignUp').click( function() {
 		$('#alertSignUpError').hide();
+		$('#btnSignUp').prop('disabled', true);
+		$('#preloaderSignUp').show();
 		var code;
 		if ($('#signUpConfirmationCode').is(':visible')) {
 			code = $('#signUpConfirmationCode').val();
@@ -556,13 +572,13 @@ $(document).ready( function() {
 			})
 			.then( function() {
 				SetAuthenticatedMode();
-				$('#modalSignUp').modal('hide');
-			})
-			.then( function() {
 				return initTree();
 			})
 			.then( function() {
 				routerOpen();
+				$('#btnSignUp').prop('disabled', false);
+				$('#preloaderSignIn').hide();
+				$('#modalSignUp').modal('hide');
 			})
 			.catch( function (err) {
 				console.log(err.name, 'Here!');
@@ -589,11 +605,35 @@ $(document).ready( function() {
 					case 'WrongRepeat':
 						$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
 						$('#alertSignUpError').show();
-						break;			
+						break;
+					case 'ExpiredCodeException':
+						$('#alertSignUpError').html(_translatorData['alertExpiredCode'][LANG]);
+						$('#alertSignUpError').show();
+						resendConfirmationCode($('#signUpEmail').val())
+							.catch( function(err) {
+								onError(err);
+							});
+						break;
 					default:
 						onError(err);
 				}
+				$('#btnSignUp').prop('disabled', false);
+				$('#preloaderSignUp').hide();
 			})
+	});
+	
+	$('#modalDelete').on('shown.bs.modal', function() {
+		$('#buttonDelete').focus();
+	});
+	
+	$('#modalSignIn').on('shown.bs.modal', function() {
+		$('#alertSignInError').hide();
+		$('#signInEmail').focus();
+	});
+
+	$('#modalSignUp').on('shown.bs.modal', function() {
+		$('#alertSignUpError').hide();
+		$('#signUpEmail').focus();
 	});
 	
 	// Disabling smoothing on all canvases
@@ -670,9 +710,31 @@ function signUp(email, password, password2, confirmationCode) {
     return promise;
 }
 
+function resendConfirmationCode(email) {
+	var promise = new Promise( function(resolve, reject) {
+		var userData = {
+			Username : email,
+			Pool : USER_POOL
+		};
+	
+		var cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);		
+		
+		cognitoUser.resendConfirmationCode( function(err, result) {
+			if(err) {
+				reject(err);	
+			} else {
+				console.log(result);
+				resolve(true);
+			}
+		});
+    });
+    
+    return promise;
+}
+
 // Returns Promise (ok, error)
 function signIn(email, password, confirmationCode) {
-	console.log(email, password);
+	//console.log(email, password);
 	var promise = new Promise( function(resolve, reject) {
 		//AWSCognito.config.region = 'us-west-2';	
 		
