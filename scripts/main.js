@@ -1377,7 +1377,7 @@ $(function () {
 		thresholdRight = $splitter.outerWidth() +
 						parseFloat($document.css('padding-left')) +
 						parseFloat($document.css('padding-right')) +
-						300;//$('#dropzone-wrap').outerWidth();
+						300;
 	console.log(thresholdRight, $('#dropzone-wrap').outerWidth());
 	
 	
