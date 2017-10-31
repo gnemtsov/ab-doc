@@ -600,6 +600,14 @@ $(document).ready( function() {
 		$('#buttonDelete').focus();
 	});
 	
+	$('#modalSignIn').on('shown.bs.modal', function() {
+		$('#signInEmail').focus();
+	});
+
+	$('#modalSignUp').on('shown.bs.modal', function() {
+		$('#signUpEmail').focus();
+	});
+	
 	// Disabling smoothing on all canvases
 	/*$('canvas').each( function() {
 		var ctx = this.getContext('2d');
