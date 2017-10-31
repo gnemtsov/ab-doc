@@ -6,7 +6,7 @@ var _translatorData = {
 		"en": "Sign in"
 	},
 	"welcomeMessage": {
-		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
+		"ru": 'Чтобы работать с документами, нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
 		"en": 'Please <a class="link-sign-in" href="#">login</a> or <a class="link-sign-up" href="#">register</a> to start working.'
 	},
 	"email": {
