@@ -1613,11 +1613,6 @@ function beforeEditName(treeId, treeNode) {
 		return false;
 	}
 	
-	// Do not allow editing name of the head (username)
-	if (treeNode.head === true) {
-		return false;
-	}
-	
 	var zTree = $.fn.zTree.getZTreeObj(treeId);
 	// Select text in node, which name we are going to edit.
 	var inputId = treeNode.tId + "_input";
@@ -1748,7 +1743,7 @@ function showRenameBtn(id, node) {
 	if (TREE_READONLY) {
 		return false;
 	}
-	return !node.head;
+	return true;
 }
 
 var lastId = -1;
