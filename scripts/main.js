@@ -1789,11 +1789,12 @@ function addHoverDom(treeId, treeNode) {
 			i++;
 		}
 		var guid = GetGUID();
-		var newNode = {id: guid, name: name, files: []};
-		zTree.addNodes(treeNode, newNode);
+		zTree.addNodes(treeNode, {id: guid, name: name, files: []});
+		var newNode = zTree.getNodeByParam('id', guid);
 		
 		routerOpen(guid);
 		zTree.editName(newNode);
+		('#' + newNode.tId + '_input').select();
 		
 		$updated.addClass('pending');
 		$updated.show();
