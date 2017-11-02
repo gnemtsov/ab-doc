@@ -941,7 +941,8 @@ function initTree() {
 			
 			var zNodes = abTree;
 			zNodes[0].head = true;
-			zNodes[0].icon = '/img/icons/home.svg';
+			zNodes[0].iconOpen = '/img/icons/home-opened.svg';
+			zNodes[0].iconClose= '/img/icons/home-closed.svg';
 			zNodes[0].open = true;
 			
 			ROOT_DOC_GUID = zNodes[0].id;
