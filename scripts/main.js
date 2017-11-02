@@ -1772,7 +1772,7 @@ function addHoverDom(treeId, treeNode) {
 	// Add new item
 	var btn = $("#addBtn_"+treeNode.tId);
 	if (btn) btn.bind("click", function() {
-		var zTree = $.fn.zTree.getZTreeObj("abTree");
+		var zTree = $.fn.zTree.getZTreeObj(treeId);
 		var name; 
 		var path; 
 		var ok = false;
@@ -1933,11 +1933,23 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 }
 
 function onRename(event, treeId, treeNode, isCancel) {
+	var zTree = $.fn.zTree.getZTreeObj(treeId);
+	
+	// GUID of a document currently opened in editor
+	var openedGUID = $('#editor').attr('guid');
+	
 	if (!isCancel) {
 		$updated.addClass('pending');
 		$updated.show();
 		TREE_MODIFIED = true;
+		
+		if (treeNode.id == openedGUID) {
+			$('#selectedDoc').html(treeNode.name);
+		}
 	}
+	
+	// Renamed node is selected in tree now. Select the node, opened in editor.
+	zTree.selectNode(zTree.getNodeByParam('id', openedGUID), false, true);
 }
 
 
