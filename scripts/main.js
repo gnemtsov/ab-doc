@@ -642,14 +642,9 @@ $(document).ready( function() {
 		$('#signUpEmail').focus();
 	});
 	
-	// Disabling smoothing on all canvases
-	/*$('canvas').each( function() {
-		var ctx = this.getContext('2d');
-		setProperty(ctx, 'imageSmoothingEnabled', false);
-		setProperty(ctx, 'mozImageSmoothingEnabled', false);
-		setProperty(ctx, 'oImageSmoothingEnabled', false);
-		setProperty(ctx, 'webkitImageSmoothingEnabled', false);
-	});*/
+	$('form').on('submit', function() {
+		return false;
+	});
 });
 
 function setProperty(obj, p, val) {
@@ -946,7 +941,8 @@ function initTree() {
 			
 			var zNodes = abTree;
 			zNodes[0].head = true;
-			zNodes[0].icon = '/img/icons/home.svg';
+			zNodes[0].iconOpen = '/img/icons/home-opened.svg';
+			zNodes[0].iconClose= '/img/icons/home-closed.svg';
 			zNodes[0].open = true;
 			
 			ROOT_DOC_GUID = zNodes[0].id;
@@ -1776,7 +1772,7 @@ function addHoverDom(treeId, treeNode) {
 	// Add new item
 	var btn = $("#addBtn_"+treeNode.tId);
 	if (btn) btn.bind("click", function() {
-		var zTree = $.fn.zTree.getZTreeObj("abTree");
+		var zTree = $.fn.zTree.getZTreeObj(treeId);
 		var name; 
 		var path; 
 		var ok = false;
@@ -1793,11 +1789,12 @@ function addHoverDom(treeId, treeNode) {
 			i++;
 		}
 		var guid = GetGUID();
-		var newNode = {id: guid, name: name, files: []};
-		zTree.addNodes(treeNode, newNode);
+		zTree.addNodes(treeNode, {id: guid, name: name, files: []});
+		var newNode = zTree.getNodeByParam('id', guid);
 		
 		routerOpen(guid);
 		zTree.editName(newNode);
+		('#' + newNode.tId + '_input').select();
 		
 		$updated.addClass('pending');
 		$updated.show();
@@ -1936,11 +1933,23 @@ function beforeRename(treeId, treeNode, newName, isCancel) {
 }
 
 function onRename(event, treeId, treeNode, isCancel) {
+	var zTree = $.fn.zTree.getZTreeObj(treeId);
+	
+	// GUID of a document currently opened in editor
+	var openedGUID = $('#editor').attr('guid');
+	
 	if (!isCancel) {
 		$updated.addClass('pending');
 		$updated.show();
 		TREE_MODIFIED = true;
+		
+		if (treeNode.id == openedGUID) {
+			$('#selectedDoc').html(treeNode.name);
+		}
 	}
+	
+	// Renamed node is selected in tree now. Select the node, opened in editor.
+	zTree.selectNode(zTree.getNodeByParam('id', openedGUID), false, true);
 }
 
 
