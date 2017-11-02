@@ -642,14 +642,9 @@ $(document).ready( function() {
 		$('#signUpEmail').focus();
 	});
 	
-	// Disabling smoothing on all canvases
-	/*$('canvas').each( function() {
-		var ctx = this.getContext('2d');
-		setProperty(ctx, 'imageSmoothingEnabled', false);
-		setProperty(ctx, 'mozImageSmoothingEnabled', false);
-		setProperty(ctx, 'oImageSmoothingEnabled', false);
-		setProperty(ctx, 'webkitImageSmoothingEnabled', false);
-	});*/
+	$('form').on('submit', function() {
+		return false;
+	});
 });
 
 function setProperty(obj, p, val) {
