@@ -3,11 +3,11 @@
 var _translatorData = {
 	"loginPage": {
 		"ru": "Вход",
-		"en": "Sign in"
+		"en": "Log in"
 	},
 	"welcomeMessage": {
 		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
-		"en": 'Please <a class="link-sign-in" href="#">login</a> or <a class="link-sign-up" href="#">register</a> to start working.'
+		"en": 'Please <a class="link-sign-in" href="#">log in</a> or <a class="link-sign-up" href="#">create account</a> to start working.'
 	},
 	"email": {
 		"ru": "Почта",
@@ -47,16 +47,16 @@ var _translatorData = {
 	},
 	"enter": {
 		"ru": "Войти",
-		"en": "Sign in"
+		"en": "Log in"
 	},
 	"signUp": {
 		"ru": "Нет учётной записи?",
-		"en": "Sign up"
+		"en": "Create account"
 	},
 	
 	"registration": {
 		"ru": "Регистрация",
-		"en": "Registration"
+		"en": "Create account"
 	},
 	"alertWrongRepeat": {
 		"ru": "Пароли не совпали.",
@@ -80,7 +80,7 @@ var _translatorData = {
 	},
 	"signUp2": {
 		"ru": "Создать учётную запись",
-		"en": "Sign up"
+		"en": "Create account"
 	},
 	
 	"exit": {
