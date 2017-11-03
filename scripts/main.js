@@ -1101,6 +1101,9 @@ function findOwner(guid) {
 //---------------------------------------
 
 function routerOpen(wantGUID) {
+	// showing preloader on Editor
+	preloaderOnEditor(true);
+	
 	if (!wantGUID) {
 		wantGUID = window.location.pathname.slice(1); // drop first '/'
 	}
@@ -1130,9 +1133,6 @@ function routerOpen(wantGUID) {
 						return Promise.reject(null);
 					}
 				})
-			
-			// showing preloader on Editor
-			// TODO
 		}
 		
 		promise
@@ -1968,6 +1968,27 @@ function onRename(event, treeId, treeNode, isCancel) {
 	
 	// Renamed node is selected in tree now. Select the node, opened in editor.
 	zTree.selectNode(zTree.getNodeByParam('id', openedGUID), false, true);
+}
+
+
+//------------------------------------------------
+//------------------- Editor ---------------------
+//------------------------------------------------
+
+$( function() {
+	preloaderOnEditor(true);
+});
+
+// GUI-only
+// Turns preloader on editor on and off
+function preloaderOnEditor(on) {
+	if (on) {
+		$('#editor-wrap').hide();
+		$('#editor-preloader').show();
+	} else {
+		$('#editor-preloader').hide();
+		$('#editor-wrap').show();
+	}
 }
 
 
