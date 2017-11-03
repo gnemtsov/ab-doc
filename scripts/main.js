@@ -3,11 +3,11 @@
 var _translatorData = {
 	"loginPage": {
 		"ru": "Вход",
-		"en": "Sign in"
+		"en": "Log in"
 	},
 	"welcomeMessage": {
 		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
-		"en": 'Please <a class="link-sign-in" href="#">login</a> or <a class="link-sign-up" href="#">register</a> to start working.'
+		"en": 'Please <a class="link-sign-in" href="#">log in</a> or <a class="link-sign-up" href="#">create account</a> to start working.'
 	},
 	"email": {
 		"ru": "Почта",
@@ -47,16 +47,16 @@ var _translatorData = {
 	},
 	"enter": {
 		"ru": "Войти",
-		"en": "Sign in"
+		"en": "Log in"
 	},
 	"signUp": {
 		"ru": "Нет учётной записи?",
-		"en": "Sign up"
+		"en": "Create account"
 	},
 	
 	"registration": {
 		"ru": "Регистрация",
-		"en": "Registration"
+		"en": "Create account"
 	},
 	"alertWrongRepeat": {
 		"ru": "Пароли не совпали.",
@@ -80,7 +80,7 @@ var _translatorData = {
 	},
 	"signUp2": {
 		"ru": "Создать учётную запись",
-		"en": "Sign up"
+		"en": "Create account"
 	},
 	
 	"exit": {
@@ -207,6 +207,7 @@ var settings = {
 		beforeRename: beforeRename,
 		beforeRemove: beforeRemove,
 		onClick: onClick,
+		onDblClick: onDblClick,
 		onDrop: onDrop,
 		onNodeCreated: onNodeCreated,
 		onRename: onRename
@@ -473,23 +474,18 @@ $(document).ready( function() {
 			}
 		});
 	
-	$('.link-sign-out').click( function() {
+	$('.link-sign-out, .link-return').click( function() {
 		if (COGNITO_USER) {
 			COGNITO_USER.signOut();
 		}
+		
+		AWS.config.credentials = null;
+		
 		//window.location.replace('/login.html');
 		setUnauthenticatedMode();
 		return true;	
 	});	
-	$('.link-return').click( function() {
-		if (COGNITO_USER) {
-			COGNITO_USER.signOut();
-		}
-		//window.location.replace('/login.html');
-		setUnauthenticatedMode();
-		return true;	
-	});
-	
+
 	$('body').on('click', 'a.link-sign-in', function (e) {
 		// Signing in
 		e.preventDefault();
@@ -864,6 +860,19 @@ function initS3() {
 	return promise;
 }
 
+// Refresh credentials every 30 mins.
+$( function() {
+	setInterval( function() {
+		if(AWS.config.credentials) {
+			AWS.config.credentials.refresh( function(err) {
+				if (err) {
+					console.log(err);
+				}
+			});
+		}
+	}, 1800000);
+});
+
 // Returns Promise(ok, err)
 function initRootDoc(srcLocation, dstKey) {
 	var getPromise = new Promise(function (resolve, reject) {
@@ -1100,6 +1109,9 @@ function findOwner(guid) {
 //---------------------------------------
 
 function routerOpen(wantGUID) {
+	// showing preloader on Editor
+	preloaderOnEditor(true);
+	
 	if (!wantGUID) {
 		wantGUID = window.location.pathname.slice(1); // drop first '/'
 	}
@@ -1734,6 +1746,16 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	routerOpen(treeNode.id);
 }
 
+function onDblClick(event, treeId, treeNode) {
+	if (!treeNode) {
+		return;
+	}
+	
+	var tree = $.fn.zTree.getZTreeObj(treeId);
+	tree.editName(treeNode);
+	$('#' + treeNode.tId + '_input').select();
+}
+
 function showRemoveBtn(id, node) {
 	if (TREE_READONLY) {
 		return false;
@@ -1794,7 +1816,7 @@ function addHoverDom(treeId, treeNode) {
 		
 		routerOpen(guid);
 		zTree.editName(newNode);
-		('#' + newNode.tId + '_input').select();
+		$('#' + newNode.tId + '_input').select();
 		
 		$updated.addClass('pending');
 		$updated.show();
@@ -1869,6 +1891,10 @@ function beforeRemove(treeId, treeNode) {
 				});
 		};
 		f(treeNode);
+	
+		if (treeNode.id == $('#editor').attr('guid')) {
+			routerOpen(tree.getNodes()[0].id);
+		}
 	
 		var $node = $('#' + treeNode.tId + '_a');
 		$node.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
@@ -1950,6 +1976,27 @@ function onRename(event, treeId, treeNode, isCancel) {
 	
 	// Renamed node is selected in tree now. Select the node, opened in editor.
 	zTree.selectNode(zTree.getNodeByParam('id', openedGUID), false, true);
+}
+
+
+//------------------------------------------------
+//------------------- Editor ---------------------
+//------------------------------------------------
+
+$( function() {
+	preloaderOnEditor(true);
+});
+
+// GUI-only
+// Turns preloader on editor on and off
+function preloaderOnEditor(on) {
+	if (on) {
+		$('#editor-wrap').hide();
+		$('#editor-preloader').show();
+	} else {
+		$('#editor-preloader').hide();
+		$('#editor-wrap').show();
+	}
 }
 
 
