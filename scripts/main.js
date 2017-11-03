@@ -474,23 +474,18 @@ $(document).ready( function() {
 			}
 		});
 	
-	$('.link-sign-out').click( function() {
+	$('.link-sign-out, .link-return').click( function() {
 		if (COGNITO_USER) {
 			COGNITO_USER.signOut();
 		}
+		
+		AWS.config.credentials = null;
+		
 		//window.location.replace('/login.html');
 		setUnauthenticatedMode();
 		return true;	
 	});	
-	$('.link-return').click( function() {
-		if (COGNITO_USER) {
-			COGNITO_USER.signOut();
-		}
-		//window.location.replace('/login.html');
-		setUnauthenticatedMode();
-		return true;	
-	});
-	
+
 	$('body').on('click', 'a.link-sign-in', function (e) {
 		// Signing in
 		e.preventDefault();
@@ -864,6 +859,19 @@ function initS3() {
 	
 	return promise;
 }
+
+// Refresh credentials every 30 mins.
+$( function() {
+	setInterval( function() {
+		if(AWS.config.credentials) {
+			AWS.config.credentials.refresh( function(err) {
+				if (err) {
+					console.log(err);
+				}
+			});
+		}
+	}, 1800000);
+});
 
 // Returns Promise(ok, err)
 function initRootDoc(srcLocation, dstKey) {

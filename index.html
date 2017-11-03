@@ -495,7 +495,11 @@
 			button, select {
 				cursor: pointer;
 			}
-
+			
+			/* fix disabled btn-success changing color when pressed */
+			.btn-success[disabled]:active {
+				background-color: rgb(40, 167, 69);
+			}
 		</style>
 		
 		<style type="text/css">
