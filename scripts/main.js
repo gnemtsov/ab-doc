@@ -1129,6 +1129,9 @@ function routerOpen(wantGUID) {
 						return Promise.reject(null);
 					}
 				})
+			
+			// showing preloader on Editor
+			// TODO
 		}
 		
 		promise
@@ -1734,6 +1737,15 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	routerOpen(treeNode.id);
 }
 
+function onDblClick(event, treeId, treeNode) {
+	if (!treeNode) {
+		return;
+	}
+	
+	tree = $.fn.zTree.getZTreeObj(treeId);
+	
+}
+
 function showRemoveBtn(id, node) {
 	if (TREE_READONLY) {
 		return false;
@@ -1794,7 +1806,7 @@ function addHoverDom(treeId, treeNode) {
 		
 		routerOpen(guid);
 		zTree.editName(newNode);
-		('#' + newNode.tId + '_input').select();
+		$('#' + newNode.tId + '_input').select();
 		
 		$updated.addClass('pending');
 		$updated.show();
@@ -1869,6 +1881,10 @@ function beforeRemove(treeId, treeNode) {
 				});
 		};
 		f(treeNode);
+	
+		if (treeNode.id == $('#editor').attr('guid')) {
+			routerOpen(tree.getNodes()[0].id);
+		}
 	
 		var $node = $('#' + treeNode.tId + '_a');
 		$node.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
