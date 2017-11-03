@@ -207,6 +207,7 @@ var settings = {
 		beforeRename: beforeRename,
 		beforeRemove: beforeRemove,
 		onClick: onClick,
+		onDblClick: onDblClick,
 		onDrop: onDrop,
 		onNodeCreated: onNodeCreated,
 		onRename: onRename
@@ -1742,8 +1743,9 @@ function onDblClick(event, treeId, treeNode) {
 		return;
 	}
 	
-	tree = $.fn.zTree.getZTreeObj(treeId);
-	
+	var tree = $.fn.zTree.getZTreeObj(treeId);
+	tree.editName(treeNode);
+	$('#' + treeNode.tId + '_input').select();
 }
 
 function showRemoveBtn(id, node) {
