@@ -452,8 +452,6 @@ var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
 var $updated;
 
 $(document).ready( function() {
-	$('.app-container').hide();
-	
 	setUnknownMode();
 	
 	initS3()
@@ -1153,7 +1151,8 @@ function routerOpen(wantGUID) {
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-						initQuill('#document', node.id, TREE_USERID, TREE_USERID !== USERID);
+//						initQuill('#document', node.id, TREE_USERID, TREE_USERID !== USERID);
+						$('#document').abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}

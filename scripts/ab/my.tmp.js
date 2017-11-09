@@ -307,7 +307,6 @@ function initQuill(id, guid, ownerid, readOnly) {
 	if ($('#editor').attr('modified') !== 0) {
 		if (USERID === $('#editor').attr('ownerid')) {
 			console.log('new editor. save old document.', USERID, TREE_USERID);
-			//alert('saving ' + $('#editor').attr('guid') + ', owned by ' + $('#editor').attr('ownerid'));
 			saveDocument('#editor');
 		}
 	}
@@ -386,20 +385,51 @@ function initQuill(id, guid, ownerid, readOnly) {
 			//$updated.html(_translatorData['saved'][LANG]);
 			$updated.hide();
 			
-			//редактор Quill from https://quilljs.com
-			var toolbar_options = [
-				'bold', 'italic', 'underline', 'strike', { 'size': [] }, { 'color': [] }, { 'background': [] }, 'blockquote', 'code-block', 'link', { 'list': 'ordered' }, { 'list': 'bullet' }, 'clean'
-			];
+			//quill config
 			var editor_options = {
 				placeholder: _translatorData['typeYourText'][LANG],
 				theme: 'bubble',
+				scrollingContainer: document.documentElement,
+				readOnly: readOnly,
+				bounds: '#document',
 				modules: {
-					toolbar: toolbar_options
-				},
+					toolbar: ['bold', 'italic', 'underline', 'strike', { 'size': [] }, { 'color': [] }, { 'background': [] }, 'blockquote', 'code-block', 'link', { 'list': 'ordered' }, { 'list': 'bullet' }, 'clean'],
+					clipboard: {
+						matchers: [
+						//	['BR', lineBreakMatcher],
+						//	[Node.TEXT_NODE, linkMatcher]
+						]
+					},
+					keyboard: {
+						bindings: {
+						/*	linebreak: {
+								key: 13,
+								shiftKey: true,
+								handler: function (range, context) {
+									var currentLeaf = this.quill.getLeaf(range.index)[0],
+										nextLeaf = this.quill.getLeaf(range.index + 1)[0],
+										delta = new Delta();
+											
+									delta.retain(range.index).insert({ 'break2': '' });
+									if (nextLeaf === null || (currentLeaf.parent !== nextLeaf.parent)) {
+										delta.insert({ 'break2': '' });
+									}
+									
+									this.quill.updateContents(delta, 'user');
+									this.quill.setSelection(range.index + 1, 'user');
+								}
+							},*/
+							esc: {
+								key: 27,
+								collapsed: false,
+								handler: function (range, context) {
+									$('div.ql-tooltip').addClass('ql-hidden');
+								}
+							}
+						}
+					}
+				}
 			};
-			if (readOnly) {
-				editor_options.readOnly = readOnly;
-			}
 
 			var editor = new Quill('#editor', editor_options);
 			$content.data('editor', editor);
