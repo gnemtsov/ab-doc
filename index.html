@@ -196,7 +196,7 @@
 				top: 0px;
 				bottom: 0px;
 				overflow-y: auto;
-				padding: 30px 20px 20px 20px;
+				padding: 30px 20px 20px 10px;
 			}
 			
 			#ztree-div.ab-closed {
@@ -235,6 +235,7 @@
 			#splitter.ab-closed {
 				border-style: none;
 				cursor: auto;
+				width: 22px;
 			}
 			
 			#splitter.thin {
@@ -317,7 +318,8 @@
 				width: 78px;
 				border-style: none;
 				padding-left: 8px;
-				margin-bottom: 8px;
+				margin-bottom: 4px;
+				margin-left: 8px;
 				cursor: auto !important;
 			}
 
@@ -411,7 +413,7 @@
 			ul.files .progress {
 				text-align: left;
 				width: 200px;
-				height: 20px;
+				height: 18px;
 				display: inline-block;
 			}
 			
@@ -479,7 +481,7 @@
 			.file-name a {
 				text-decoration: none;
 				border-bottom: 1px solid transparent;
-				height: 23px;
+				height: 20px;
 			}
 			
 			.file-name a:hover {
@@ -493,7 +495,11 @@
 			button, select {
 				cursor: pointer;
 			}
-
+			
+			/* fix disabled btn-success changing color when pressed */
+			.btn-success[disabled]:active {
+				background-color: rgb(40, 167, 69);
+			}
 		</style>
 		
 		<style type="text/css">
@@ -537,11 +543,11 @@
 				animation: sk-bouncedelay 0.9s infinite ease-in-out both;
 			}
 
-			.small-preloader .bounce1, .big-preloader .bounce1{
+			.small-preloader .bounce1, .big-preloader .bounce1 {
 				animation-delay: -0.30s;
 			}
 
-			.small-preloader .bounce2, .big-preloader .bounce1 {
+			.small-preloader .bounce2, .big-preloader .bounce2 {
 				animation-delay: -0.15s;
 			}
 
@@ -672,6 +678,7 @@
 						</div>
 						<div id="editor" class="message-content" waiting="0" modified="0"></div>
 					</div>
+					<div id="editor-preloader" class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 				</div>
  			</div>
  			

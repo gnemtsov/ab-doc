@@ -405,6 +405,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 			$content.data('editor', editor);
 			$content.attr('guid', guid);
 
+			preloaderOnEditor(false);
+
 			//лупа для больших изображений
 			function backgroundReposition(e, image){
 				var X = e.offsetX ? e.offsetX : e.pageX - image.offsetLeft,
