@@ -5,6 +5,10 @@ var _translatorData = {
 		"ru": "Вход",
 		"en": "Log in"
 	},
+	"resetPasswordPage": {
+		"ru": "Сброс пароля",
+		"en": "Password reset"
+	},
 	"welcomeMessage": {
 		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
 		"en": 'Please <a class="link-sign-in" href="#">log in</a> or <a class="link-sign-up" href="#">create account</a> to start working.'
@@ -45,9 +49,21 @@ var _translatorData = {
 		"ru": "Неверный код подтверждения.",
 		"en": "Wrong confirmation code."
 	},
+	"alertUnknownLoginError": {
+		"ru": "Произошла ошибка. Попробуйте войти ещё раз.",
+		"en": "Unknown error. Try again."
+	},
+	"alertNoUsername": {
+		"ru": "Укажите ваш email.",
+		"en": "Enter your email."
+	},
 	"enter": {
 		"ru": "Войти",
 		"en": "Log in"
+	},
+	"resetPassword": {
+		"ru": "Выслать код",
+		"en": "Send confirmation code"
 	},
 	"signUp": {
 		"ru": "Нет учётной записи?",
@@ -142,7 +158,7 @@ var _translatorData = {
 		"en": "Cancel"
 	},
 	
-	"emptyDropzoneMessage" :{
+	"emptyDropzoneMessage": {
 		"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
 		"en": "Drop your files here, you can place pictures right in the text"
 	},
@@ -161,6 +177,11 @@ var _translatorData = {
 	"no": {
 		"ru": "нет",
 		"en": "no"
+	},
+	
+	"forgotPassword": {
+		"ru": "Забыли пароль?",
+		"en": "Forgot password?"
 	}
 }
 
@@ -506,7 +527,16 @@ $(document).ready( function() {
 		if ($('#signInConfirmationCode').is(':visible')) {
 			code = $('#signInConfirmationCode').val();
 		}
-		signIn($('#signInEmail').val(), $('#signInPassword').val(), code)
+		new Promise( function(resolve, reject) {
+			if(!$('#signInEmail').val()) {
+				reject(ABError('NoUsername'));
+			} else {
+				resolve();
+			}
+		})
+			.then( function() {
+				return signIn($('#signInEmail').val(), $('#signInPassword').val(), code);
+			})
 			.then( function() {
 				return initS3();
 			})
@@ -545,13 +575,29 @@ $(document).ready( function() {
 							.catch( function(err) {
 								onError(err);
 							});
-						break;						
+						break;	
+					case 'NoUsername':
+						$('#alertSignInError').html(_translatorData['alertNoUsername'][LANG]);
+						$('#alertSignInError').show();
+						break;					
 					default:
+						$('#alertSignInError').html(_translatorData['alertUnknownLoginError'][LANG]);
+						$('#alertSignInError').show();						
 						onError(err);
 				}
 				$('#btnSignIn').prop('disabled', false);
 				$('#preloaderSignIn').hide();
 			})
+	});
+	
+	$('#forgotPassword').click( function() {
+		$('#btnSignIn').hide();
+		$('#btnResetPassword').show();
+		$('#modalSignIn .modal-title').html(_translatorData['resetPasswordPage'][LANG]);
+	});
+	
+	$('#btnResetPassword').click( function() {
+		
 	});
 	
 	$('#btnSignUp').click( function() {
@@ -617,7 +663,8 @@ $(document).ready( function() {
 							});
 						break;
 					default:
-						onError(err);
+						$('#alertSignUpError').html(_translatorData['alertUnknownLoginError'][LANG]);
+						$('#alertSignUpError').show();
 				}
 				$('#btnSignUp').prop('disabled', false);
 				$('#preloaderSignUp').hide();
@@ -783,7 +830,7 @@ function signIn(email, password, confirmationCode) {
 						// authentication.
 
 						// Get these details and call 
-						alert('Требуется сменить пароль. Эта функция пока не работает.');
+						//alert('Требуется сменить пароль. Эта функция пока не работает.');
 						reject();
 						//cognitoUser.completeNewPasswordChallenge(newPassword, data, this)
 					}
@@ -984,6 +1031,10 @@ $(function() {
 	$('#modalSignIn').on('show.bs.modal', function(event) {
 		$('#divSignInConfirmationCode').hide();
 		$('#signInConfirmationCode').val('');
+		$('#btnSignIn').show();
+		$('#btnResetPassword').hide();
+		$('preloaderSignIn').hide();
+		$('#modalSignIn .modal-title').html(_translatorData['loginPage'][LANG]);
 	});
 	$('#modalSignUp').on('show.bs.modal', function(event) {
 		$('#divSignUpConfirmationCode').hide();

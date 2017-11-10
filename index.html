@@ -637,16 +637,6 @@
 		</nav>
 
 		<div class="container-fluid">
-			<!--div class="row justify-content-center">
-				<div class="alert alert-danger collapse col-4" role="alert" id="alertError" style="z-index: 1045;">
-					<span id="spanSomethingWentWrong" data-translate="somethingWentWrong"></span>
-					<a href="/index.html" class="link-return" data-translate="return"></a>
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>	
-			</div-->
-
 			<div class="row preloader-container justify-content-center">
 				<div class="big-preloader" style="margin-top: 120px;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 			</div>
@@ -712,27 +702,27 @@
 						</div>
 						<div class="modal-body">
 							<div class="container-fluid">
-								<form>
-									<div class="form-group">
+								<form id="formSignIn">
+									<div class="form-group row">
 										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
 									</div>							
-									<div class="form-group input-group">
+									<div class="form-group input-group row">
 										<span class="input-group-addon" data-translate="email"></span>
 										<input id="signInEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
 									</div>
-									<div class="form-group input-group">
+									<div class="form-group input-group row">
 										<span class="input-group-addon" data-translate="password"></span>
 										<input id="signInPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
 									</div>
-									<div class="form-group input-group" id="divSignInConfirmationCode">
+									<div class="form-group input-group row" id="divSignInConfirmationCode">
 										<span class="input-group-addon" data-translate="confirmationCode"></span>
 										<input id="signInConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
 									</div>
-									<div class="form-group input-group">
-										<span class="input-group-btn">
-											<button id="btnSignIn" class="btn btn-success" type="submit" data-translate="enter"></button>
-											<div id="preloaderSignIn" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
-										</span>
+									<div class="form-group row">
+										<button id="btnSignIn" class="btn btn-success" type="submit" value="SignIn" data-translate="enter"></button>
+										<button id="btnResetPassword" class="btn btn-success" type="submit" value="ResetPassword" data-translate="resetPassword" style="display: none;"></button>
+										<div class="small-preloader" id="preloaderSignIn" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+										<a class="ml-1" id="forgotPassword" href="#" data-translate="forgotPassword"></a>
 									</div>
 								</form>
 							</div>
