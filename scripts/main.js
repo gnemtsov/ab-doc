@@ -844,6 +844,29 @@ function signIn(email, password, confirmationCode) {
     return promise;
 }
 
+// Returns Promise (ok, error)
+function requestResetPassword(email) {
+	var promise = new Promise( function(resolve, reject) {
+		var userData = {
+			Username : email,
+			Pool : USER_POOL
+		};
+		
+		var cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+		
+		cognitoUser.forgotPassword({
+			onSuccess: function() {
+				resolve();
+			},
+			onFailure: function(err) {
+				reject(err);
+			}
+		});
+    });
+    
+    return promise;
+}
+
 // Returns Promise(ok, error)
 // Doesn't affect UI
 function initS3() {
