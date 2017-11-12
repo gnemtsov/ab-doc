@@ -20,12 +20,15 @@
 	var Parchment = Quill.import('parchment'),
 		Delta = Quill.import('delta');
 
-	var $content = $('#editor'),
+	var $doc_wrap = $('#document-wrap'),
+		$content = $('#editor'),
 		$drop_zone = $('#dropzone'),
-		$clip = $drop_zone.find('#clip'),
+		$clip = $drop_zone.find('#clip-input'),
 		$files = $('#files'),
 		$saving = $('#saving'),
 		editor;
+
+	var DOC_IMG_MOVING = false;
 
 	// object prototype
 	abDoc.prototype = {
@@ -74,8 +77,152 @@
 		/*=======================*/
 		attachEditorHandlers: function() {
 			var self = this;
+            var first = false,
+				second = false;
 
-			// paste & drop
+			//editor drag & drop
+		/*	$doc_wrap.on({
+                dragenter: function (e) {
+                    if (first) {
+                        second = true;
+                        return;
+                    } else {
+                        first = true;
+						DOC_IMG_MOVING || $drop_zone.addClass('highlighted');
+                    }
+                },
+                dragleave: function (e) {
+                    if (second) {
+                        second = false;
+                    } else if (first) {
+                        first = false;
+                    }
+                    if (!first && !second) {
+						DOC_IMG_MOVING || $drop_zone.removeClass('highlighted');
+					}
+                },
+                drop: function (e) {
+                    if (second) {
+                        second = false;
+                    } else if (first) {
+                        first = false;
+                    }
+                    if (!first && !second) {
+
+						if (!DOC_IMG_MOVING) {
+							e.preventDefault();
+							e.stopPropagation();
+
+							$drop_zone.removeClass('highlighted');
+							
+							var uploaders = new Array(),
+								non_image_files = new Array();
+	
+							//aim
+							var clientX = e.originalEvent.clientX,
+								clientY = e.originalEvent.clientY;
+	
+							if (document.caretPositionFromPoint) { // standards-based way
+								var pos = document.caretPositionFromPoint(clientX, clientY),
+									drop_range = document.createRange();
+								drop_range.setStart(pos.offsetNode, pos.offset);
+								drop_range.collapse();							
+							} else if (document.caretRangeFromPoint) { // WebKit way
+								var drop_range = document.caretRangeFromPoint(clientX, clientY);							
+							} else if (document.body.createTextRange) { // IE way
+								var drop_range = document.body.createTextRange();
+								drop_range.moveToPoint(clientX, clientY);
+							}
+						
+							var drop_blot = Parchment.find(drop_range.startContainer),
+								drop_offset = drop_blot.offset(editor.scroll) + drop_range.startOffset;
+	
+							//process all files
+							var files = e.originalEvent.dataTransfer.files;
+							for (var i = 0, f; f = files[i]; i++) {							
+								//вставляем в сообщение только картинки, остальные файлы загрузим, как приложения
+								if (!f.type.match('image.*')) {
+									non_image_files.push(f);
+									continue;
+								}
+								
+								var _f = f; // f changes on each iteration
+								console.log(_f);
+								
+								//загружаем картинку в S3 и добавляем promise в массив uploaders
+								var uploader = Promise.resolve(_f)
+									.then( function(f) {
+										if (!canUpload(f.size)) {
+											console.log('No space left', f);
+											onWarning(_translatorData['noSpace'][LANG]);
+											return Promise.reject('No space left');
+										}
+										
+										$updated.show();
+										$content.attr('waiting', Number($content.attr('waiting')) + 1);
+										editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
+										
+										return s3Uploader({
+											Body: f,
+											ContentType: f.type,
+											ContentDisposition: f.name,
+											Key: USERID + '/' + self.docGUID + '/' + GetGUID(),
+											ACL: 'public-read'										
+										}, undefined, true)
+									});
+									
+								uploaders.push(uploader);
+							}
+	
+							//по завершении загрузки всех картинок проставляем картинкам src и сохраняем сообщение <--- ? у меня не сохраняется
+							Promise.all(uploaders).then(
+								function (keys) {
+									var img_load = 0,
+										delta = { ops: [] };
+									keys.forEach(function (key, i, keys) {
+										var retain = drop_offset + i;
+	
+										delta.ops = [];
+										if(retain){
+											delta.ops.push({ "retain": retain });
+										}
+										delta.ops.push( { "delete": 1 } );
+										delta.ops.push( { "insert": { "image": AWS_CDN_ENDPOINT + key } } );
+										editor.updateContents(delta, 'silent');
+	
+										$(editor.root).find("img[src$='" + AWS_CDN_ENDPOINT + key + "']").one('load', function () {
+											img_load++;
+											if (img_load === keys.length) {
+												$content.attr('waiting', Number($content.attr('waiting')) - keys.length);
+											}
+	
+											delta.ops = [];
+											if(retain){
+												delta.ops.push({ "retain": retain });
+											}
+											delta.ops.push( { "retain": 1, attributes: { width: this.naturalWidth, height: this.naturalHeight } } );
+											editor.updateContents(delta, 'user');
+										});
+									});
+								},
+								function (error) { 
+									console.log(error);
+								}
+							);
+	
+							//upload other files as attachments
+							if(non_image_files.length > 0){
+								$drop_zone.data('files', non_image_files).trigger('drop');                    
+							}
+						} else {
+							DOC_IMG_MOVING = false;
+						}
+					}
+                }
+
+			});			*/
+
+			// paste
 			$(editor.root).on({
 
 				paste: function (e) {
@@ -149,124 +296,16 @@
 						}
 					}
 
-				},
-
-				drop: function (e) {
-					if ($content.attr('moving') !== '1') {
-						e.preventDefault();
-						e.stopPropagation();
-
-						var uploaders = new Array(),
-							non_image_files = new Array();
-
-						//aim
-						var clientX = e.originalEvent.clientX,
-							clientY = e.originalEvent.clientY;
-
-						if (document.caretPositionFromPoint) { // standards-based way
-							var pos = document.caretPositionFromPoint(clientX, clientY),
-								drop_range = document.createRange();
-							drop_range.setStart(pos.offsetNode, pos.offset);
-							drop_range.collapse();							
-						} else if (document.caretRangeFromPoint) { // WebKit way
-							var drop_range = document.caretRangeFromPoint(clientX, clientY);							
-						} else if (document.body.createTextRange) { // IE way
-							var drop_range = document.body.createTextRange();
-							drop_range.moveToPoint(clientX, clientY);
-						}
-					
-						var drop_blot = Parchment.find(drop_range.startContainer),
-							drop_offset = drop_blot.offset(editor.scroll) + drop_range.startOffset;
-
-						//process all files
-						var files = e.originalEvent.dataTransfer.files;
-						for (var i = 0, f; f = files[i]; i++) {							
-							//вставляем в сообщение только картинки, остальные файлы загрузим, как приложения
-							if (!f.type.match('image.*')) {
-								non_image_files.push(f);
-								continue;
-							}
-							
-							var _f = f; // f changes on each iteration
-							console.log(_f);
-							
-							//загружаем картинку в S3 и добавляем promise в массив uploaders
-							var uploader = Promise.resolve(_f)
-								.then( function(f) {
-									if (!canUpload(f.size)) {
-										console.log('No space left', f);
-										onWarning(_translatorData['noSpace'][LANG]);
-										return Promise.reject('No space left');
-									}
-									
-									$updated.show();
-									$content.attr('waiting', Number($content.attr('waiting')) + 1);
-									editor.insertEmbed(drop_offset, 'image', 'img/ajax-loader.gif', 'silent');
-									
-									return s3Uploader({
-										Body: f,
-										ContentType: f.type,
-										ContentDisposition: f.name,
-										Key: ownerid + '/' + guid + '/' + GetGUID(),
-										ACL: 'public-read'										
-									}, undefined, true)
-								});
-								
-							uploaders.push(uploader);
-						}
-
-						//по завершении загрузки всех картинок проставляем картинкам src и сохраняем сообщение <--- ? у меня не сохраняется
-						Promise.all(uploaders).then(
-							function (keys) {
-								var img_load = 0,
-									delta = { ops: [] };
-								keys.forEach(function (key, i, keys) {
-									var retain = drop_offset + i;
-
-									delta.ops = [];
-									if(retain){
-										delta.ops.push({ "retain": retain });
-									}
-									delta.ops.push( { "delete": 1 } );
-									delta.ops.push( { "insert": { "image": AWS_CDN_ENDPOINT + key } } );
-									editor.updateContents(delta, 'silent');
-
-									$(editor.root).find("img[src$='" + AWS_CDN_ENDPOINT + key + "']").one('load', function () {
-										img_load++;
-										if (img_load === keys.length) {
-											$content.attr('waiting', Number($content.attr('waiting')) - keys.length);
-										}
-
-										delta.ops = [];
-										if(retain){
-											delta.ops.push({ "retain": retain });
-										}
-										delta.ops.push( { "retain": 1, attributes: { width: this.naturalWidth, height: this.naturalHeight } } );
-										editor.updateContents(delta, 'user');
-									});
-								});
-							},
-							function (error) { 
-								console.log(error);
-							}
-						);
-
-						//загрузить прочие файлы, как приложения
-						if(non_image_files.length > 0){
-							console.log('non_image_files drop');
-							$drop_zone.data('files', non_image_files).trigger('drop');                    
-						}
-					}
 				}
 			});
 
 			//image events
 			$(editor.root).on({
 				'dragstart': function (e) { 
-					$content.attr('moving', 1); 
+					DOC_IMG_MOVING = true;
 				},
-				'dragend': function (e) { 
-					$content.attr('moving', 0); 
+				'dragend': function (e) {
+					DOC_IMG_MOVING = false;
 				},
 				'mousedown': function (e) {
 					if(e.which === 1){
@@ -289,10 +328,14 @@
 			var self = this;
 
 			//clip
-			$clip.on({
+			$('#clip-icon').on({
 				'click': function (e) {
-//					e.stopPropagation();
-				},
+					e.preventDefault();
+					e.stopPropagation();
+					$clip.trigger('click');
+				}
+			});
+			$clip.on({
 				'change': function (e) {
 					e.preventDefault();
 					e.stopPropagation();
@@ -300,152 +343,140 @@
 					return false;
 				}
 			});
-			$('div.clip').on({
-				'click': function (e) {
-					$clip.trigger('click');
-				}
-			});
 
-			//dropzone
-			$drop_zone.bind({
-				dragenter: function (e) {
-					if (self.readOnly) {
-						return;
+			//dropzone drag & drop
+            var first = false,
+				second = false;
+			$drop_zone.on({
+                dragenter: function (e) {
+                    if (first) {
+                        second = true;
+                        return;
+                    } else {
+                        first = true;
+						$(this).addClass('highlighted');
+                    }
+                },
+                dragleave: function (e) {
+                    if (second) {
+                        second = false;
+                    } else if (first) {
+                        first = false;
+                    }
+                    if (!first && !second) {
+						$(this).removeClass('highlighted');
 					}
-					
-					console.log('Dropzone dragenter');
+                },
+                drop: function (e) {
 					e.preventDefault();
 					e.stopPropagation();
-					//$(this).addClass('highlighted');
-					return false;
-				},
-				dragover: function (e) {
-					if (self.readOnly) {
-						return;
+				if (second) {
+                        second = false;
+                    } else if (first) {
+                        first = false;
 					}
-					
-					console.log('Dropzone dragover');
-					e.preventDefault();
-					e.stopPropagation();
-					//$(this).addClass('highlighted');
-					return false;
-				},
-				dragleave: function (e) {
-					if (self.readOnly) {
-						return;
-					}
-					
-					console.log('Dropzone dragleave');
-					//$(this).removeClass('highlighted');
-					return false;
-				},
-				drop: function (e) {
-					console.log('dropzone.drop');
-					if (self.readOnly) {
-						return;
-					}
-					e.preventDefault();
-					e.stopPropagation();
+					console.log(first, second);
+                    if (!first && !second) {
 
-					var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
-					$drop_zone.removeData('files');
-					$drop_zone.removeClass('highlighted');
-					$drop_zone.addClass('used');
-
-					var uploaders = new Array();
-					$.each(files, function (i, file) {
-						console.log(file);
-						var fileGUID = GetGUID();
-						var key = USERID + '/' + self.docGUID + '/attachments/' + fileGUID;	
-
-						var $li = self.getFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date());
-						
-						//нужен promise, который вернёт key.
-						var uploaderPromise;
-						// TODO: rewrite!!!!!!
-						var uploader = Promise.resolve()
-								.then( function() {						
-									var params = {
-										Body: file,
-										ContentType: file.type,
-										ContentDisposition: file.name,
-										Key: key,
-										ACL: 'public-read'
-									};
-									
-									if (!canUpload(file.size)) {
-										console.log('No space left', file);
-										onWarning(_translatorData['noSpace'][LANG]);
-										return Promise.reject('No space left');
-									}
-
-									$files.append($li);
-									$files.attr('waiting', Number($files.attr('waiting')) + 1);
-									$updated.show();
-									
-									var oldPercents = 0;
-									uploaderPromise = s3Uploader(params, function (percents) {
-										//console.log(oldPercents, ' ->', percents);
-										if (percents > oldPercents) {
-											//console.log('updating progress bar..');
-											$li.find('.progress-bar').css('width', percents + '%');
-											oldPercents = percents;
+						e.preventDefault();
+						e.stopPropagation();
+	
+						var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
+						$drop_zone.removeData('files');
+						$drop_zone.removeClass('highlighted');
+						$drop_zone.addClass('used');
+	
+						var uploaders = new Array();
+						$.each(files, function (i, file) {
+							console.log(file);
+							var fileGUID = GetGUID();
+							var key = USERID + '/' + self.docGUID + '/attachments/' + fileGUID;	
+	
+							var $li = self.getFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date());
+							
+							//нужен promise, который вернёт key.
+							var uploaderPromise;
+							// TODO: rewrite!!!!!!
+							var uploader = Promise.resolve()
+									.then( function() {						
+										var params = {
+											Body: file,
+											ContentType: file.type,
+											ContentDisposition: file.name,
+											Key: key,
+											ACL: 'public-read'
+										};
+										
+										if (!canUpload(file.size)) {
+											console.log('No space left', file);
+											onWarning(_translatorData['noSpace'][LANG]);
+											return Promise.reject('No space left');
 										}
-									}, true);
-									return uploaderPromise;
-								})
-								.catch( function(err) {
-									if (err !== 'No space left') {
-										onError(err);
-									}
+	
+										$files.append($li);
+										$files.attr('waiting', Number($files.attr('waiting')) + 1);
+										$updated.show();
+										
+										var oldPercents = 0;
+										uploaderPromise = s3Uploader(params, function (percents) {
+											//console.log(oldPercents, ' ->', percents);
+											if (percents > oldPercents) {
+												//console.log('updating progress bar..');
+												$li.find('.progress-bar').css('width', percents + '%');
+												oldPercents = percents;
+											}
+										}, true);
+										return uploaderPromise;
+									})
+									.catch( function(err) {
+										if (err !== 'No space left') {
+											onError(err);
+										}
+									});
+									
+							uploader.abort = function() {
+								uploaderPromise.abort();
+							}
+							
+							uploaders.push(
+								uploader.then(
+									function (key) {
+										if (key === 'abort') {
+											return Promise.resolve("abort");
+										}
+	
+										// replace it with finished version
+										$li.replaceWith(self.getFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date(), true));
+									},
+									function (Error) { console.log(Error); }
+								)
+							);
+							
+							$li.find('span.abort').on('click', function () {
+								uploader.abort();
+								$(this).closest('li').fadeOut('slow', function () {
+									$(this).remove();
 								});
-								
-						uploader.abort = function() {
-							uploaderPromise.abort();
-						}
-						
-						uploaders.push(
-							uploader.then(
-								function (key) {
-									if (key === 'abort') {
-										return Promise.resolve("abort");
-									}
-
-									// replace it with finished version
-									$li.replaceWith(self.getFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date(), true));
-								},
-								function (Error) { console.log(Error); }
-							)
-						);
-						
-						$li.find('span.abort').on('click', function () {
-							uploader.abort();
-							$(this).closest('li').fadeOut('slow', function () {
-								$(this).remove();
 							});
 						});
-					});
-
-					Promise.all(uploaders).then(
-						function (data) {
-							$files.attr('waiting', Number($files.attr('waiting')) - uploaders.length);
-							if ($content.attr('data-modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-								$updated.removeClass('pending');
-							}
-						},
-						function (error) { console.log(error); }
-					);
-
-					return false;
+	
+						Promise.all(uploaders).then(
+							function (data) {
+								$files.attr('waiting', Number($files.attr('waiting')) - uploaders.length);
+								if ($content.attr('data-modified') === '0' && $content.attr('waiting') === '0' && $files.attr('waiting') === '0') {
+									$updated.removeClass('pending');
+								}
+							},
+							function (error) { console.log(error); }
+						);
+		
+					}
 				}
 			});
 
+
 			//files list handlers
-			$files.on('click', 'div.cross', function () {
-				if (self.readOnly) {
-					return;
-				}
-				
+/*			$files.on('click', 'div.cross', function () {
 				var $li = $(this).closest('li');
 				$li.find('div.cross').hide();
 				$li.find('.progress').hide();
@@ -455,10 +486,6 @@
 			});
 
 			$files.on('click', 'a.no', function () {
-				if (self.readOnly) {
-					return;
-				}
-				
 				var $li = $(this).closest('li');
 				$li.find('.file-question').hide();
 				$li.find('.progress').show();
@@ -520,17 +547,22 @@
 				if (! $(this).find('.file-question').is(':visible')) {
 					$(this).find('div.cross').hide();
 				}
-			});
+			});*/
 
 		},
 
 
 		attachLoupeHandlers: function(){
 
+			function backgroundReposition(e, image){
+				var X = e.offsetX ? e.offsetX : e.pageX - image.offsetLeft,
+					Y = e.offsetY ? e.offsetY : e.pageY - image.offsetTop;
+				image.style['background-position-x'] = Math.round((X / image.width)*100) + '%';
+				image.style['background-position-y'] = Math.round((Y / image.height)*100) + '%';        
+			}
+
 			$content.on('mouseup', 'img', function (e) {
 				var $img = $(this);
-				console.log('Test');
-				console.log(e.which === 1, $img.attr('width') > $content.width(), $content.attr('data-modified') === '0', $content.attr('waiting') === '0');
 				if(e.which === 1 && $img.attr('width') > $content.width() && $content.attr('data-modified') === '0' && $content.attr('waiting') === '0'){
 					if($img.attr('src').indexOf('data:image/svg+xml;base64') === -1){
 						if($content.attr('editable') === '1') {
@@ -566,13 +598,6 @@
 					}
 				}
 			});
-
-			function backgroundReposition(e, image){
-				var X = e.offsetX ? e.offsetX : e.pageX - image.offsetLeft,
-					Y = e.offsetY ? e.offsetY : e.pageY - image.offsetTop;
-				image.style['background-position-x'] = Math.round((X / image.width)*100) + '%';
-				image.style['background-position-y'] = Math.round((Y / image.height)*100) + '%';        
-			}
 
 		}
 

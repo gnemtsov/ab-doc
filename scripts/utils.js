@@ -98,7 +98,10 @@ var _translatorData = {
 		"ru": "Документ",
 		"en": "Document"
 	},
-	
+	"changesPending": {
+		"ru": "Есть несохраненные изменения!",
+		"en": "There are unsaved changes!"
+	},
 	"saving": {
 		"ru": "сохранение...",
 		"en": "saving..."

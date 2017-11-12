@@ -1211,9 +1211,7 @@ $(function () {
 		thresholdRight = $splitter.outerWidth() +
 						parseFloat($document.css('padding-left')) +
 						parseFloat($document.css('padding-right')) +
-						300;
-	console.log(thresholdRight, $('#dropzone-wrap').outerWidth());
-	
+						300;	
 	
 	$app_container.outerHeight(window.innerHeight - 1 - navHeight);
 	$app_container.css('top', $nav.outerHeight() + 'px');
@@ -1249,7 +1247,7 @@ $(function () {
 		});
 		
 		$(document).mousemove(function(event) {
-			event.preventDefault();
+			//event.preventDefault(); TODO<--------------------do something with this
 			
 			// splitterDragging is true only in 'split' mode
 			if (splitterDragging) {
@@ -1919,11 +1917,15 @@ function updateUsedSpacePending(p) {
 	updateIndicator();
 }
 
-
-
-
-window.onbeforeunload = function() {
-	if (TREE_MODIFIED || ((USERID === TREE_USERID) && ($('#editor[modified="1"]').length > 0))) {
-		return '';
-	}
+//onbeforeunload
+window.onbeforeunload = function (e) {
+    if ($('#update.pending').length) {
+        if (typeof e == "undefined") {
+            e = window.event;
+        }
+        if (e) {
+            e.returnValue = _translatorData['changesPending'][LANG];
+        }
+        return _translatorData['changesPending'][LANG];
+    }
 }
