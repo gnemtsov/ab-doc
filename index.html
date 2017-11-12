@@ -27,8 +27,11 @@
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
 			<a class="navbar-brand" href="/"><img src="/img/Logo.png"></a>
-			<canvas class="authenticated-mode" id="sizeIndicator" width="24" height="24"></canvas>
-			<img src="/img/icons/compose_my.svg" class="authenticated-mode" id="updated">
+			<div id="sizeIndicator" class="authenticated-mode"></div>
+			<div id="update" class="authenticated-mode">
+				<img id="icon-pending" src="img/icons/update-pending.svg">
+				<img id="icon-saving" src="img/icons/update-saving.svg">
+			</div>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 			</button>
@@ -86,8 +89,8 @@
 					</div>
 				</div>
 				<div id="document" class="ab-opened">
-					<h2 id="selectedDoc"></h2>
-					<div id="editor-wrap">
+					<h1 id="selectedDoc"></h1>
+					<div id="document-wrap">
 						<div id="dropzone-wrap" class="float-right" style="z-index: 1000;">
 							<div id="dropzone" class="filedrag" style="z-index: 1005;">
 								<div class="clip">
@@ -96,7 +99,7 @@
 								<ul id="files" class="files" waiting="0" attr-translate="data-empty-message" data-translate="emptyDropzoneMessage"></ul>
 							</div>
 						</div>
-						<div id="editor" waiting="0" modified="0"></div>
+						<div id="editor" waiting="0" data-modified="0"></div>
 					</div>
 					<div id="editor-preloader" class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 				</div>
@@ -214,6 +217,7 @@
 		<script src="scripts/bootstrap/bootstrap.min.js?ver=v0"></script>
 		<script src="scripts/quill/Jason_Chen.Quill.min.js?ver=v0"></script>
 		<script src="scripts/linkify/SoapBox.linkify.min.js?ver=v0"></script>
+		<script src="scripts/svg.js/svg.min.js?ver=v0"></script>
 		<script src="scripts/jsbn/jsbn.js?ver=v0"></script>
 		<script src="scripts/jsbn/jsbn2.js?ver=v0"></script>
 		<script src="scripts/sjcl/sjcl.js?ver=v0"></script>
@@ -226,6 +230,7 @@
 		<script src="scripts/ztree/jquery.ztree.excheck.js?ver=v0"></script>
 		<script src="scripts/ztree/jquery.ztree.exedit.js?ver=v0"></script>
 		
+		<script src="scripts/utils.js?ver=v0"></script>
 		<script src="scripts/main.js?ver=v0"></script>
 		<script src="scripts/doc.js?ver=v0"></script>
 

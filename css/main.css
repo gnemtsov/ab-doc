@@ -2,11 +2,17 @@
 /*-------------------------global--------------------------*/
 /*---------------------------------------------------------*/
 
-body html {
+html {
+    position: relative;
+    min-height: 100%;
+    font-size: 14px;
+}
+
+body {
     margin: 0;
     height: 100%;
     overflow: hidden;
-    font-size: 14px;
+    -ms-overflow-style: scrollbar;
 }
 
 .form-control{
@@ -61,17 +67,39 @@ a.navbar-brand img{
     height: 42px;
 }
 
-/* canvas looks weird when setting size with css*/
 #sizeIndicator {
-    width: 24px;
-    height: 24px;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    width: 32px;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    height: 32px;
+    margin-left: 16px;
 }
 
-#updated {
-    width: 24px;
-    height: 24px;
+#update {
+    position: relative;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    margin-left: 12px;
 }
-
+#update img {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    opacity: 0;
+    transition-duration: 1s;    
+    transition-property: opacity;
+}
+#update.pending img#icon-pending {
+    opacity: 1;
+}
+#update.saving img#icon-saving {
+    opacity: 1;
+}
+    
 
 /*---------------------------------------------------------*/
 /*-------------------------tree----------------------------*/
@@ -296,8 +324,8 @@ input.rename {
     padding: 30px 20px 20px 20px;
 }
 
-#document h2 {
-    margin-bottom: 16px;
+#selectedDoc {
+    margin-bottom: 2rem;
 }
 
 #document.ab-closed {
@@ -308,8 +336,9 @@ input.rename {
 /*  inside editor   */
 /*==================*/
 #editor {
-    padding: 0px !important;
-    font-size: 16px !important;
+    font-family: 'PT Serif', Georgia, serif;    
+    font-size: 1.23rem !important;
+    padding: 0rem !important;
     color: #000000;
     min-height: 100px;
     -ms-word-break: break-all;
@@ -345,11 +374,6 @@ input.rename {
 
 #editor.ql-container.ql-bubble:not(.ql-disabled) a::after{
     border-top: 6px solid #727272;
-}
-
-#editor {
-    padding: 0px !important;
-    font-size: 16px !important;
 }
 
 #editor:focus {
@@ -405,105 +429,105 @@ input.rename {
 /*==================*/
 /*  bubble toolbar  */
 /*==================*/
-#editor-wrap .ql-bubble .ql-tooltip{
+#document-wrap .ql-bubble .ql-tooltip{
     z-index: 1;
   }
 
-#editor-wrap .ql-bubble .ql-tooltip{
+#document-wrap .ql-bubble .ql-tooltip{
   background-color: none;    
 }
 
-#editor-wrap .ql-bubble .ql-toolbar {
+#document-wrap .ql-bubble .ql-toolbar {
 border-radius: 5px;
 background-color: #444;
 }
 
-#editor-wrap .ql-bubble .ql-picker-options{
+#document-wrap .ql-bubble .ql-picker-options{
 background-color: #444;
 padding: 0px;
 }
 
-#editor-wrap .ql-bubble .ql-tooltip:not(.ql-flip) .ql-tooltip-arrow {
+#document-wrap .ql-bubble .ql-tooltip:not(.ql-flip) .ql-tooltip-arrow {
     border-bottom: 6px solid #444;
 }
 
-#editor-wrap .ql-bubble .ql-toolbar .ql-formats {
+#document-wrap .ql-bubble .ql-toolbar .ql-formats {
     padding: 0px !important;
     margin: 0px !important;
 }
-#editor-wrap .ql-editor.ql-blank::before {
+#document-wrap .ql-editor.ql-blank::before {
     color: #C4C4C5;
     font-style: normal;
 }
 
-#editor-wrap .ql-bubble .ql-fill, .ql-bubble .ql-stroke.ql-fill {
+#document-wrap .ql-bubble .ql-fill, .ql-bubble .ql-stroke.ql-fill {
     fill: #fff;
 }
 
-#editor-wrap .ql-bubble .ql-stroke, #editor-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
+#document-wrap .ql-bubble .ql-stroke, #document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
     stroke: #fff;
 }
 
-#editor-wrap .ql-bubble .ql-picker-label{
+#document-wrap .ql-bubble .ql-picker-label{
 padding-left: 6px;
 }
 
-#editor-wrap .ql-bubble .ql-picker.ql-size .ql-picker-label::before, #editor-wrap .ql-bubble .ql-picker.ql-size .ql-picker-item::before {
+#document-wrap .ql-bubble .ql-picker.ql-size .ql-picker-label::before, #document-wrap .ql-bubble .ql-picker.ql-size .ql-picker-item::before {
     color: #fff;
     padding: 6px;
 }
-#editor-wrap .ql-bubble .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg{
+#document-wrap .ql-bubble .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg{
 right: 4px;
 }
 
-#editor-wrap .ql-bubble.ql-toolbar button, #editor-wrap .ql-bubble .ql-toolbar button {
+#document-wrap .ql-bubble.ql-toolbar button, #document-wrap .ql-bubble .ql-toolbar button {
     height: 34px; 
     width: 34px;
     padding: 6px;
     border-right: 1px solid #FFFFFF;
 }
 
-#editor-wrap .ql-bubble .ql-toolbar .ql-formats:first-child button:first-child, 
-#editor-wrap .ql-bubble.ql-toolbar .ql-formats:first-child button:first-child {
+#document-wrap .ql-bubble .ql-toolbar .ql-formats:first-child button:first-child, 
+#document-wrap .ql-bubble.ql-toolbar .ql-formats:first-child button:first-child {
     border-radius: 5px 0px 0px 5px;
 }
-#editor-wrap .ql-bubble .ql-toolbar .ql-formats:last-child button:last-child, 
-#editor-wrap .ql-bubble.ql-toolbar .ql-formats:last-child button:last-child {
+#document-wrap .ql-bubble .ql-toolbar .ql-formats:last-child button:last-child, 
+#document-wrap .ql-bubble.ql-toolbar .ql-formats:last-child button:last-child {
     border-radius: 0px 5px 5px 0px;
     border-right: none;
 }
 
 
-#editor-wrap .ql-bubble .ql-picker.ql-size {
+#document-wrap .ql-bubble .ql-picker.ql-size {
     height: 34px; 
     border-right: 1px solid #FFFFFF;
 }
 
-#editor-wrap .ql-bubble .ql-color-picker {
+#document-wrap .ql-bubble .ql-color-picker {
     height: 34px; 
     width: 34px;
     border-right: 1px solid #FFFFFF;
 }
-#editor-wrap .ql-bubble .ql-color-picker svg{
+#document-wrap .ql-bubble .ql-color-picker svg{
     margin: 0px;
 }
 
-#editor-wrap .ql-bubble .ql-color-picker .ql-picker-label{
+#document-wrap .ql-bubble .ql-color-picker .ql-picker-label{
     padding: 6px !important;
 }
 
-#editor-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label{
+#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label{
 color: #fff;
 }
-#editor-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-fill{
+#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-fill{
 fill: #fff;
 }
 
-#editor-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-options{
+#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-options{
 margin-top: 0px;
 }
 
-#editor-wrap .ql-bubble .ql-picker-options .ql-picker-item{
+#document-wrap .ql-bubble .ql-picker-options .ql-picker-item{
 padding-left: 6px;
 }
 
@@ -529,10 +553,6 @@ padding-left: 6px;
     height: 1px;
 }
 
-#updated {
-    margin-left: 12px;
-}
-
 div.clip {
     background-image: url(/img/icons/paperclip2.svg);
     background-repeat: no-repeat;
@@ -555,8 +575,8 @@ div.clip:hover {
     width: 78px;
     border-style: none;
     padding-left: 8px;
-    margin-bottom: 4px;
-    margin-left: 8px;
+    margin-bottom: 0.5rem;
+    margin-left: 1.6rem;
     cursor: auto !important;
 }
 
@@ -579,13 +599,12 @@ div.clip:hover {
     top: 25px;
 }
 
-img.file-icon {
+.filedrag img.file-icon {
     width: 38px;
     height: 38px;
     float: left;
-    margin-top: 4px;
+    margin: 4px 7px 0px 0px;
 }
-
 
 /*==================*/
 /* dropzone's files */

@@ -1,171 +1,3 @@
-// Data for translation
-
-var _translatorData = {
-	"loginPage": {
-		"ru": "Вход",
-		"en": "Log in"
-	},
-	"welcomeMessage": {
-		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
-		"en": 'Please <a class="link-sign-in" href="#">log in</a> or <a class="link-sign-up" href="#">create account</a> to start working.'
-	},
-	"email": {
-		"ru": "Почта",
-		"en": "Email"
-	},
-	"yourEmail": {
-		"ru": "Ваш email",
-		"en": "Your email"		
-	},
-	"password": {
-		"ru": "Пароль",
-		"en": "Password"
-	},
-	"yourPassword": {
-		"ru": "Ваш пароль",
-		"en": "Your password"		
-	},
-	"confirmationCode": {
-		"ru": "Код подтверждения",
-		"en": "Confirmation code"
-	},
-	"yourConfirmationCode": {
-		"ru": "Ваш код подтверждения",
-		"en": "Your confirmation code"
-	},
-	"alertUserDoesntExist": {
-		"ru": "Пользователь с таким именем не зарегистрирован.",
-		"en": "Username is not registered."
-	},
-	"alertWrongPassword": {
-		"ru": "Неправильное имя пользователя или пароль.",
-		"en": "Wrong username or password."
-	},
-	"alertWrongCode": {
-		"ru": "Неверный код подтверждения.",
-		"en": "Wrong confirmation code."
-	},
-	"enter": {
-		"ru": "Войти",
-		"en": "Log in"
-	},
-	"signUp": {
-		"ru": "Нет учётной записи?",
-		"en": "Create account"
-	},
-	
-	"registration": {
-		"ru": "Регистрация",
-		"en": "Create account"
-	},
-	"alertWrongRepeat": {
-		"ru": "Пароли не совпали.",
-		"en": "Passwords didn't match."
-	},	
-	"alertBadPassword": {
-		"ru": "Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
-		"en": "Minimum password length is 8 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
-	},
-	"alertUserExists": {
-		"ru": "Пользователь с таким именем уже существует.",
-		"en": "This username is already taken."
-	},
-	"alertExpiredCode": {
-		"ru": "Код подтверждения устарел. Вам был выслан новый.",
-		"en": "Your confirmation code is expired. New confirmation code was sent to you."
-	},
-	"repeatPassword": {
-		"ru": "Повторите пароль",
-		"en": "Repeat password"
-	},
-	"signUp2": {
-		"ru": "Создать учётную запись",
-		"en": "Create account"
-	},
-	
-	"exit": {
-		"ru": "Выход",
-		"en": "Exit"
-	},
-	"somethingWentWrong": {
-		"ru": "Что-то пошло не так.",
-		"en": "Somenthing went wrong."
-	},
-	"return": {
-		"ru": "Вернуться",
-		"en": "Return"
-	},
-	"document": {
-		"ru": "Документ",
-		"en": "Document"
-	},
-	
-	"saving": {
-		"ru": "сохранение...",
-		"en": "saving..."
-	},
-	"saved": {
-		"ru": "сохранено",
-		"en": "saved"
-	},
-	"edited": {
-		"ru": "изменено",
-		"en": "edited"
-	},
-	"typeYourText": {
-		"ru": "Напишите что-нибудь удивительное...",
-		"en": "Compose something awesome..."
-	},
-	
-	"deleteTitle": {
-		"ru": "Удаление",
-		"en": "Delete"
-	},
-	"deleteQuestion1": {
-		"ru": "Документ",
-		"en": "You are going to delete document"
-	},
-	"deleteQuestion2": {
-		"ru": " будет удалён, продолжить?",
-		"en": ", continue?"
-	},
-	"deleteQuestion3": {
-		"ru": " Также будут удалены все вложенные документы и папки.",
-		"en": " All sub-documents are going to be deleted too."
-	},
-	"ok": {
-		"ru": "Ок",
-		"en": "Ok"
-	},
-	"cancel": {
-		"ru": "Отмена",
-		"en": "Cancel"
-	},
-	
-	"emptyDropzoneMessage" :{
-		"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
-		"en": "Drop your files here, you can place pictures right in the text"
-	},
-	"noSpace": {
-		"ru": "Недостаточно места для загрузки файла",
-		"en": "No space left to upload this file"
-	},
-	"areYouSure": {
-		"ru": "Вы уверены?",
-		"en": "Are you sure?"
-	},
-	"yes": {
-		"ru": "да",
-		"en": "yes"
-	},
-	"no": {
-		"ru": "нет",
-		"en": "no"
-	}
-}
-
-// ====================
-
 AWSCognito.config.region = 'us-west-2';
 AWS.config.region = 'us-west-2';
 
@@ -239,18 +71,6 @@ function createObjectS3Params(params, errCallback) {
 		}
 	});
 };
-
-/*function getObjectS3(path, errCallback) {
-	var params = {
-		Bucket: "ab-doc-storage",
-		Key: path
-	};
-	return s3.getObject(params, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}		
-	});
-}*/
 
 function getObjectS3Params(params, errCallback) {
 	params.Bucket = STORAGE_BUCKET;
@@ -375,30 +195,7 @@ function listS3Files(prefix) {
 	return promise;
 }
 
-// prefix should not end with "/"
-/*function loadTree(prefix, username, tree, callback, errCallback) {
-	withS3Files(prefix+"/", function(files) {
-		var head = {id: newId(), name: username, s3path: prefix, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"};
-		tree.addNodes(null, head, true);
-		files.map( function(f) {
-			var pathArray = f.Key.split("/");
-			var node = {
-				id: newId(),
-				name: pathArray[pathArray.length - 1]
-			};
-			function filter(n) {
-				return buildPath(n) === pathArray.slice(0, pathArray.length - 1).join("/");
-			}
-			var parent = tree.getNodesByFilter(filter, true);
-			tree.addNodes(parent, node, true);
-		});
-		
-		callback();
-	}, errCallback);
-}*/
-
 // zTree /\
-
 function _errorPopover(c) {
 	$('nav').popover({
 		content: c,
@@ -450,6 +247,7 @@ var COGNITO_USER;
 var ROOT_DOC_GUID = 'root-doc';
 var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
 var $updated;
+var sizeIndicator;
 
 $(document).ready( function() {
 	setUnknownMode();
@@ -471,6 +269,29 @@ $(document).ready( function() {
 					onError(err);
 			}
 		});
+
+	//keep an eye on some attributes to update indicator
+	var observer = new MutationObserver(function(mutations) {
+		mutations.forEach(function(mutation) {
+			switch(mutation.attributeName) {
+				case 'data-modified':
+					if (mutation.target.getAttribute("data-modified") === '1') { 
+						$('#update').addClass('pending');
+					} else {
+						$('#update').removeClass('pending');						
+					}
+					break;
+			}			
+		});    
+	});
+
+	var config = { 
+		attributes: true,
+		attributeFilter: ['data-modified'],
+		attributeOldValue: true
+	}
+	observer.observe(document.getElementById('editor'), config);				
+		
 	
 	$('.link-sign-out, .link-return').click( function() {
 		if (COGNITO_USER) {
@@ -1459,6 +1280,7 @@ $(function () {
 //------ Timer (tree, document, used space) -------
 //-------------------------------------------------
 
+
 $(function() {
 	setInterval(function () {
 		// Save tree column's size
@@ -1503,33 +1325,29 @@ $(function() {
 		}
 		
 		// EDITOR
-		$('#editor[modified="1"]').each(function (index, element) {
-			if (USERID === TREE_USERID) {
-				var $editor = $('#editor'),
-					$files = $('#files');
-				
-				$updated.show();
-				$(element).attr('modified', 0);
-				
-				console.log('Saving! ', USERID, TREE_USERID);
-				
-				saveDocument('#editor').then(
-					function (ok) {
-						$updated.fadeOut('slow', function () {
-							console.log($editor.attr('modified') === '0', $editor.attr('waiting') === '0', $files.attr('waiting') === '0')
-							if ($editor.attr('modified') === '0' && $editor.attr('waiting') === '0' && $files.attr('waiting') === '0') {
-								$(this).removeClass('pending');
-							}
-							
-							$(this).hide();
-						});
-					},
-					function (err) {
-						onError(err);
-					}
-				);
-			}
-		});
+		var $editor = $('#editor'),
+			$files = $('#files');
+
+		if($editor.attr('data-modified') === '1' && USERID === TREE_USERID){
+			$('#update').addClass('saving');
+			var params = {
+				Key: USERID + '/' + $editor.attr('guid') + '/index.html',
+				Body: $editor.children('.ql-editor').html(),
+				ACL: 'public-read'
+			};
+			$editor.attr('data-modified', 0); //document html was copied to params, it's safe to set this to zero		
+
+			Promise.all([ 
+				s3Uploader(params), 
+				new Promise(function(resolve, reject) {
+					setTimeout(resolve, 800);
+				  })
+			])
+				.then(function(){
+					$('#update').removeClass('saving');
+				});
+		}
+
 	}, 3000);
 	
 	// USED SPACE
@@ -1817,7 +1635,6 @@ function addHoverDom(treeId, treeNode) {
 		zTree.editName(newNode);
 		$('#' + newNode.tId + '_input').select();
 		
-		$updated.addClass('pending');
 		$updated.show();
 		TREE_MODIFIED = true;
 
@@ -1990,11 +1807,11 @@ $( function() {
 // Turns preloader on editor on and off
 function preloaderOnEditor(on) {
 	if (on) {
-		$('#editor-wrap').hide();
+		$('#document-wrap').hide();
 		$('#editor-preloader').show();
 	} else {
 		$('#editor-preloader').hide();
-		$('#editor-wrap').show();
+		$('#document-wrap').show();
 	}
 }
 
@@ -2017,47 +1834,45 @@ function getDirectorySize(key) {
 
 // GUI-only
 function updateIndicator() {
-	var f = Math.min(1.0, (USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING) / MAX_USED_SPACE);
-	
-	var canvas = $('#sizeIndicator')[0],
-		ctx = canvas.getContext('2d'),
-		w = canvas.width,
-		h = canvas.height;
-	
-	var topLX = w*0.08, topRX = w*0.92,
-		topLY = h*0.08, topRY = h*0.08,
-		botLX = w*0.15, botRX = w*0.85,
-		botLY = h*0.92, botRY = h*0.92,
-		edgeLX = topLX*f + botLX*(1.0 - f),
-		edgeRX = topRX*f + botRX*(1.0 - f),
-		edgeLY = topLY*f + botLY*(1.0 - f),
-		edgeRY = topRY*f + botRY*(1.0 - f);
-	
-	/*setProperty(ctx, 'imageSmoothingEnabled', false);
-	setProperty(ctx, 'mozImageSmoothingEnabled', false);
-	setProperty(ctx, 'oImageSmoothingEnabled', false);
-	setProperty(ctx, 'webkitImageSmoothingEnabled', false);*/
-	
-	ctx.clearRect(0, 0, w, h);
-	
-	ctx.lineWidth = 0;
-	ctx.fillStyle = '#DD6600';
-	ctx.beginPath();
-	ctx.moveTo(edgeLX, edgeLY);
-	ctx.lineTo(botLX, botLY);
-	ctx.lineTo(botRX, botRY);
-	ctx.lineTo(edgeRX, edgeRY);
-	ctx.fill();
-	
-	ctx.lineWidth = 2.00;
-	
-	ctx.strokeStyle = '#FFFFFF';
-	ctx.beginPath();
-	ctx.moveTo(topLX, topLY);
-	ctx.lineTo(botLX, botLY);
-	ctx.lineTo(botRX, botRY);
-	ctx.lineTo(topRX, topRY);
-	ctx.stroke();
+	var size = 32,
+		bucket_capacity = MAX_USED_SPACE,
+		space_occupied = USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING;
+
+	//bucket coords
+	var bx1 = 2, bx2 = 5, bx3 = size - bx2, bx4 = size - bx1,
+		by1 = 2, by2 = size - by1, by3 = by2, by4 = by1,
+		tg_alpha = (bx2 - bx1) / (by2 - by1);
+
+	//calculate areas
+	var barea = Math.abs(bx1*by2 + bx2*by3 + bx3*by4 + bx4*by1 - bx2*by1 - bx3*by2 - bx4*by3 - bx1*by4) / 2,
+		sarea = Math.min(1.0, space_occupied / bucket_capacity) * barea;
+
+	//calculate y of the occupied space (see .service/sizeIndicator.jpg for details)
+	var a = -2*tg_alpha,
+		b = 3*tg_alpha*by2 + bx3 + size - 3*bx2 + tg_alpha*by3,
+		c = bx2*by2 - tg_alpha*Math.pow(by2, 2) + 2*bx2*by3 - bx3*by2 - size*by3 - tg_alpha*by2*by3 + 2*sarea,
+		D = Math.pow(b, 2) - 4*a*c,
+		y = (-b + Math.sqrt(D)) / (2*a);
+
+	//occupied space coords
+	var sx1 = Math.ceil(bx2 - by2*tg_alpha + y*tg_alpha), sx2 = bx2, sx3 = bx3, sx4 = size - sx1,
+		sy1 = Math.ceil(y)-2, sy2 = by2, sy3 = by3, sy4 = sy1;
+
+	//draw
+	if(!sizeIndicator){
+		sizeIndicator = SVG('sizeIndicator');
+		sizeIndicator.space = sizeIndicator
+			.polygon([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4])   //occupied space
+			.fill('#DD6600');
+
+		sizeIndicator.bucket = sizeIndicator
+			.polyline([bx1,by1, bx2,by2, bx3,by3, bx4,by4]).fill('none')   //bucket shape
+			.stroke({ color: '#fff', width: 3, linecap: 'round', linejoin: 'round' });
+	} else {
+		sizeIndicator.space
+			.animate(2000)
+			.plot([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4]);
+	}
 }
 
 var USER_USED_SPACE = 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
