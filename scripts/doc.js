@@ -81,7 +81,7 @@
 				second = false;
 
 			//editor drag & drop
-		/*	$doc_wrap.on({
+			$doc_wrap.on({
                 dragenter: function (e) {
                     if (first) {
                         second = true;
@@ -110,9 +110,10 @@
                     if (!first && !second) {
 
 						if (!DOC_IMG_MOVING) {
+
 							e.preventDefault();
 							e.stopPropagation();
-
+							
 							$drop_zone.removeClass('highlighted');
 							
 							var uploaders = new Array(),
@@ -220,7 +221,7 @@
 					}
                 }
 
-			});			*/
+			});
 
 			// paste
 			$(editor.root).on({
@@ -349,37 +350,39 @@
 				second = false;
 			$drop_zone.on({
                 dragenter: function (e) {
+					e.preventDefault();
                     if (first) {
                         second = true;
                         return;
                     } else {
                         first = true;
-						$(this).addClass('highlighted');
+						$drop_zone.addClass('highlighted');
                     }
                 },
                 dragleave: function (e) {
+					e.preventDefault();
                     if (second) {
                         second = false;
                     } else if (first) {
                         first = false;
                     }
                     if (!first && !second) {
-						$(this).removeClass('highlighted');
+						$drop_zone.removeClass('highlighted');
 					}
                 },
+                dragover: function (e) {
+					e.preventDefault();
+				},
                 drop: function (e) {
 					e.preventDefault();
 					e.stopPropagation();
-				if (second) {
+					if (second) {
                         second = false;
                     } else if (first) {
                         first = false;
 					}
-					console.log(first, second);
                     if (!first && !second) {
 
-						e.preventDefault();
-						e.stopPropagation();
 	
 						var files = ( $drop_zone.data('files') ? $drop_zone.data('files') : e.originalEvent.dataTransfer.files );
 						$drop_zone.removeData('files');
@@ -476,7 +479,7 @@
 
 
 			//files list handlers
-/*			$files.on('click', 'div.cross', function () {
+			$files.on('click', 'div.cross', function () {
 				var $li = $(this).closest('li');
 				$li.find('div.cross').hide();
 				$li.find('.progress').hide();
@@ -547,7 +550,7 @@
 				if (! $(this).find('.file-question').is(':visible')) {
 					$(this).find('div.cross').hide();
 				}
-			});*/
+			});
 
 		},
 
