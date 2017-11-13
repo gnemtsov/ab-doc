@@ -1,6 +1,10 @@
 // Data for translation
 
 var _translatorData = {
+	"about": {
+		"ru": "О программе",
+		"en": "About"
+	},
 	"loginPage": {
 		"ru": "Вход",
 		"en": "Log in"
@@ -2161,7 +2165,7 @@ function canUpload(size) {
 }
 
 function updateUsedSpaceDelta(d) {
-	if (typeof(d) !== 'number') {
+	if ((typeof(d) !== 'number') || isNaN(d)) {
 		console.log('updateUsedSpaceDelta wrong d:', d);
 		return;
 	}
@@ -2171,10 +2175,11 @@ function updateUsedSpaceDelta(d) {
 }
 
 function updateUsedSpacePending(p) {
-	if (typeof(p) !== 'number') {
+	if ((typeof(p) !== 'number') || isNaN(p)) {
 		console.log('updateUsedSpacePending wrong p:', p);
 		return;
 	}
+	console.log('updateUsedSpacePending ', p);
 	USER_USED_SPACE_PENDING += p
 	updateIndicator();
 }
@@ -2183,7 +2188,11 @@ function updateUsedSpacePending(p) {
 
 
 window.onbeforeunload = function() {
-	if (TREE_MODIFIED || ((USERID === TREE_USERID) && ($('#editor[modified="1"]').length > 0))) {
+	if (TREE_MODIFIED ||
+		($('#editor').attr('waiting') !== '0') ||
+		($('#files').attr('waiting') !== '0') ||
+		((USERID === TREE_USERID) && ($('#editor[modified="1"]').length > 0))
+		) {
 		return '';
 	}
 }

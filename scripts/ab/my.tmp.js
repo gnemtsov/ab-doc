@@ -132,7 +132,8 @@ function splitNameAndExtension(fileName) {
 }
 
 // Returns HTML for file attachment
-function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
+function genFileHTML(key, iconURL, fileName, fileSize, modified, finished, isFirstInTheList) {
+	console.log('genFileHTML:  isFirstInTheList', isFirstInTheList);
 	var x = splitNameAndExtension(fileName);
 	var ficon = (finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
 				'<img class="file-icon" src="' + iconURL + '"></img>' + 
@@ -140,13 +141,13 @@ function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
 		feLen = Math.min(x.e.length, 12),
 		fname = '<div class="file-name">' +
 				(finished ? '<a href="' + AWS_CDN_ENDPOINT + key + '">' : '') +
-				'<span class="fn" style="max-width: calc(180px - ' + feLen + 'ch);">' + x.n + '</span>' +
+				'<span class="fn">' + x.n + '</span>' +
 				'<span class="fe" style="max-width: ' + feLen + 'ch;">' + x.e + '</span>' +
 				(finished ? '</a>' : '') +
 				'</div>',
 		fmodified = (modified ?
 			modified.getFullYear().toString().slice(2) + '-' + (modified.getMonth() + 1) + '-' + modified.getDate() + ' ' +
-			modified.getHours().toString().padStart(2, '0') + ':' + modified.getMinutes().toString().padStart(2, '0') + ':' + modified.getSeconds().toString().padStart(2, '0')
+			modified.getHours().toString().padStart(2, '0') + ':' + modified.getMinutes().toString().padStart(2, '0')
 				: 
 			''),
 		fbottom = '<div class="file-size">' + GetSize(fileSize) + '</div> ' + 
@@ -158,7 +159,16 @@ function genFileHTML(key, iconURL, fileName, fileSize, modified, finished) {
 					'<a href="#" class="yes">' + _translatorData['yes'][LANG] + '</a> ' + 
 					'<a href="#" class="no">' + _translatorData['no'][LANG] + '</a>' + 
 					'</div>';
-	return $('<li s3key="' + key + '" data-size="' + fileSize + '" data-modified="' + modified + '">').append(ficon + fname + (finished ? fbottom : progress) + remove_button + question);
+	var $li = $('<li s3key="' + key + '" data-size="' + fileSize + '" data-modified="' + modified + '" data-finished="' + finished + '">').append(ficon + fname + (finished ? fbottom : progress) + remove_button + question);
+	updateFileHTML($li, isFirstInTheList);
+	return $li;
+}
+
+// Used to update file name length
+function updateFileHTML($li, isFirstInTheList) {
+	console.log('updateFileHTML', $li, isFirstInTheList);
+	var feLen = Math.min($li.find('span.fe').html().length, 12);
+	$li.find('span.fn').attr('style', 'max-width: calc(' + (isFirstInTheList ? 180 : 220) + 'px - ' + feLen + 'ch);');
 }
 
 function mimeTypeToIconURL(type) {
@@ -350,8 +360,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 						console.log(f.LastModified);
 						var cd = decodeURIComponent(data.ContentDisposition.substring(29));
 						var mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(cd)[1]);
-						var $li = genFileHTML(f.Key, mimeTypeToIconURL(mime), cd, f.Size, f.LastModified, true);	
-						toSort.push({cd: cd, li: $li});						
+						var li = genFileHTML.bind(null, f.Key, mimeTypeToIconURL(mime), cd, f.Size, f.LastModified, true);
+						console.log('not called yet');
+						toSort.push({cd: cd, li: li});						
 					})
 					.catch( function(err) {
 						onError(err);
@@ -370,9 +381,10 @@ function initQuill(id, guid, ownerid, readOnly) {
 						}
 						return 0;
 					});
-					toSort.forEach(function(x) {
-						console.log('Adding attachment ', x.li);
-						$files.append(x.li);
+					toSort.forEach(function(x, i) {
+						var $li = x.li(i === 0);
+						console.log('Adding attachment ', $li);
+						$files.append($li);
 					});
 				});
 		})
@@ -785,7 +797,8 @@ function initQuill(id, guid, ownerid, readOnly) {
 						var fileGUID = GetGUID();
 						var key = USERID + '/' + guid + '/attachments/' + fileGUID;	
 
-						var $li = genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date());
+						var li = genFileHTML.bind(null, key, mimeTypeToIconURL(file.type), file.name, file.size, new Date(), false);
+						var $li = li($files.find('li').length === 0);
 						
 						//нужен promise, который вернёт key.
 						var uploaderPromise;
@@ -840,7 +853,7 @@ function initQuill(id, guid, ownerid, readOnly) {
 									}
 
 									// replace it with finished version
-									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date(), true));
+									$li.replaceWith(genFileHTML(key, mimeTypeToIconURL(file.type), file.name, file.size, new Date(), true, $li.prev().length === 0));
 								},
 								function (Error) { console.log(Error); }
 							)
@@ -908,7 +921,9 @@ function initQuill(id, guid, ownerid, readOnly) {
 				
 				$li.find('.file-question')
 					.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
-				$files.attr('waiting', Number($files.attr('waiting')) + 1);
+				if ($li.attr('data-finished') !== 'false') {
+					$files.attr('waiting', Number($files.attr('waiting')) + 1);
+				}
 				$updated.show().addClass('pending');
 
 				// remove from s3
@@ -929,6 +944,11 @@ function initQuill(id, guid, ownerid, readOnly) {
 					// if no files in the list, hide dropzone
 					if ($('#files li').length === 0) {
 						$drop_zone.removeClass('used');
+					}
+					var firstLi = $files.find('li')[0];
+					console.log('firstLi', firstLi);
+					if (firstLi) {
+						updateFileHTML($(firstLi), true);
 					}
 				});
 				$files.attr('waiting', Number($files.attr('waiting')) - 1);
