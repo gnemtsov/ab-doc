@@ -57,6 +57,10 @@ var _translatorData = {
 		"ru": "Произошла ошибка. Попробуйте войти ещё раз.",
 		"en": "Unknown error. Try again."
 	},
+	"alertUnknownError": {
+		"ru": "Произошла ошибка. Попробуйте ещё раз.",
+		"en": "Unknown error. Try again."
+	},
 	"alertNoUsername": {
 		"ru": "Укажите ваш email.",
 		"en": "Enter your email."
@@ -65,9 +69,13 @@ var _translatorData = {
 		"ru": "Войти",
 		"en": "Log in"
 	},
-	"resetPassword": {
+	"sendCode": {
 		"ru": "Выслать код",
 		"en": "Send confirmation code"
+	},
+	"resetPassword": {
+		"ru": "Сменить пароль",
+		"en": "Set new password"
 	},
 	"signUp": {
 		"ru": "Нет учётной записи?",
@@ -595,14 +603,102 @@ $(document).ready( function() {
 	});
 	
 	$('#forgotPassword').click( function() {
-		$('#btnSignIn').hide();
-		$('#btnResetPassword').show();
+		$('#alertSignInError').hide();
+		$('#modalSignIn').find('.sign-in').hide();
+		$('#modalSignIn').find('.forgot-password').show();
+		$('#modalSignIn').find('.reset-password').hide();
 		$('#modalSignIn .modal-title').html(_translatorData['resetPasswordPage'][LANG]);
+		$('#forgotPasswordEmail').val($('#signInEmail').val());
 	});
 	
-	$('#btnResetPassword').click( function() {
-		
+	$('#btnSendCode').click( function() {
+		$('#btnSendCode').prop('disabled', true);
+		$('#preloaderForgotPassword').show();
+		$('#alertSignInError').hide();	
+		requestResetPassword($('#forgotPasswordEmail').val())
+			.then( function() {
+				console.log('email was sent');
+				$('#modalSignIn').find('.sign-in').hide();
+				$('#modalSignIn').find('.forgot-password').hide();
+				$('#modalSignIn').find('.reset-password').show();
+			})
+			.catch( function(err) {
+				$('#alertSignInError').html(_translatorData['alertUnknownError'][LANG]);
+				$('#alertSignInError').show();		
+				onError(err);
+			})
+			.then( function() {
+				$('#btnSendCode').prop('disabled', false);
+				$('#preloaderForgotPassword').hide();
+			})
 	});
+	
+	$('#btnConfirmResetPassword').click( function() {
+		$('#alertSignInError').hide();
+		$('#btnConfirmResetPassword').prop('disabled', true);
+		$('#preloaderConfirmReset').show();
+		var code = $('#resetConfirmationCode').val();
+		
+		var email = $('#forgotPasswordEmail').val(),
+			password = $('#resetPassword').val(),
+			password2 = $('#resetRepeatPassword').val();
+		confirmResetPassword(email, password, password2, code)
+			.then( function() {
+				return signIn(email, password);
+			})
+			.then( function() {
+				return initS3();
+			})
+			.then( function() {
+				setAuthenticatedMode();
+				return initTree();
+			})
+			.then( function() {
+				routerOpen();
+				$('#modalSignIn').modal('hide');
+			})
+			.catch( function (err) {
+				console.log(err.name, 'Here!');
+				switch(err.name) {
+					case 'CodeMismatchException':
+						$('#alertSignInError').html(_translatorData['alertWrongCode'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					case 'InvalidParameterException':
+						$('#alertSignInError').html(_translatorData['alertBadPassword'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					case 'InvalidPasswordException':
+						$('#alertSignInError').html(_translatorData['alertBadPassword'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					case 'UsernameExistsException':
+						$('#alertSignInError').html(_translatorData['alertUserExists'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					case 'WrongRepeat':
+						$('#alertSignInError').html(_translatorData['alertWrongRepeat'][LANG]);
+						$('#alertSignInError').show();
+						break;
+					case 'ExpiredCodeException':
+						$('#alertSignInError').html(_translatorData['alertExpiredCode'][LANG]);
+						$('#alertSignInError').show();
+						requestResetPassword(email)
+							.catch( function(err) {
+								onError(err);
+							});
+						break;
+					default:
+						$('#alertSignInError').html(_translatorData['alertUnknownError'][LANG]);
+						$('#alertSignInError').show();
+				}
+			})
+			.then( function() {
+				$('#btnConfirmResetPassword').prop('disabled', false);
+				$('#preloaderConfirmReset').hide();
+				console.log('I`m here!');
+			})
+	});	
 	
 	$('#btnSignUp').click( function() {
 		$('#alertSignUpError').hide();
@@ -667,7 +763,7 @@ $(document).ready( function() {
 							});
 						break;
 					default:
-						$('#alertSignUpError').html(_translatorData['alertUnknownLoginError'][LANG]);
+						$('#alertSignUpError').html(_translatorData['alertUnknownError'][LANG]);
 						$('#alertSignUpError').show();
 				}
 				$('#btnSignUp').prop('disabled', false);
@@ -711,6 +807,7 @@ function signUp(email, password, password2, confirmationCode) {
 
 		if(password != password2) {
 			reject(ABError('WrongRepeat'));
+			return;
 		}
 		  
 		var dataEmail = {
@@ -750,12 +847,35 @@ function signUp(email, password, password2, confirmationCode) {
 			}
 	 
 			reject(ABError('ConfirmationRequired'));
-			//cognitoUser = result.user;
-			//$('#divConfirmation').show();
 		});
     });
     
     return promise;
+}
+
+function confirmResetPassword(email, password, password2, code) {
+	var promise = new Promise( function(resolve, reject) {
+		if(password != password2) {
+			reject(ABError('WrongRepeat'));
+			return;
+		}
+		
+		var userData = {
+			Username : email,
+			Pool : USER_POOL
+		};
+	
+		var cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);	
+		cognitoUser.confirmPassword(code, password, function(err, result) {
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve(result);
+		});
+    });
+    
+    return promise;	
 }
 
 function resendConfirmationCode(email) {
@@ -1059,9 +1179,16 @@ $(function() {
 		$('#divSignInConfirmationCode').hide();
 		$('#signInConfirmationCode').val('');
 		$('#btnSignIn').show();
-		$('#btnResetPassword').hide();
 		$('preloaderSignIn').hide();
 		$('#modalSignIn .modal-title').html(_translatorData['loginPage'][LANG]);
+		
+		$('#modalSignIn').find('.sign-in').show();
+		$('#modalSignIn').find('.forgot-password').hide();
+		$('#modalSignIn').find('.reset-password').hide();
+		
+		$('#btnSignIn').prop('disabled', false);
+		$('#btnSendCode').prop('disabled', false);
+		$('#btnConfirmResetPassword').prop('disabled', false);
 	});
 	$('#modalSignUp').on('show.bs.modal', function(event) {
 		$('#divSignUpConfirmationCode').hide();

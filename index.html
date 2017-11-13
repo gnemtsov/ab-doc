@@ -708,24 +708,58 @@
 								<form id="formSignIn">
 									<div class="form-group row">
 										<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
-									</div>							
-									<div class="form-group input-group row">
-										<span class="input-group-addon" data-translate="email"></span>
-										<input id="signInEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+									</div>	
+									<div class="sign-in">						
+										<div class="form-group input-group row">
+											<span class="input-group-addon" data-translate="email"></span>
+											<input id="signInEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+										</div>
+										<div class="form-group input-group row">
+											<span class="input-group-addon" data-translate="password"></span>
+											<input id="signInPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+										</div>
+										<div class="form-group input-group row" id="divSignInConfirmationCode">
+											<span class="input-group-addon" data-translate="confirmationCode"></span>
+											<input id="signInConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
+										</div>
+										<div class="form-group row">
+											<button id="btnSignIn" class="btn btn-success" type="submit" value="SignIn" data-translate="enter"></button>
+											<div class="small-preloader" id="preloaderSignIn" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+											<a class="ml-1" id="forgotPassword" href="#" data-translate="forgotPassword"></a>
+										</div>
 									</div>
-									<div class="form-group input-group row">
-										<span class="input-group-addon" data-translate="password"></span>
-										<input id="signInPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+									<div class="forgot-password">
+										<div class="form-group row">
+											<div class="alert alert-danger collapse col-12" role="alert" id="alertSignInError"></div>
+										</div>							
+										<div class="form-group input-group row">
+											<span class="input-group-addon" data-translate="email"></span>
+											<input id="forgotPasswordEmail" type="text" class="form-control" attr-translate="placeholder" data-translate="yourEmail"></input>
+										</div>
+										<div class="form-group row">
+											<button id="btnSendCode" class="btn btn-success" type="submit" value="ResetPassword" data-translate="sendCode"></button>
+											<div class="small-preloader" id="preloaderForgotPassword" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+										</div>
 									</div>
-									<div class="form-group input-group row" id="divSignInConfirmationCode">
-										<span class="input-group-addon" data-translate="confirmationCode"></span>
-										<input id="signInConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
-									</div>
-									<div class="form-group row">
-										<button id="btnSignIn" class="btn btn-success" type="submit" value="SignIn" data-translate="enter"></button>
-										<button id="btnResetPassword" class="btn btn-success" type="submit" value="ResetPassword" data-translate="resetPassword" style="display: none;"></button>
-										<div class="small-preloader" id="preloaderSignIn" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
-										<a class="ml-1" id="forgotPassword" href="#" data-translate="forgotPassword"></a>
+									<div class="reset-password">
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="password"></span>
+											<input id="resetPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="yourPassword"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-addon" data-translate="password"></span>
+											<input id="resetRepeatPassword" type="password" class="form-control" attr-translate="placeholder" data-translate="repeatPassword"></input>
+										</div>
+										<div class="form-group input-group" id="divSignUpConfirmationCode">
+											<span class="input-group-addon" data-translate="confirmationCode"></span>
+											<input id="resetConfirmationCode" type="text" class="form-control" attr-translate="placeholder" data-translate="yourConfirmationCode"></input>
+										</div>
+										<div class="form-group input-group">
+											<span class="input-group-btn">
+												<button id="btnConfirmResetPassword" class="btn btn-success" type="submit" data-translate="resetPassword"></button>
+												<div id="preloaderConfirmReset" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+											</span>
+										</div>
 									</div>
 								</form>
 							</div>
