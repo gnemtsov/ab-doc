@@ -866,12 +866,13 @@ function confirmResetPassword(email, password, password2, code) {
 		};
 	
 		var cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);	
-		cognitoUser.confirmPassword(code, password, function(err, result) {
-			if (err) {
+		cognitoUser.confirmPassword(code, password, {
+			onSuccess: function(result) {
+				resolve(result);
+			},
+			onFailure: function(err) {
 				reject(err);
-				return;
 			}
-			resolve(result);
 		});
     });
     
