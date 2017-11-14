@@ -197,6 +197,18 @@ var _translatorData = {
 	}
 }
 
+//------------------------------------------------
+//------------- console.log on/off ---------------
+//------------------------------------------------
+
+$(function() {
+	if (window.location.hostname === 'ab-doc.com') {
+		console.log = function() {};
+	}
+});
+
+
+
 // ====================
 
 AWSCognito.config.region = 'us-west-2';
@@ -2324,3 +2336,4 @@ window.onbeforeunload = function() {
 		return '';
 	}
 }
+
