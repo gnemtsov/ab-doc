@@ -4,6 +4,10 @@ var _translatorData = {
 	"back": {
 		"ru": "На главную",
 		"en": "Back to main page"
+	},
+	"copyright": {
+		"ru": "© Лаборатория автоматизации бизнеса",
+		"en": "© English translation: TODO" //TODO!!!
 	}
 }
 
