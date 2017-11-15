@@ -516,6 +516,9 @@ $(document).ready( function() {
 					break;
 				default:
 					onError(err);
+					setTimeout(	function() {
+						window.location.reload(false);
+					}, 2500);
 			}
 		});
 	
@@ -1031,15 +1034,17 @@ function initS3() {
 						'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
 					}
 				});
-				AWS.config.credentials.clearCachedId();
+				//AWS.config.credentials.clearCachedId();
 					
 				AWS.config.credentials.get( function(err) {
 					if (err) {
 						// No error messages
 						console.log('error there!');
 						cognitoUser.signOut();
+						// Remove CognitoIdentityServiceProvider.* from LSO
+						// TODO
 						reject(err);
-						return
+						return;
 					}
 					
 					var accessKeyId = AWS.config.credentials.accessKeyId;
