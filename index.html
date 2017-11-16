@@ -623,9 +623,6 @@
 							<option value="en">En</option>
 						</select>
 					</li>
-					<li class="nav-item authenticated-mode">
-						<a class="navbar-text link-sign-out" data-translate="exit" href="#"></a>
-					</li>
 					<li class="nav-item unauthenticated-mode">
 						<a class="navbar-text link-sign-in" data-translate="enter" href="#"></a>
 					</li>
@@ -633,7 +630,10 @@
 						<a class="navbar-text link-sign-up" data-translate="signUp" href="#"></a>
 					</li>
 					<li class="nav-item">
-						<a class="navbar-text" data-translate="about" href="/about.html"></a>
+						<a class="navbar-text link-about" data-translate="about" href="#"></a>
+					</li>
+					<li class="nav-item authenticated-mode">
+						<a class="navbar-text link-sign-out" data-translate="exit" href="#"></a>
 					</li>
 				</ul>
 			</div>
@@ -644,35 +644,40 @@
 				<div class="big-preloader" style="margin-top: 120px;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 			</div>
  			
- 			<div class="row unauthenticated-mode" style="margin-top: 120px;">
-				<div class="col-12">
-					<h2 class="text-center" data-translate="welcomeMessage"></h2>
+ 			<div id="main">
+				<div class="row unauthenticated-mode" style="margin-top: 120px;">
+					<div class="col-12">
+						<h2 class="text-center" data-translate="welcomeMessage"></h2>
+					</div>
+				</div>
+				
+				<div class="row app-container authenticated-mode">
+					<div id="ztree-div" class="ab-opened">
+						<ul id="abTree" class="ztree"></ul>
+					</div>
+					<div id="splitter" class="ab-opened">
+						<div id="toggleButton" class="ab-opened">
+						</div>
+					</div>
+					<div id="document" class="ab-opened">
+						<h2 id="selectedDoc"></h2>
+						<div id="editor-wrap">
+							<div id="dropzone-wrap" class="float-right" style="z-index: 1000;">
+								<div id="dropzone" class="filedrag" style="z-index: 1005;">
+									<div class="clip">
+										<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 1010;">
+									</div>
+									<ul id="files" class="files" waiting="0" attr-translate="data-empty-message" data-translate="emptyDropzoneMessage"></ul>
+								</div>
+							</div>
+							<div id="editor" class="message-content" waiting="0" modified="0"></div>
+						</div>
+						<div id="editor-preloader" class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+					</div>
 				</div>
  			</div>
  			
- 			<div class="row app-container authenticated-mode">
-				<div id="ztree-div" class="ab-opened">
-					<ul id="abTree" class="ztree"></ul>
-				</div>
-				<div id="splitter" class="ab-opened">
-					<div id="toggleButton" class="ab-opened">
-					</div>
-				</div>
-				<div id="document" class="ab-opened">
-					<h2 id="selectedDoc"></h2>
-					<div id="editor-wrap">
-						<div id="dropzone-wrap" class="float-right" style="z-index: 1000;">
-							<div id="dropzone" class="filedrag" style="z-index: 1005;">
-								<div class="clip">
-									<input id="clip" class="clip" name="clip" multiple="multiple" type="file" style="z-index: 1010;">
-								</div>
-								<ul id="files" class="files" waiting="0" attr-translate="data-empty-message" data-translate="emptyDropzoneMessage"></ul>
-							</div>
-						</div>
-						<div id="editor" class="message-content" waiting="0" modified="0"></div>
-					</div>
-					<div id="editor-preloader" class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
-				</div>
+ 			<div id="about" style="display: none;">
  			</div>
  			
  			<!-- Modal Delete -->
