@@ -1598,7 +1598,8 @@ $(function () {
 		$ztree_div = $('#ztree-div'),
 		$splitter = $('#splitter'),
 		$app_container = $('.app-container'),
-		$nav = $('.navbar');	
+		$about_container = $('#about'),
+		$nav = $('nav');	
 		
 	// if (window's width < smallWidth) window is considered small, otherwise it's big 
 	var smallWidth = 600;
@@ -1671,6 +1672,7 @@ $(function () {
 		
 		// app-container's height
 		$app_container.outerHeight(window.innerHeight - 1 - navHeight);
+		$about_container.outerHeight(window.innerHeight - 1 - navHeight);
 	});
 	
 	// Init columns
@@ -1684,7 +1686,8 @@ $(function () {
 	
 	$app_container.outerHeight(window.innerHeight - 1 - navHeight);
 	$app_container.css('top', $nav.outerHeight() + 'px');
-	
+	$about_container.outerHeight(window.innerHeight - 1 - navHeight);
+		
 	TREE_WIDTH = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
 	if (isNaN(TREE_WIDTH)) {
 		TREE_WIDTH = window.innerWidth * 0.25;
