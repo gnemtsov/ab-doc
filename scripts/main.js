@@ -5,6 +5,10 @@ var _translatorData = {
 		"ru": "О программе",
 		"en": "About"
 	},
+	"back": {
+		"ru": "На главную",
+		"en": "Back to main page"
+	},
 	"loginPage": {
 		"ru": "Вход",
 		"en": "Log in"
@@ -802,6 +806,66 @@ $(document).ready( function() {
 	
 	$('form').on('submit', function() {
 		return false;
+	});
+	
+	// aboutPages is used to cache about-pages....
+	// ... Maybe it's not needed, page is reloaded when lang is changed
+	var aboutPages = [];
+	$('.link-about').on('click', function() {
+		$('.preloader-container').hide();
+		
+		if ($('#main').is(':visible')) {
+			$('#main').hide();
+			$('.link-about').html(_translatorData['back'][LANG]);
+			
+			$('#about').html('');
+			$('#about').show();
+			if (aboutPages[LANG]) {
+				$('#about').html(aboutPages[LANG]);
+			} else {
+				$('.preloader-container').show();
+				var getPromise = new Promise(function (resolve, reject) {
+					var xhr = new XMLHttpRequest();
+					xhr.open('GET', '/about/' + LANG + '.html');
+					xhr.onload = function () {
+						if (this.status >= 200 && this.status < 300) {
+							resolve(xhr.response);
+							console.log(xhr.response);
+						} else {
+							reject({
+								status: this.status,
+								statusText: xhr.statusText
+							});
+						}
+					};
+					xhr.onerror = function () {
+						reject({
+							status: this.status,
+							statusText: xhr.statusText
+						});
+					};
+					xhr.send();
+				});
+				getPromise
+					.then( function(data) {
+						aboutPages[LANG] = data;
+						return data;
+					})
+					.catch( function(err) {
+						return 'not found';
+					})
+					.then( function(data) {
+						$('.preloader-container').hide();
+						$('#about').html(data);
+					});
+			}
+		} else {
+			$('#main').show();
+			$('#about').hide();
+			$('.preloader-container').hide();
+			$('.link-about').html(_translatorData['about'][LANG]);
+		}
+		return true;
 	});
 });
 
