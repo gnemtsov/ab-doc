@@ -719,77 +719,6 @@ $(document).ready( function() {
 			})
 	});	
 	
-	$('#btnSignUp').click( function() {
-		$('#alertSignUpError').hide();
-		$('#btnSignUp').prop('disabled', true);
-		$('#preloaderSignUp').show();
-		var code;
-		if ($('#signUpConfirmationCode').is(':visible')) {
-			code = $('#signUpConfirmationCode').val();
-		}
-		var email = $('#signUpEmail').val(),
-			password = $('#signUpPassword').val(),
-			password2 = $('#signUpRepeatPassword').val();
-		signUp(email, password, password2, code)
-			.then( function() {
-				return signIn(email, password);
-			})
-			.then( function() {
-				return initS3();
-			})
-			.then( function() {
-				setAuthenticatedMode();
-				return initTree();
-			})
-			.then( function() {
-				routerOpen();
-				$('#btnSignUp').prop('disabled', false);
-				$('#preloaderSignIn').hide();
-				$('#modalSignUp').modal('hide');
-			})
-			.catch( function (err) {
-				console.log(err.name, 'Here!');
-				switch(err.name) {
-					case 'CodeMismatchException':
-						$('#alertSignUpError').html(_translatorData['alertWrongCode'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'InvalidParameterException':
-						$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'InvalidPasswordException':
-						$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'UsernameExistsException':
-						$('#alertSignUpError').html(_translatorData['alertUserExists'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'ConfirmationRequired':
-						$('#divSignUpConfirmationCode').show();
-						break;
-					case 'WrongRepeat':
-						$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'ExpiredCodeException':
-						$('#alertSignUpError').html(_translatorData['alertExpiredCode'][LANG]);
-						$('#alertSignUpError').show();
-						resendConfirmationCode($('#signUpEmail').val())
-							.catch( function(err) {
-								onError(err);
-							});
-						break;
-					default:
-						$('#alertSignUpError').html(_translatorData['alertUnknownError'][LANG]);
-						$('#alertSignUpError').show();
-				}
-				$('#btnSignUp').prop('disabled', false);
-				$('#preloaderSignUp').hide();
-			})
-	});
-	
 	$('#modalDelete').on('shown.bs.modal', function() {
 		$('#buttonDelete').focus();
 	});
@@ -868,6 +797,80 @@ $(document).ready( function() {
 		return true;
 	});
 });
+
+// It's used with reCAPTCHA
+function btnSignUpClick() {
+	console.log('btnSignUpClick()');
+	
+	$('#alertSignUpError').hide();
+	$('#btnSignUp').prop('disabled', true);
+	$('#preloaderSignUp').show();
+	var code;
+	if ($('#signUpConfirmationCode').is(':visible')) {
+		code = $('#signUpConfirmationCode').val();
+	}
+	var email = $('#signUpEmail').val(),
+		password = $('#signUpPassword').val(),
+		password2 = $('#signUpRepeatPassword').val();
+	signUp(email, password, password2, code)
+		.then( function() {
+			return signIn(email, password);
+		})
+		.then( function() {
+			return initS3();
+		})
+		.then( function() {
+			setAuthenticatedMode();
+			return initTree();
+		})
+		.then( function() {
+			routerOpen();
+			$('#btnSignUp').prop('disabled', false);
+			$('#preloaderSignIn').hide();
+			$('#modalSignUp').modal('hide');
+		})
+		.catch( function (err) {
+			console.log(err.name, 'Here!');
+			switch(err.name) {
+				case 'CodeMismatchException':
+					$('#alertSignUpError').html(_translatorData['alertWrongCode'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'InvalidParameterException':
+					$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'InvalidPasswordException':
+					$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'UsernameExistsException':
+					$('#alertSignUpError').html(_translatorData['alertUserExists'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'ConfirmationRequired':
+					$('#signUpConfirmationCode').parent().show();
+					break;
+				case 'WrongRepeat':
+					$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'ExpiredCodeException':
+					$('#alertSignUpError').html(_translatorData['alertExpiredCode'][LANG]);
+					$('#alertSignUpError').show();
+					resendConfirmationCode($('#signUpEmail').val())
+						.catch( function(err) {
+							onError(err);
+						});
+					break;
+				default:
+					$('#alertSignUpError').html(_translatorData['alertUnknownError'][LANG]);
+					$('#alertSignUpError').show();
+			}
+			$('#btnSignUp').prop('disabled', false);
+			$('#preloaderSignUp').hide();
+		})
+}
 
 function setProperty(obj, p, val) {
 	if (obj[p] !== undefined) {
@@ -1273,8 +1276,10 @@ $(function() {
 		$('#btnConfirmResetPassword').prop('disabled', false);
 	});
 	$('#modalSignUp').on('show.bs.modal', function(event) {
-		$('#divSignUpConfirmationCode').hide();
 		$('#signUpConfirmationCode').val('');
+		//$('#divSignUpConfirmationCode').hide();
+		// The above line stopped working. Don't know why.
+		$('#signUpConfirmationCode').parent().hide();
 	});
 });
 
