@@ -74,7 +74,7 @@ a.navbar-brand img{
     min-height: 32px !important;
     max-height: 32px !important;
     height: 32px;
-    margin-left: 16px;
+    margin-left: 20px;
 }
 
 #update {
@@ -83,7 +83,7 @@ a.navbar-brand img{
     min-width: 32px !important;
     height: 32px !important;
     min-height: 32px !important;
-    margin-left: 12px;
+    margin-left: 20px;
 }
 #update img {
     position: absolute;
@@ -399,15 +399,15 @@ input.rename {
 #editor img{
     max-width: 100%;
     height: auto;
-    background-color: #e8f3fe;
     background-repeat:no-repeat;
     overflow: auto;
     cursor: default;
 }
-#editor img[src$="ajax-loader.gif"]{
+#editor img[src$="ab-doc-preloader-nano.gif"]{
     margin: 2px;
     padding: 10px;
-    border: 1px solid #dcdcdc;  
+    background-color: #ffd098;
+    border: 1px solid #bababa;  
     display: inline-block;
 }
 
@@ -543,13 +543,16 @@ padding-left: 6px;
 #dropzone {
     position: relative;
     float: right;
-    width: 78px;
+    -moz-box-sizing: border-box; /* в Firefox нужен префикс */
+    box-sizing: border-box;
     border-style: none;
-    padding-left: 8px;
+    min-height: 100px;
+    min-width: 100px;
+    padding: 2px;
     margin-bottom: 0.5rem;
     margin-left: 1.6rem;
     cursor: auto !important;
-    z-index: 1;
+    z-index: 1; /*dropzone must be higher than editor to reseive dragenter events*/
 }
 
 #dropzone.used {
@@ -558,17 +561,22 @@ padding-left: 6px;
     border: 1px dashed #C0C0C0;
 }
 
-#dropzone.highlighted {
+#dropzone.highlighted, #dropzone.superhighlighted {
     width: 300px;
-    min-height: 120px;
-    background-color: #fff0f0;
-    border: 1px dashed #000000;		
+    min-height: 150px;
+    padding: 0px;
 }
-
-#dropzone.highlighted ul:empty::after {
-    content: attr(data-empty-message);
-    position: relative;
-    top: 25px;
+#dropzone.highlighted.used, #dropzone.superhighlighted.used {
+    padding: 1px;
+}
+#dropzone.highlighted {
+    background-color: #ffe7d3;
+    border: 2px dashed #C0C0C0;		
+}
+#dropzone.superhighlighted {
+    background-color: #ffe7d3;
+/*    background-color: #ffdcbe;*/
+    border: 2px dashed #000000;		
 }
 
 #clip-icon {
@@ -581,153 +589,146 @@ padding-left: 6px;
     cursor: pointer;
     z-index: 2;
 }
+#dropzone.highlighted #clip-icon, #dropzone.superhighlighted #clip-icon{
+    opacity: 1;
+    top: -26px;
+    right: 4px;    
+}
+#dropzone.highlighted.used #clip-icon, #dropzone.superhighlighted.used #clip-icon{
+    opacity: 1;
+    top: -25px;
+    right: 5px;    
+}
+
 #clip-icon:hover {
     opacity: 1;
 }
 #clip-input {
+    position: absolute; /*behind clip-icon*/
+    top: 0;
+    right: 38px;
     opacity: 0;
     max-height: 1px;
     max-width: 1px;
-    z-index: 0;
 }
 
-#dropzone img.file-icon {
-    width: 38px;
-    height: 38px;
-    float: left;
-    margin: 4px 7px 0px 0px;
+#dropzone #dropzone-message{
+    text-align: center;
+    margin-top: 40px;
+    padding: 10px;
+    font-size: 1.3rem;
+    display: none;
+}
+#dropzone.highlighted #dropzone-message, #dropzone.superhighlighted #dropzone-message{
+    display: block;
+}
+#dropzone.used #dropzone-message{
+    display: none;
 }
 
 /*==================*/
 /* dropzone's files */
 /*==================*/
-ul.files {
-    margin: 10px 0px 20px 0px;
-    padding: 0px;
-    list-style-type: none;
+
+/*file-container*/
+    /*file-icon*/
+    /*file-wrap*/
+        /*file-name*/
+            /*file-n*/
+            /*file-e*/
+        /*file-meta*/
+            /*file-action*/
+            /*file-size*/
+            /*file-modified*/
+            /*file-question*/
+
+.file-container{
+    margin: 0.75rem 0.75rem 1rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
 }
-
-ul.files li {
-    display: block;
-    height: 46px;
-    margin: 12px 0px 5px 0px;
-    clear: both;
+.file-icon{
+    margin: 4px 6px 0px 0px;
 }
-
-ul.files .file-name {
-    width: 228px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap; 
-    display: inline-block;
-    vertical-align: top;
+.file-wrap{
+    max-width: 234px;
 }
-
-ul.files .file-name * {
-    display: inline-block;
-    vertical-align: top;
-    font-size: 16px;
+.file-container:first-child .file-wrap{
+    max-width: 184px;
 }
-
-/* file name without extension */
-ul.files .file-name .fn {
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap; 
-}		
-
-/* file extension */
-ul.files .file-name .fe {
-    max-width: 50px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap; 
-}	
-
-ul.files .file-size {
-    overflow: hidden;
-    height: 20px;
-    text-overflow: ellipsis;
-    display: inline-block;
-    vertical-align: top;
-}
-
-ul.files .file-modified {
-    overflow: hidden;
-    height: 20px;
-    text-overflow: ellipsis;
-    display: inline-block;
-    vertical-align: top;
-    color: #777;
-    margin-top: 3px;
-    font-size: 12px;
-}
-
-ul.files .progress {
-    text-align: left;
-    width: 200px;
-    height: 18px;
-    display: inline-block;
-}
-
-ul.files .progress-bar {
-    color: #000000;
-    height: 18px;
-    background-color: #ffd098;
-    padding-left: 4px;
-    white-space: nowrap;
-    font-size: 14px;
-    padding-top: 1px;
-}
-
-ul.files .file-question {
-    display: inline-block;
-    height: 18px;
-}
-            
-/* first file */
-ul.files li:first-child {
-    width: 250px;
-}
-
-ul.files *:first-child .file-name {
-    width: 196px;
-}
-
-ul.files *:first-child .file-name .fn {
-    max-width: 144px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap; 
-}	
-            
-ul.files *:first-child .progress {
-    width: 160px;
-}			
-
-div.cross {
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    background-image: url(/img/icons/trash.svg);
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-left: 8px;
-    margin-top: 2px;
-    cursor: pointer;
-}	
-
-.file-name a {
+.file-wrap a:hover{
     text-decoration: none;
-    border-bottom: 1px solid transparent;
-    height: 20px;
+}
+.file-wrap a .file-name:hover:after {
+    content: "";
+    position: absolute;
+    height: 1px;
+    border-bottom: 1px solid #0056b3;
+    bottom: 3px;
+    width: 100%;
+  }
+.file-name{
+    display: inline-flex;
+    max-width: 100%;
+    position: relative;
+    white-space: nowrap;
+
+}
+.file-n{
+    text-overflow: ellipsis;
+    overflow: hidden;
+}    
+
+.file-meta{
+    white-space: nowrap;
+    line-height: 1.2;
+    height: 18px !important; /*equals trash icon height*/
+}
+.file-meta a:hover{
+    text-decoration: underline;
 }
 
-.file-name a:hover {
-    border-bottom: 1px solid rgb(0, 123, 255);
+.file-size{
+    position: relative;    
+}
+.file-size.file-progress{
+    min-width: 180px;
+    max-width: 180px;
+    width: 0%;
+    display: inline-block;
+    border-radius: 2px;
+    border: 1px solid #bababa;
+}    
+.file-size.file-progress:before{
+    position:absolute;
+    z-index:-1;
+    top:0;
+    left:0;
+    height:100%;
+    width:inherit; /*it takes width from .file-size*/
+    border-radius: 2px;
+    content:"";
+    background-color: #ffd098;    
+}
+.file-modified{
+    font-size: 0.8rem;
+    margin-left: 8px;
+    color: #777;
 }
 
+.file-question, .file-action{
+    display: none;
+}
+.file-action{
+    position: relative;
+    bottom: 3px;
+    right: 0px;
+    width: 18px;
+    height: 18px;
+    display: none;
+    margin-left: 8px;
+    cursor: pointer;    
+}
 
 
 /*---------------------------------------------------------*/

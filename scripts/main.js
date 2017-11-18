@@ -62,15 +62,6 @@ function createObjectS3(path, body, errCallback) {
 	});
 };*/
 
-function createObjectS3Params(params, errCallback) {
-	params.Bucket = STORAGE_BUCKET;
-	
-	return s3.upload(params, {partSize: 6 * 1024 * 1024, queueSize: 2}, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}
-	});
-};
 
 function getObjectS3Params(params, errCallback) {
 	params.Bucket = STORAGE_BUCKET;
@@ -237,17 +228,70 @@ var USERID; // Id of a currently logged in user
 var TREE_USERID; // Id of a user, whose tree is shown
 var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
 var STORAGE_BUCKET = "ab-doc-storage";
-var LANG;
+var LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en';
 var TREE_MODIFIED = false;
 var TREE_READY = false; // Is tree.json loaded?
 var TREE_FILENAME = "tree.json";
 var TREE_KEY;
 var TREE_READONLY;
+var FILES_MODIFIED = false;
 var COGNITO_USER;
 var ROOT_DOC_GUID = 'root-doc';
 var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
 var $updated;
 var sizeIndicator;
+
+//ACTIVITY object stores activities states and updates indicator in navbar.
+//Activities: doc edit, file [guid] upload, file [guid] delete or whatever.
+//Two possible states: pending or saving.
+//Each activity on each specific object must be reported independently!
+//"saving" class is "!important", so it dominates if both classes are active
+var ACTIVITY = {
+	lines: {}, //each activity has own line of pending and saving events
+
+	push: function (activity, state){
+		if(this.lines.hasOwnProperty(activity)){
+			this.lines[activity].push(state);
+		} else {
+			this.lines[activity] = [state];
+		}
+		this.refresh();
+	},
+
+	get: function(activity){
+		if(this.lines.hasOwnProperty(activity)){
+			var length = this.lines[activity].length;
+			return this.lines[activity][length-1];
+		} else {
+			return undefined;
+		}	
+	},
+
+	flush: function(activity){
+		if(this.lines.hasOwnProperty(activity)){
+			var index = this.lines[activity].indexOf('saving');
+			if(index !== -1){
+				this.lines[activity] = this.lines[activity].slice(index+1);
+			}
+		}		
+		this.refresh();
+		return this.get(activity);
+	},
+
+	refresh: function(){
+		var keys = Object.keys(this.lines),
+			pending = saving = false;
+
+		for (var i = 0; i < keys.length; i++) {
+			pending = pending || this.lines[ keys[i] ].indexOf('pending') !== -1;
+			saving = saving || this.lines[ keys[i] ].indexOf('saving') !== -1;
+		}
+
+		pending ? $('#update').addClass('pending') : $('#update').removeClass('pending');						
+		saving ? $('#update').addClass('saving') : $('#update').removeClass('saving');						
+	}
+}
+
 
 $(document).ready( function() {
 	setUnknownMode();
@@ -269,29 +313,6 @@ $(document).ready( function() {
 					onError(err);
 			}
 		});
-
-	//keep an eye on some attributes to update indicator
-	var observer = new MutationObserver(function(mutations) {
-		mutations.forEach(function(mutation) {
-			switch(mutation.attributeName) {
-				case 'data-modified':
-					if (mutation.target.getAttribute("data-modified") === '1') { 
-						$('#update').addClass('pending');
-					} else {
-						$('#update').removeClass('pending');						
-					}
-					break;
-			}			
-		});    
-	});
-
-	var config = { 
-		attributes: true,
-		attributeFilter: ['data-modified'],
-		attributeOldValue: true
-	}
-	observer.observe(document.getElementById('editor'), config);				
-		
 	
 	$('.link-sign-out, .link-return').click( function() {
 		if (COGNITO_USER) {
@@ -973,7 +994,7 @@ function routerOpen(wantGUID) {
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
 //						initQuill('#document', node.id, TREE_USERID, TREE_USERID !== USERID);
-						$('#document').abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
+						$('#document-wrap').abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}
@@ -1005,10 +1026,6 @@ function routerOpen(wantGUID) {
 //---------------------------------------
 
 $(function() {
-	LANG = localStorage.getItem('ab-doc.translator.lang');
-	if (!LANG) {
-		LANG = "ru";
-	}
 	$('[data-translate]').each( function(i, el) {
 		var dt = $(el).attr('data-translate'),
 			at = $(el).attr('attr-translate');
@@ -1320,30 +1337,6 @@ $(function() {
 				);
 			}
 			TREE_MODIFIED = false;
-		}
-		
-		// EDITOR
-		var $editor = $('#editor'),
-			$files = $('#files');
-
-		if($editor.attr('data-modified') === '1' && USERID === TREE_USERID){
-			$('#update').addClass('saving');
-			var params = {
-				Key: USERID + '/' + $editor.attr('guid') + '/index.html',
-				Body: $editor.children('.ql-editor').html(),
-				ACL: 'public-read'
-			};
-			$editor.attr('data-modified', 0); //document html was copied to params, it's safe to set this to zero		
-
-			Promise.all([ 
-				s3Uploader(params), 
-				new Promise(function(resolve, reject) {
-					setTimeout(resolve, 800);
-				  })
-			])
-				.then(function(){
-					$('#update').removeClass('saving');
-				});
 		}
 
 	}, 3000);
@@ -1899,7 +1892,7 @@ function canUpload(size) {
 }
 
 function updateUsedSpaceDelta(d) {
-	if (typeof(d) !== 'number') {
+	if ((typeof(d) !== 'number') || isNaN(d)) {
 		console.log('updateUsedSpaceDelta wrong d:', d);
 		return;
 	}
@@ -1909,7 +1902,7 @@ function updateUsedSpaceDelta(d) {
 }
 
 function updateUsedSpacePending(p) {
-	if (typeof(p) !== 'number') {
+	if ((typeof(p) !== 'number') || isNaN(p)) {
 		console.log('updateUsedSpacePending wrong p:', p);
 		return;
 	}
@@ -1919,7 +1912,7 @@ function updateUsedSpacePending(p) {
 
 //onbeforeunload
 window.onbeforeunload = function (e) {
-    if ($('#update.pending').length) {
+    if ($('#update.pending').length || $('#update.saving').length) {
         if (typeof e == "undefined") {
             e = window.event;
         }

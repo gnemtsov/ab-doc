@@ -1,43 +1,17 @@
 <html>
-    <head></head>
-    <body style="background-color: #666;">
-        <div id="sizeIndicator1" style="margin: 20px;"></div>
-
-<script src="scripts/svg.js/svg.min.js?ver=v0"></script>            
-<script>
-
-    var size = 32,
-        bucket_capacity = 100,
-        space_occupied = 1;
-
-	//bucket coords
-	var bx1 = 2, bx2 = 5, bx3 = size - bx2, bx4 = size - bx1,
-        by1 = 2, by2 = size - by1, by3 = by2, by4 = by1,
-        tg_alpha = (bx2 - bx1) / (by2 - by1);
-
-    //calculate areas
-    var barea = Math.abs(bx1*by2 + bx2*by3 + bx3*by4 + bx4*by1 - bx2*by1 - bx3*by2 - bx4*by3 - bx1*by4) / 2,
-        sarea = Math.min(1.0, space_occupied / bucket_capacity) * barea;
-    
-    //calculate y of the occupied space (see .service/sizeIndicator.jpg for details)
-    var a = -2*tg_alpha,
-        b = 3*tg_alpha*by2 + bx3 + size - 3*bx2 + tg_alpha*by3,
-        c = bx2*by2 - tg_alpha*Math.pow(by2, 2) + 2*bx2*by3 - bx3*by2 - size*by3 - tg_alpha*by2*by3 + 2*sarea,
-        D = Math.pow(b, 2) - 4*a*c,
-        y = (-b + Math.sqrt(D)) / (2*a);
-    
-	//occupied space coords
-	var sx1 = Math.ceil(bx2 - by2*tg_alpha + y*tg_alpha), sx2 = bx2, sx3 = bx3, sx4 = size - sx1,
-		sy1 = Math.ceil(y)-2, sy2 = by2, sy3 = by3, sy4 = sy1;
-
-    //draw
-    var draw1 = SVG('sizeIndicator1');
-	draw1.polyline([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4])
-		.fill('#DD6600');	
-	draw1.polyline([bx1,by1, bx2,by2, bx3,by3, bx4,by4]).fill('none')
-		.stroke({ color: '#fff', width: 3, linecap: 'round', linejoin: 'round' });
-
-</script>
-
+    <head>
+        <style>
+            img{
+                display: block;
+                margin: 30px;
+                padding: 10px;
+                background-color: #ffd098;
+            }
+        </style>
+    </head>
+    <body style="background-color: #aca8a4">
+        <img class="ab-doc-preloader" src="img/ab-doc-preloader-big.gif">
+        <img class="ab-doc-preloader" src="img/ab-doc-preloader-micro.gif">
+        <img class="ab-doc-preloader" src="img/ab-doc-preloader-nano.gif">
     </body>
 </html>

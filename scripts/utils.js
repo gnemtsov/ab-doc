@@ -102,18 +102,6 @@ var _translatorData = {
 		"ru": "Есть несохраненные изменения!",
 		"en": "There are unsaved changes!"
 	},
-	"saving": {
-		"ru": "сохранение...",
-		"en": "saving..."
-	},
-	"saved": {
-		"ru": "сохранено",
-		"en": "saved"
-	},
-	"edited": {
-		"ru": "изменено",
-		"en": "edited"
-	},
 	"typeYourText": {
 		"ru": "Напишите что-нибудь удивительное...",
 		"en": "Compose something awesome..."
@@ -226,6 +214,26 @@ function s3Uploader(params, onprogress, updateFlag) {
     return promise;
 }
 
+function createObjectS3Params(params, errCallback) {
+	params.Bucket = STORAGE_BUCKET;
+	
+	return s3.upload(params, {partSize: 6 * 1024 * 1024, queueSize: 2}, function(err, data) {
+		if (err && (errCallback instanceof Function)) {
+			errCallback(err);
+		}
+	});
+};
+
+
+function GetContentDisposition(str){
+	return "attachment; filename*=UTF-8''" +
+		encodeURIComponent(str).
+		// Замечание: хотя RFC3986 резервирует "!", RFC5987 это не делает, так что нам не нужно избегать этого
+		replace(/['()]/g, escape). // i.e., %27 %28 %29
+		replace(/\*/g, '%2A').
+		// Следующее не требуется для кодирования процентов для RFC5987, так что мы можем разрешить немного больше читаемости через провод: |`^
+		replace(/%(?:7C|60|5E)/g, unescape);
+}
 
 function GetGUID() {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
