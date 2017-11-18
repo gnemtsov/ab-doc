@@ -993,7 +993,6 @@ function routerOpen(wantGUID) {
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-//						initQuill('#document', node.id, TREE_USERID, TREE_USERID !== USERID);
 						$('#document-wrap').abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);

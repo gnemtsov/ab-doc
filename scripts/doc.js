@@ -1,13 +1,19 @@
 /******************************************************************/
 /*********************Document and attachments*********************/
 /******************************************************************/
-(function (global, $, Quill) {
+(function (g, $, Quill) {
 	
 	"use strict";
 
+	//timer id to clear it on every initialization
+	var docTimer;
+
+	//the following should be part of the object but typing "self" many times sucks
+	var	$doc_wrap, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;
+
 	// function creates object (calls abDoc.init - constructor)
 	var abDoc = function (docGUID, ownerid, readOnly) {
-		var params = {
+		var params = {  //external params
 			docWrap: this,
 			docGUID : docGUID,
 			ownerid : ownerid,
@@ -16,25 +22,6 @@
 		};
 		return new abDoc.init(params);
 	};
-
-	//doc.js globals
-	var $doc_wrap,
-		editor,
-		$drop_zone = $('<div id="dropzone" class=""></div>'),
-		$clip_icon = $('<img id="clip-icon" src="img/icons/paperclip.svg">'),
-		$clip_input = $('<input id="clip-input" name="clip" multiple="multiple" type="file">'),
-		$message = $('<div id="dropzone-message">'+_translatorData['emptyDropzoneMessage'][LANG]+'</div>'),
-		$files_wrap = $('<div id="files_wrap"></div>'),
-		$editor = $('<div id="editor"></div>');
-
-	$drop_zone.append(
-		$clip_icon,
-		$clip_input,
-		$files_wrap,
-		$message
-	);
-
-	var DOC_IMG_MOVING = false;
 
 	// object prototype
 	abDoc.prototype = {
@@ -74,9 +61,9 @@
 							'</div>'),
 					$meta = $('<div class="file-meta">' + 
 								'<span class="file-question">' + 
-									_translatorData['areYouSure'][LANG] + 
-									'&nbsp;<a href="#" class="file-yes">' + _translatorData['yes'][LANG] + '</a>' + 
-									'&nbsp;<a href="#" class="file-no">' + _translatorData['no'][LANG] + '</a>' + 
+									g._translatorData['areYouSure'][g.LANG] + 
+									'&nbsp;<a href="#" class="file-yes">' + g._translatorData['yes'][g.LANG] + '</a>' + 
+									'&nbsp;<a href="#" class="file-no">' + g._translatorData['no'][g.LANG] + '</a>' + 
 								'</span>' +
 							'</div>');
 						
@@ -118,6 +105,7 @@
 		/*     wrap handlers   */
 		/*=======================*/
 		attachWrapHandlers: function() {
+			var self = this;
 			//doc-wrap drag & drop
 			//these handlers just highlight dropzone and pass drop event to it
 			//drop events from content don't bubble to doc-wrap!
@@ -128,7 +116,7 @@
 			$doc_wrap.on({
                 dragenter: function (e) {
 					e.preventDefault();					
-					if (DOC_IMG_MOVING) {
+					if (self.imgMoving) {
 						return;
 					}						
                     if (first) {
@@ -141,7 +129,7 @@
                 },
                 dragleave: function (e) {
 					e.preventDefault();
-					if (DOC_IMG_MOVING) {
+					if (self.imgMoving) {
 						return;
 					}						
                     if (second) {
@@ -158,7 +146,7 @@
 				},
                 drop: function (e) {
 					e.preventDefault();
-					if (DOC_IMG_MOVING) {
+					if (self.imgMoving) {
 						return;
 					}						
                     if (second) {
@@ -178,6 +166,8 @@
 		/*     editor handlers   */
 		/*=======================*/
 		attachEditorHandlers: function() {
+			var self = this;
+
 			// paste & drop in editor root
 			$editor.on({
 
@@ -193,7 +183,7 @@
 						e.stopPropagation();
 
 						var file = e.originalEvent.clipboardData.items[0].getAsFile(),
-							paste_index = editor.getSelection(true).index;
+							paste_index = self.editor.getSelection(true).index;
 						if (file !== null) {
 							$editor.triggerHandler('drop', [file, paste_index]);
 						}
@@ -206,7 +196,7 @@
                 drop: function (e, file, drop_index) {
 					e.stopPropagation();
 
-					if (!DOC_IMG_MOVING) {
+					if (!self.imgMoving) {
 						e.preventDefault();
 
 						if(typeof file === 'undefined'){ //original drop event
@@ -230,7 +220,7 @@
 							}
 						
 							var drop_blot = Parchment.find(drop_range.startContainer);
-							drop_index = drop_blot.offset(editor.scroll) + drop_range.startOffset;
+							drop_index = drop_blot.offset(self.editor.scroll) + drop_range.startOffset;
 						} else { //handler was triggered from paste event
 							var files = [file];
 						}
@@ -238,15 +228,15 @@
 						var non_image_files = new Array();
 						$.each(files, function (i, file) {
 							if (!canUpload(file.size)) { // exit if we don't have enough space
-								onWarning(_translatorData['noSpace'][LANG]);
+								onWarning(g._translatorData['noSpace'][g.LANG]);
 								return;
 							}	
 
 							if (file.type.match('image.*')) { //insert only pics, other files upload as attachments
 								var index_obj = { value: drop_index + i };
-								editor.disable();
+								self.editor.disable();
 								ACTIVITY.push('embed drop', 'saving');
-								editor.insertEmbed(index_obj.value, 'image', 'img/ab-doc-preloader-nano.gif', 'silent');
+								self.editor.insertEmbed(index_obj.value, 'image', 'img/ab-doc-preloader-nano.gif', 'silent');
 																
 								//upload pic to S3
 								var picGUID = GetGUID();
@@ -260,23 +250,23 @@
 								}).send(function(err, data) {
 									if(err) {
 										onError(err);
-										editor.enable();
+										self.editor.enable();
 									} else {
 										var delta = new Delta();
 										delta.retain(index_obj.value)
 											 .delete(1)
 											 .insert({ "image": AWS_CDN_ENDPOINT + data.Key });
-										editor.updateContents(delta, 'silent');
+										self.editor.updateContents(delta, 'silent');
 
-										$(editor.root).find("img[src$='" + AWS_CDN_ENDPOINT + data.Key + "']").one(
+										$(self.editor.root).find("img[src$='" + AWS_CDN_ENDPOINT + data.Key + "']").one(
 											'load', 
 											function () {
 												var delta = new Delta();
 												delta.retain(index_obj.value)
 													 .retain(1, { width: this.naturalWidth, height: this.naturalHeight });
-												editor.updateContents(delta, 'user');
+												self.editor.updateContents(delta, 'user');
 												if(ACTIVITY.flush('embed drop') === undefined){
-													editor.enable();
+													self.editor.enable();
 												}
 											}
 										);
@@ -293,19 +283,19 @@
 							$drop_zone.triggerHandler('drop', [non_image_files]);                    
 						}
 					} else {
-						DOC_IMG_MOVING = false;
+						self.imgMoving = false;
 					}
                 }
 
 			});
 
 			//image move & click (change caret position)
-			$(editor.root).on({
+			$(self.editor.root).on({
 				'dragstart': function (e) { 
-					DOC_IMG_MOVING = true;
+					self.imgMoving = true;
 				},
 				'dragend': function (e) {
-					DOC_IMG_MOVING = false;
+					self.imgMoving = false;
 				},
 				'mousedown': function (e) {
 					if(e.which === 1){
@@ -351,7 +341,7 @@
                 dragenter: function (e) {
 					e.preventDefault();
 					e.stopPropagation();
-					if (DOC_IMG_MOVING) {
+					if (self.imgMoving) {
 						return;
 					}						
                     if (first) {
@@ -365,7 +355,7 @@
                 dragleave: function (e) {
 					e.preventDefault();
 					e.stopPropagation();
-					if (DOC_IMG_MOVING) {
+					if (self.imgMoving) {
 						return;
 					}						
                     if (second) {
@@ -384,7 +374,7 @@
                 drop: function (e, files) {
 					e.preventDefault();
 					e.stopPropagation();
-					if (DOC_IMG_MOVING) {
+					if (self.imgMoving) {
 						return;
 					}						
 					if (second) {
@@ -403,7 +393,7 @@
 						$.each(files, function (i, file) {
 
 							if (!canUpload(file.size)) {
-								onWarning(_translatorData['noSpace'][LANG]);
+								onWarning(g._translatorData['noSpace'][g.LANG]);
 								return;
 							}
 
@@ -558,6 +548,7 @@
 
 
 		attachLoupeHandlers: function(){
+			var self = this;
 
 			function backgroundReposition(e, image){
 				var X = e.offsetX ? e.offsetX : e.pageX - image.offsetLeft,
@@ -612,36 +603,65 @@
 	abDoc.init = function(params) {
 
 		var self = this;
+
+		self.imgMoving = false;		
 		$.extend(self, params);
 
-		//-------------prepare document template--------------//
-		//TODO посмотреть, вообще нужно ли это, может (как загружается новый документ?)
-		$doc_wrap = $(self.docWrap);
-		$doc_wrap.off();
-		$doc_wrap
-			.empty()  //also unbinds children's old event handlers
-			.append($drop_zone)
-			.append($editor);
-		$files_wrap.empty();
-			
-		if(!self.readOnly){
-			self.attachWrapHandlers();
-		}				
+		if(docTimer !== 'undefined'){
+			clearInterval(docTimer);
+		}
 
+		//-------------prepare document template--------------//
+		if($doc_wrap instanceof $){
+			$doc_wrap.off().empty(); //empty and remove also unbind old event handlers
+			$editor.remove();
+			$drop_zone.remove();
+			$clip_icon.remove();
+			$clip_input.remove();
+			$files_wrap.remove();
+			$files_message.remove();
+		}
+
+		$doc_wrap = $(self.docWrap);
+		$editor = $('<div id="editor"></div>');
+		$drop_zone = $('<div id="dropzone"></div>');
+		$clip_icon = $('<img id="clip-icon" src="img/icons/paperclip.svg">');
+		$clip_input = $('<input id="clip-input" name="clip" multiple="multiple" type="file">');
+		$files_wrap = $('<div id="files_wrap"></div>');
+		$files_message = $('<div id="dropzone-message">'+g._translatorData['emptyDropzoneMessage'][g.LANG]+'</div>');
+
+		$doc_wrap.empty();
+		$drop_zone.append(
+			$clip_icon,
+			$clip_input,
+			$files_wrap,
+			$files_message
+		);	
+		$doc_wrap.append(
+			$drop_zone,
+			$editor
+		);
 
 		//---------load document index.html from S3-----------//
 		var params = {
 			Bucket: STORAGE_BUCKET,
 			Key: self.path + '/index.html'
 		}
-		s3.getObject(params, function(err, data) {
-			if (err) { onError(err); } 
-			else {
-				$editor.html(data.Body.toString('utf-8'));
+		s3.getObject(params).on(
+			'complete',	
+			function(response) {
 
-				//quill config
+				//get data for saved doc or error 'NoSuchKey' for new doc, otherwise exit
+				if(response.error === null){
+					$editor.html(response.data.Body.toString('utf-8'));
+				} else if(response.error.code !== 'NoSuchKey') {
+					onError(response.error.message); 
+					return;
+				}
+
+				//init quill
 				var editor_options = {
-					placeholder: _translatorData['typeYourText'][LANG],
+					placeholder: g._translatorData['typeYourText'][g.LANG],
 					theme: 'bubble',
 					scrollingContainer: document.documentElement,
 					readOnly: self.readOnly,
@@ -684,30 +704,32 @@
 						}
 					}
 				};
-				editor = new Quill('#editor', editor_options);
+				self.editor = new Quill('#editor', editor_options);
 
-				var length = editor.getLength();
-				if (editor.getText(length - 2, 2) === '\n\n') {
-					editor.deleteText(length - 2, 2);
+				var length = self.editor.getLength();
+				if (self.editor.getText(length - 2, 2) === '\n\n') {
+					self.editor.deleteText(length - 2, 2);
 				}
 							
 				self.attachLoupeHandlers();
 				
+				//attach handlers and init timer
 				if(!self.readOnly){
 
+					self.attachWrapHandlers();
 					self.attachEditorHandlers();
-					editor.on('text-change', function () {
+					self.editor.on('text-change', function () {
 						ACTIVITY.push('document modify', 'pending');
 					});
 
-					self.timer = setInterval(function () {
+					docTimer = setInterval(function () {
 						if(ACTIVITY.get('document modify') === 'pending'){
 
 							ACTIVITY.push('document modify', 'saving');
 							var params = {
 								Bucket: STORAGE_BUCKET,
 								Key: USERID + '/' + self.docGUID + '/index.html',
-								Body: editor.root.innerHTML,
+								Body: self.editor.root.innerHTML,
 								ContentType: 'text/html',
 								ContentDisposition: GetContentDisposition('index.html'),
 								ACL: 'public-read'
@@ -721,12 +743,11 @@
 							});
 						}
 					}, 3000);
-						
-				}				
 
+				}
 				preloaderOnEditor(false);
-			}				
-		});
+			}
+		).send();		
 
 		//---------load attachments list from S3-------------//
 		self.files = new Array();

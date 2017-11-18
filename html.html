@@ -8,10 +8,21 @@
                 background-color: #ffd098;
             }
         </style>
+		<script src="scripts/jquery/jquery-3.1.1.min.js?ver=v0"></script>
+        <script>
+            $(function() {
+                var $parent = $('#parent'),
+                    $child = $('#child');
+                
+
+                console.log($parent[0].outerHTML);
+//                $parent.replaceWith('<p>new parent</p>');
+                $parent.empty();
+                console.log($parent[0].outerHTML);
+            });
+        </script>
     </head>
     <body style="background-color: #aca8a4">
-        <img class="ab-doc-preloader" src="img/ab-doc-preloader-big.gif">
-        <img class="ab-doc-preloader" src="img/ab-doc-preloader-micro.gif">
-        <img class="ab-doc-preloader" src="img/ab-doc-preloader-nano.gif">
+        <div id="parent">text1<span id="child">child</span>text2</div>
     </body>
 </html>
