@@ -14,18 +14,12 @@ var settings = {
 		selectedMulti: true,
 		addHoverDom: addHoverDom,
 		removeHoverDom: removeHoverDom,
+		showLine: false
 	},
 	edit: {
 		enable: true,
 		showRemoveBtn: showRemoveBtn,
 		showRenameBtn: showRenameBtn,
-		drag: {
-			isCopy: true,
-			isMove: true,
-			prev: true,
-			inner: true,
-			next: true
-		}
 	},
 	data: {
 		simpleData: {
@@ -39,7 +33,6 @@ var settings = {
 		beforeRename: beforeRename,
 		beforeRemove: beforeRemove,
 		onClick: onClick,
-		onDblClick: onDblClick,
 		onDrop: onDrop,
 		onNodeCreated: onNodeCreated,
 		onRename: onRename
@@ -240,6 +233,10 @@ var ROOT_DOC_GUID = 'root-doc';
 var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
 var $updated;
 var sizeIndicator;
+
+//TIMERS object to track all timers and prevent memory leaks
+//all timers can be disabled for debugging
+var TIMERS = { off: false };
 
 //ACTIVITY object stores activities states and updates indicator in navbar.
 //Activities: doc edit, file [guid] upload, file [guid] delete or whatever.
@@ -702,7 +699,7 @@ function initS3() {
 
 // Refresh credentials every 30 mins.
 $( function() {
-	setInterval( function() {
+	TIMERS.credentials = TIMERS.off || setInterval( function() {
 		if(AWS.config.credentials) {
 			AWS.config.credentials.refresh( function(err) {
 				if (err) {
@@ -790,8 +787,8 @@ function initTree() {
 			
 			var zNodes = abTree;
 			zNodes[0].head = true;
-			zNodes[0].iconOpen = '/img/icons/home-opened.svg';
-			zNodes[0].iconClose= '/img/icons/home-closed.svg';
+			//zNodes[0].iconOpen = '/img/icons/home-opened.svg';
+			//zNodes[0].iconClose= '/img/icons/home-closed.svg';
 			zNodes[0].open = true;
 			
 			ROOT_DOC_GUID = zNodes[0].id;
@@ -1296,7 +1293,7 @@ $(function () {
 
 
 $(function() {
-	setInterval(function () {
+	TIMERS.tree = TIMERS.off || setInterval(function () {
 		// Save tree column's size
 		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
@@ -1342,7 +1339,7 @@ $(function() {
 	
 	// USED SPACE
 	// Update it less frequently	
-	setInterval(function () {
+	TIMERS.space = TIMERS.off || setInterval(function () {
 		if (USER_USED_SPACE_CHANGED) {
 			updateUsedSpace();
 		}
@@ -1551,16 +1548,6 @@ function onClick(event, treeId, treeNode, clickFlag) {
 	tree.lastClicked = treeNode;
 	
 	routerOpen(treeNode.id);
-}
-
-function onDblClick(event, treeId, treeNode) {
-	if (!treeNode) {
-		return;
-	}
-	
-	var tree = $.fn.zTree.getZTreeObj(treeId);
-	tree.editName(treeNode);
-	$('#' + treeNode.tId + '_input').select();
 }
 
 function showRemoveBtn(id, node) {

@@ -1,28 +1,41 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <style>
-            img{
-                display: block;
-                margin: 30px;
-                padding: 10px;
-                background-color: #ffd098;
-            }
-        </style>
+        <style>     </style>
+        <link rel="stylesheet" href="css/ztree/migrate/zTreeStyle.css" type="text/css">
 		<script src="scripts/jquery/jquery-3.1.1.min.js?ver=v0"></script>
+        <script src="scripts/ztree/jquery.ztree.3.5.30.all.js"></script>
         <script>
             $(function() {
-                var $parent = $('#parent'),
-                    $child = $('#child');
-                
-
-                console.log($parent[0].outerHTML);
-//                $parent.replaceWith('<p>new parent</p>');
-                $parent.empty();
-                console.log($parent[0].outerHTML);
             });
         </script>
-    </head>
+        <SCRIPT LANGUAGE="JavaScript">
+                var zTreeObj;
+                // zTree configuration information, refer to API documentation (setting details)
+                var setting = {
+                    edit:{
+                        enable: true
+                    }
+
+                };
+                // zTree data attributes, refer to the API documentation (treeNode data details)
+                $(document).ready(function(){
+                var zNodes = [
+                {name:"test"},
+                {name:"test"},
+                {name:"test"},
+                {name:"test"},
+                {name:"test"},
+                {name:"test"},
+                {name:"test"}
+                ];
+                zTreeObj = $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+                });
+       </SCRIPT>
+</head>
     <body style="background-color: #aca8a4">
-        <div id="parent">text1<span id="child">child</span>text2</div>
+            <div>
+                    <ul id="treeDemo" class="ztree"></ul>
+                 </div>
     </body>
 </html>

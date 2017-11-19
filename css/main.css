@@ -105,124 +105,6 @@ a.navbar-brand img{
 /*-------------------------tree----------------------------*/
 /*---------------------------------------------------------*/
 
-
-.node_name {
-    font-size: 15px;
-    margin-left: 4px;
-    vertical-align: middle;
-}
-
-.ztree li a.curSelectedNode {
-    background-color: inherit;
-    border: inherit;
-    border-left: 4px solid #dd6600;
-    margin-left: -10px;
-    padding-left: 6px;
-    font-weight: bold;
-}
-
-.ztree li span.button.add {
-    margin-left:2px;
-    margin-right: -1px;
-    background: url(/img/icons/file.svg);
-    vertical-align: vertical;
-    /*vertical-align:middle;*/
-}
-
-.ztree li span.button {
-    background-position: 0px 0px !important;
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    width: 20px !important;
-    height: 20px !important;
-    margin: 2px 2px 0px 0px !important;
-}
-.ztree li span {
-    margin-right: 10px;
-}			
-span.remove {
-    width: 24px;
-    height: 24px;
-    background-image: url(/img/icons/trash.svg);
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.ztree li a {
-    line-height: 24px !important;
-    height: 24px !important;
-}
-
-.ztree li span.button {
-    background-image: none;
-}
-
-.ztree li span.button.remove {
-    background: url(/img/icons/trash.svg);
-}
-
-.ztree li span.button.edit {
-    background: url(/img/icons/edit.svg);
-}
-
-.ztree li span.button.ico_close {
-    background: url(/img/icons/folder-colored.svg);
-}
-
-.ztree li span.button.ico_open {
-    background: url(/img/icons/folder-open-colored.svg);
-}
-
-.ztree li span.button.switch.center_close {
-    background-image: none;
-}
-
-.ztree li span.button.switch.center_open {
-    background-image: none;
-}
-
-.ztree li span.button.switch.root_close {
-    background-image: none;
-}
-
-.ztree li span.button.switch.root_open {
-    background-image: none;
-}
-
-.ztree li span.button.ico_docu {
-    background-image: url(/img/icons/file.svg);
-}
-        
-.ztree li span.button.center_docu {
-    background-image: none;
-}	
-
-.ztree li span.button.bottom_docu {
-    background-image: none;
-}
-
-.ztree li span.button.bottom_close {
-    background-image: none;
-}
-
-.ztree li span.button.bottom_open {
-    background-image: none;
-}
-
-.ztree li ul.line {
-    background-image: none;
-    background-size: 24px 24px;
-}
-
-.ztree li[class*=level] {
-    margin-top: 8px;
-}
-
-input.rename {
-    font-size: 15px !important;
-    height: 24px !important;
-}
-
 #ztree-div {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -234,12 +116,133 @@ input.rename {
     overflow-y: auto;
     padding: 30px 20px 20px 10px;
 }
-
 #ztree-div.ab-closed {
-    /*width: 0px !important;*/
     padding: 0px;
 }
 
+
+.ztree *{
+    font-size: 15px;
+}
+.ztree li{
+    line-height:inherit;
+}
+.ztree li a {
+    height: 32px;
+    color: black !important;
+    padding: 0px;
+}
+.ztree li a:hover {
+    color: black;
+}
+
+.ztree li a.curSelectedNode {
+    position: relative;
+    height: 32px;
+    background-color: inherit;
+    font-weight: bold;
+    border: none;
+}
+.ztree li a.curSelectedNode:before{
+    content: "";
+    position: absolute;
+    width: 4px;
+    background-color: #dd6600;
+    top: 4px;
+    left: -8px;
+    height: 24px;
+}
+
+.ztree li a.curSelectedNode_Edit {
+    height: 32px;
+    background-color:inherit;
+    border: none;
+    color: black;
+}
+.ztree li a.tmpTargetNode_inner {  
+    height: 32px;
+    padding-right: 6px;
+    background-color:#aaaaac46;
+    border:none;
+}
+
+
+.ztree li a input.rename {
+    height:26px;
+    font-size: inherit;
+    width:inherit;
+    border:1px rgb(49, 49, 49) solid; *border:0px
+}
+.ztree li span {
+    vertical-align: middle !important;
+    line-height:32px;
+}
+
+
+/*tree icons*/
+.ztree li span.button {
+    width:20px; 
+    height:20px;
+    margin-left: 2px;
+    background-size: contain;
+    background-image: none;
+    background-attachment: inherit;
+}
+
+.ztree li a.level0 span.button.ico_open {
+    background-position: inherit;
+    background-image:url("../img/icons/home-opened.svg"); *background-image:url("../img/icons/home-opened.svg");
+}
+.ztree li a.level0 span.button.ico_close {
+    background-position: inherit;
+    background-image:url("../img/icons/home-closed.svg"); *background-image:url("../img/icons/home-closed.svg");
+}
+.ztree li span.button.ico_open {
+    background-position: inherit;
+    background-image:url("../img/icons/folder-open-colored.svg"); *background-image:url("../img/icons/folder-open-colored.svg");
+}
+.ztree li span.button.ico_close {
+    background-position: inherit;
+    background-image:url("../img/icons/folder-colored.svg"); *background-image:url("../img/icons/folder-colored.svg");
+}
+.ztree li span.button.ico_docu {
+    background-position: inherit;
+    background-image:url("../img/icons/file.svg"); *background-image:url("../img/icons/file.svg");
+}
+
+.ztree li span.button.add {
+    margin-right:2px;
+    margin-left: 12px;
+    background-image:url("../img/icons/plus-bold.svg"); *background-image:url("../img/icons/plus-bold.svg");
+}
+.ztree li span.button.edit {
+    background-position: inherit;
+    background-image:url("../img/icons/edit.svg"); *background-image:url("../img/icons/edit.svg");
+}
+.ztree li span.button.remove {
+    background-position: inherit;
+    background-image:url("../img/icons/trash.svg"); *background-image:url("../img/icons/trash.svg");
+}
+
+/*dragging*/
+span.tmpzTreeMove_arrow { 
+    width:20px; 
+    height:20px;
+    background-attachment: inherit;
+    background-size: contain;
+    background-position: inherit;
+    background-image:url("../img/icons/arrow-right.svg"); *background-image:url("../img/icons/arrow-right.svg")
+}
+ul.ztree.zTreeDragUL { 
+    background-color: #ffd9bc;
+    color: black;
+    border: 2px black dotted;
+    padding-left: 6px;
+    padding-right: 8px;
+}
+ul.tmpTargetzTree {
+    background-color: inherit;
+}
 
 
 /*---------------------------------------------------------*/
@@ -672,7 +675,7 @@ padding-left: 6px;
     max-width: 100%;
     position: relative;
     white-space: nowrap;
-
+    font-size: 1.15rem;
 }
 .file-n{
     text-overflow: ellipsis;
@@ -681,7 +684,7 @@ padding-left: 6px;
 
 .file-meta{
     white-space: nowrap;
-    line-height: 1.2;
+    line-height: 1.4;
     height: 18px !important; /*equals trash icon height*/
 }
 .file-meta a:hover{
