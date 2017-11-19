@@ -261,7 +261,7 @@
 												var delta = new Delta();
 												delta.retain(index_obj.value)
 													 .retain(1, { width: this.naturalWidth, height: this.naturalHeight });
-												self.editor.updateContents(delta, 'user');
+												self.editor.updateContents(delta, 'api');
 												if(ACTIVITY.flush('embed drop') === undefined){
 													self.editor.enable();
 												}
