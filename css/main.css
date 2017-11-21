@@ -1,0 +1,826 @@
+/*---------------------------------------------------------*/
+/*-------------------------global--------------------------*/
+/*---------------------------------------------------------*/
+
+html {
+    position: relative;
+    min-height: 100%;
+    font-size: 14px;
+}
+
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    -ms-overflow-style: scrollbar;
+}
+
+.form-control{
+    line-height: 1.5;
+}
+
+button, select {
+    cursor: pointer;
+}
+
+/* fix disabled btn-success changing color when pressed */
+.btn-success[disabled]:active {
+    background-color: rgb(40, 167, 69);
+}
+
+.app-container {
+    position: absolute;
+    /*top: 100px;*/
+    height: 400px;
+    width: 100%;
+    display: none;
+}
+
+
+/* about */
+#about {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    overflow-x: hidden;
+    owerflow-y: auto;
+}
+
+
+/*---------------------------------------------------------*/
+/*-------------------------navbar--------------------------*/
+/*---------------------------------------------------------*/
+
+.navbar {
+    padding-bottom: 4px;
+    padding-top: 4px;
+    z-index: 1001;
+}
+
+.navbar-dark .navbar-text {
+    color: #ffffff;				
+}
+
+.nav-item {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.nav-item > select.form-control {
+    font-size: 14px;
+    padding: 4px;
+    margin-top: 4px;
+}
+
+
+a.navbar-brand img{
+    height: 42px;
+}
+
+#sizeIndicator {
+    min-width: 32px !important;
+    max-width: 32px !important;
+    width: 32px;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    height: 32px;
+    margin-left: 20px;
+}
+
+#update {
+    position: relative;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    margin-left: 20px;
+}
+#update img {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    opacity: 0;
+    transition-duration: 1s;    
+    transition-property: opacity;
+}
+#update.pending img#icon-pending {
+    opacity: 1;
+}
+#update.saving img#icon-saving {
+    opacity: 1;
+}
+  
+
+/*---------------------------------------------------------*/
+/*-------------------------tree----------------------------*/
+/*---------------------------------------------------------*/
+
+#ztree-div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: absolute;
+    left: 0px;
+    width: 25%;
+    top: 0px;
+    bottom: 0px;
+    overflow-y: auto;
+    padding: 30px 20px 20px 10px;
+}
+#ztree-div.ab-closed {
+    padding: 0px;
+}
+
+
+.ztree *{
+    font-size: 15px;
+}
+.ztree li{
+    line-height:inherit;
+}
+.ztree li a {
+    height: 32px;
+    color: black !important;
+    padding: 0px;
+}
+.ztree li a:hover {
+    color: black;
+}
+
+.ztree li a.curSelectedNode {
+    position: relative;
+    height: 32px;
+    background-color: inherit;
+    font-weight: bold;
+    border: none;
+}
+.ztree li a.curSelectedNode:before{
+    content: "";
+    position: absolute;
+    width: 4px;
+    background-color: #dd6600;
+    top: 4px;
+    left: -8px;
+    height: 24px;
+}
+
+.ztree li a.curSelectedNode_Edit {
+    height: 32px;
+    background-color:inherit;
+    border: none;
+    color: black;
+}
+.ztree li a.tmpTargetNode_inner {  
+    height: 32px;
+    padding-right: 6px;
+    background-color:#aaaaac46;
+    border:none;
+}
+
+
+.ztree li a input.rename {
+    height:26px;
+    font-size: inherit;
+    width:inherit;
+    border:1px rgb(49, 49, 49) solid; *border:0px
+}
+.ztree li span {
+    vertical-align: middle !important;
+    line-height:32px;
+}
+
+
+/*tree icons*/
+.ztree li span.button {
+    width:20px; 
+    height:20px;
+    margin-left: 2px;
+    background-size: contain;
+    background-image: none;
+    background-attachment: inherit;
+}
+
+.ztree li a.level0 span.button.ico_open {
+    background-position: inherit;
+    background-image:url("../img/icons/home-opened.svg"); *background-image:url("../img/icons/home-opened.svg");
+}
+.ztree li a.level0 span.button.ico_close {
+    background-position: inherit;
+    background-image:url("../img/icons/home-closed.svg"); *background-image:url("../img/icons/home-closed.svg");
+}
+.ztree li span.button.ico_open {
+    background-position: inherit;
+    background-image:url("../img/icons/folder-open-colored.svg"); *background-image:url("../img/icons/folder-open-colored.svg");
+}
+.ztree li span.button.ico_close {
+    background-position: inherit;
+    background-image:url("../img/icons/folder-colored.svg"); *background-image:url("../img/icons/folder-colored.svg");
+}
+.ztree li span.button.ico_docu {
+    background-position: inherit;
+    background-image:url("../img/icons/file.svg"); *background-image:url("../img/icons/file.svg");
+}
+
+.ztree li span.button.add {
+    margin-right:2px;
+    margin-left: 12px;
+    background-image:url("../img/icons/plus-bold.svg"); *background-image:url("../img/icons/plus-bold.svg");
+}
+.ztree li span.button.edit {
+    background-position: inherit;
+    background-image:url("../img/icons/edit.svg"); *background-image:url("../img/icons/edit.svg");
+}
+.ztree li span.button.remove {
+    background-position: inherit;
+    background-image:url("../img/icons/trash.svg"); *background-image:url("../img/icons/trash.svg");
+}
+
+/*dragging*/
+span.tmpzTreeMove_arrow { 
+    width:20px; 
+    height:20px;
+    background-attachment: inherit;
+    background-size: contain;
+    background-position: inherit;
+    background-image:url("../img/icons/arrow-right.svg"); *background-image:url("../img/icons/arrow-right.svg")
+}
+ul.ztree.zTreeDragUL { 
+    background-color: #ffd9bc;
+    color: black;
+    border: 2px black dotted;
+    padding-left: 6px;
+    padding-right: 8px;
+}
+ul.tmpTargetzTree {
+    background-color: inherit;
+}
+
+
+/*---------------------------------------------------------*/
+/*-------------------------splitter------------------------*/
+/*---------------------------------------------------------*/
+
+#splitter {
+    cursor: col-resize;
+    border-left: 1px solid;
+    border-color: #b0b0b0;
+    position: absolute;
+    width: 12px;
+    top: 0px;
+    bottom: 0px;
+    margin: 20px 0px;
+    display: block;
+}
+
+#splitter.ab-closed {
+    border-style: none;
+    cursor: auto;
+    width: 22px;
+}
+
+#splitter.thin {
+    width: 0px;
+    padding: 0px;
+    margin: 0px 0px;
+}
+
+/*#ztree-div:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
+    /* temporarly disabled. it adds horizontal scroll, when it's on the right size of page.*/
+    /*transition: all 0.3s ease 0.0s;*/
+}
+
+#toggleButton {
+    cursor: pointer;
+    position: relative;
+    top: 45px;
+    border: solid;
+    border-width: 1px;
+    border-color: inherit;
+    width: 20px;
+    height: 40px;
+    background-color: #ffffff;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 1000;
+}
+
+#toggleButton.ab-opened {
+    background-image: url(/img/icons/chevron-left.svg);
+    border-right-color: #ffffff;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    margin-left: -20px;
+}
+
+#toggleButton.ab-closed {
+    background-image: url(/img/icons/chevron-right.svg);
+    border-left-color: #ffffff;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    margin-left: -1px;
+}
+
+
+/*---------------------------------------------------------*/
+/*-------------------------document------------------------*/
+/*---------------------------------------------------------*/
+
+#document {
+    border-style: none;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    left: 25%;
+    width: 75%;
+    top: 0px;
+    bottom: 0px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 30px 20px 20px 20px;
+}
+
+#selectedDoc {
+    margin-bottom: 2rem;
+}
+
+#document-wrap{
+    flex-grow: 1;
+}
+
+/*==================*/
+/*  inside editor   */
+/*==================*/
+#editor {
+    font-family: 'PT Serif', Georgia, serif;    
+    font-size: 1.23rem !important;
+    padding: 0rem !important;
+    color: #000000;
+    min-height: 100px;
+    -ms-word-break: break-all;
+    word-break: break-all;
+    word-break: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
+#editor .ql-editor {
+    padding: 0px;
+    overflow-y: inherit;
+}
+
+#editor .ql-editor.ql-blank::before {
+    left: 0px;
+}
+
+#editor.ql-container.ql-bubble:not(.ql-disabled) a{
+    white-space: pre-wrap;
+   }
+   
+#editor.ql-container.ql-bubble:not(.ql-disabled) a::before {
+    background-color: #727272;
+    border-radius: 3px;
+    font-size: 12px;
+    padding: 3px 8px;
+    content: attr(href);
+    white-space: nowrap;
+}
+
+#editor.ql-container.ql-bubble:not(.ql-disabled) a::after{
+    border-top: 6px solid #727272;
+}
+
+#editor:focus {
+    outline: 0px solid transparent;
+}
+
+#editor p{
+    margin-bottom: 1em !important;
+    line-height: 160% !important;
+}
+
+#editor pre{
+    margin-top: 0px !important;
+    margin-bottom: 1em !important;
+    /*background-color: #505558 !important;*/
+    font-size: 14px !important;
+    line-height: 150% !important;
+}
+
+
+#editor img{
+    max-width: 100%;
+    height: auto;
+    background-repeat:no-repeat;
+    overflow: auto;
+    cursor: default;
+}
+#editor img[src$="ab-doc-preloader-nano.gif"]{
+    margin: 2px;
+    padding: 10px;
+    background-color: #ffd098;
+    border: 1px solid #bababa;  
+    display: inline-block;
+}
+
+#editor ul, #editor .ql-editor ul, #editor ol,
+    #editor .ql-editor ol {
+    margin-bottom: 6px;
+}
+
+#editor li {
+    padding-bottom: 24px;
+}
+
+#editor blockquote,
+#editor .ql-bubble .ql-editor blockquote{
+    margin:0px !important;
+    padding: 5px 20px 10px !important;
+    line-height:25px;
+}
+   
+
+/*==================*/
+/*  bubble toolbar  */
+/*==================*/
+#document-wrap .ql-bubble .ql-tooltip{
+    z-index: 1;
+  }
+
+#document-wrap .ql-bubble .ql-tooltip{
+  background-color: none;    
+}
+
+#document-wrap .ql-bubble .ql-toolbar {
+border-radius: 5px;
+background-color: #444;
+}
+
+#document-wrap .ql-bubble .ql-picker-options{
+background-color: #444;
+padding: 0px;
+}
+
+#document-wrap .ql-bubble .ql-tooltip:not(.ql-flip) .ql-tooltip-arrow {
+    border-bottom: 6px solid #444;
+}
+
+#document-wrap .ql-bubble .ql-toolbar .ql-formats {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+#document-wrap .ql-editor.ql-blank::before {
+    color: #C4C4C5;
+    font-style: normal;
+}
+
+#document-wrap .ql-bubble .ql-fill, .ql-bubble .ql-stroke.ql-fill {
+    fill: #fff;
+}
+
+#document-wrap .ql-bubble .ql-stroke, #document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
+    stroke: #fff;
+}
+
+#document-wrap .ql-bubble .ql-picker-label{
+padding-left: 6px;
+}
+
+#document-wrap .ql-bubble .ql-picker.ql-size .ql-picker-label::before, #document-wrap .ql-bubble .ql-picker.ql-size .ql-picker-item::before {
+    color: #fff;
+    padding: 6px;
+}
+#document-wrap .ql-bubble .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg{
+right: 4px;
+}
+
+#document-wrap .ql-bubble.ql-toolbar button, #document-wrap .ql-bubble .ql-toolbar button {
+    height: 34px; 
+    width: 34px;
+    padding: 6px;
+    border-right: 1px solid #FFFFFF;
+}
+
+#document-wrap .ql-bubble .ql-toolbar .ql-formats:first-child button:first-child, 
+#document-wrap .ql-bubble.ql-toolbar .ql-formats:first-child button:first-child {
+    border-radius: 5px 0px 0px 5px;
+}
+#document-wrap .ql-bubble .ql-toolbar .ql-formats:last-child button:last-child, 
+#document-wrap .ql-bubble.ql-toolbar .ql-formats:last-child button:last-child {
+    border-radius: 0px 5px 5px 0px;
+    border-right: none;
+}
+
+
+#document-wrap .ql-bubble .ql-picker.ql-size {
+    height: 34px; 
+    border-right: 1px solid #FFFFFF;
+}
+
+#document-wrap .ql-bubble .ql-color-picker {
+    height: 34px; 
+    width: 34px;
+    border-right: 1px solid #FFFFFF;
+}
+#document-wrap .ql-bubble .ql-color-picker svg{
+    margin: 0px;
+}
+
+#document-wrap .ql-bubble .ql-color-picker .ql-picker-label{
+    padding: 6px !important;
+}
+
+#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label{
+color: #fff;
+}
+#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-fill{
+fill: #fff;
+}
+
+#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-options{
+margin-top: 0px;
+}
+
+#document-wrap .ql-bubble .ql-picker-options .ql-picker-item{
+padding-left: 6px;
+}
+
+.ql-bubble.ql-toolbar button:hover, .ql-bubble .ql-toolbar button:hover, .ql-bubble.ql-toolbar button.ql-active, .ql-bubble .ql-toolbar button.ql-active, .ql-bubble.ql-toolbar .ql-picker-label:hover, .ql-bubble .ql-toolbar .ql-picker-label:hover, .ql-bubble.ql-toolbar .ql-picker-label.ql-active, .ql-bubble .ql-toolbar .ql-picker-label.ql-active, .ql-bubble.ql-toolbar .ql-picker-item:hover, .ql-bubble .ql-toolbar .ql-picker-item:hover, .ql-bubble.ql-toolbar .ql-picker-item.ql-selected, .ql-bubble .ql-toolbar .ql-picker-item.ql-selected, .ql-bubble .ql-picker.ql-expanded {
+    background-color: rgb(32, 32, 32);
+}
+
+/*==================*/
+/* dropzone's main  */
+/*==================*/
+#dropzone {
+    position: relative;
+    float: right;
+    -moz-box-sizing: border-box; /* в Firefox нужен префикс */
+    box-sizing: border-box;
+    border-style: none;
+    min-height: 100px;
+    min-width: 100px;
+    padding: 2px;
+    margin-bottom: 0.5rem;
+    margin-left: 1.6rem;
+    cursor: auto !important;
+    z-index: 1; /*dropzone must be higher than editor to reseive dragenter events*/
+}
+
+#dropzone.used {
+    width: 300px;
+    background-color: #f8f8f8;
+    border: 1px dashed #C0C0C0;
+}
+
+#dropzone.highlighted, #dropzone.superhighlighted {
+    width: 300px;
+    min-height: 150px;
+    padding: 0px;
+}
+#dropzone.highlighted.used, #dropzone.superhighlighted.used {
+    padding: 1px;
+}
+#dropzone.highlighted {
+    background-color: #ffe7d3;
+    border: 2px dashed #C0C0C0;		
+}
+#dropzone.superhighlighted {
+    background-color: #ffe7d3;
+/*    background-color: #ffdcbe;*/
+    border: 2px dashed #000000;		
+}
+
+#clip-icon {
+    position: absolute;
+    top: -24px;
+    right: 6px;    
+    opacity: 0.67;
+    width: 64px;
+    height: 64px;
+    cursor: pointer;
+    z-index: 2;
+}
+#dropzone.highlighted #clip-icon, #dropzone.superhighlighted #clip-icon{
+    opacity: 1;
+    top: -26px;
+    right: 4px;    
+}
+#dropzone.highlighted.used #clip-icon, #dropzone.superhighlighted.used #clip-icon{
+    opacity: 1;
+    top: -25px;
+    right: 5px;    
+}
+
+#clip-icon:hover {
+    opacity: 1;
+}
+#clip-input {
+    position: absolute; /*behind clip-icon*/
+    top: 0;
+    right: 38px;
+    opacity: 0;
+    max-height: 1px;
+    max-width: 1px;
+}
+
+#dropzone #dropzone-message{
+    text-align: center;
+    margin-top: 40px;
+    padding: 10px;
+    font-size: 1.3rem;
+    display: none;
+}
+#dropzone.highlighted #dropzone-message, #dropzone.superhighlighted #dropzone-message{
+    display: block;
+}
+#dropzone.used #dropzone-message{
+    display: none;
+}
+
+/*==================*/
+/* dropzone's files */
+/*==================*/
+
+/*file-container*/
+    /*file-icon*/
+    /*file-wrap*/
+        /*file-name*/
+            /*file-n*/
+            /*file-e*/
+        /*file-meta*/
+            /*file-action*/
+            /*file-size*/
+            /*file-modified*/
+            /*file-question*/
+
+.file-container{
+    margin: 0.75rem 0.75rem 1rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
+}
+.file-icon{
+    margin: 4px 6px 0px 0px;
+}
+.file-wrap{
+    max-width: 234px;
+}
+.file-container:first-child .file-wrap{
+    max-width: 184px;
+}
+.file-wrap a:hover{
+    text-decoration: none;
+}
+.file-wrap a .file-name:hover:after {
+    content: "";
+    position: absolute;
+    height: 1px;
+    border-bottom: 1px solid #0056b3;
+    bottom: 3px;
+    width: 100%;
+  }
+.file-name{
+    display: inline-flex;
+    max-width: 100%;
+    position: relative;
+    white-space: nowrap;
+    font-size: 1.15rem;
+}
+.file-n{
+    text-overflow: ellipsis;
+    overflow: hidden;
+}    
+
+.file-meta{
+    white-space: nowrap;
+    line-height: 1.4;
+    height: 18px !important; /*equals trash icon height*/
+}
+.file-meta a:hover{
+    text-decoration: underline;
+}
+
+.file-size{
+    position: relative;    
+}
+.file-size.file-progress{
+    min-width: 180px;
+    max-width: 180px;
+    width: 0%;
+    display: inline-block;
+    border-radius: 2px;
+    border: 1px solid #bababa;
+}    
+.file-size.file-progress:before{
+    position:absolute;
+    z-index:-1;
+    top:0;
+    left:0;
+    height:100%;
+    width:inherit; /*it takes width from .file-size*/
+    border-radius: 2px;
+    content:"";
+    background-color: #ffd098;    
+}
+.file-modified{
+    font-size: 0.8rem;
+    margin-left: 8px;
+    color: #777;
+}
+
+.file-question, .file-action{
+    display: none;
+}
+.file-action{
+    position: relative;
+    bottom: 3px;
+    right: 0px;
+    width: 18px;
+    height: 18px;
+    display: none;
+    margin-left: 8px;
+    cursor: pointer;    
+}
+
+
+/*---------------------------------------------------------*/
+/*-------------------------preloaders----------------------*/
+/*---------------------------------------------------------*/
+
+.preloader {
+    display: inline-block;
+    overflow: hidden;
+    height: 1.3em;
+    line-height: 1.5em;
+    vertical-align: text-bottom;
+    font-size: 48px;
+    margin-top: 100px;
+    transform: rotate(90deg);
+  }
+
+  .preloader::after {
+    display: inline-table;
+    white-space: pre;
+    text-align: left;
+  }
+
+  .preloader::after {
+    content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\A⠧\A⠇\A⠏";
+    animation: spin 2s steps(10) infinite;
+  }
+  
+  @keyframes spin  { to { transform: translateY( -15.0em); } }
+  
+  .small-preloader {
+      width: 40px;
+      text-align: center;
+  }
+
+  .small-preloader > div {
+      width: 8px;
+      height: 8px;
+      margin: 1px;
+      background-color: #606060;
+
+      border-radius: 100%;
+      display: inline-block;
+      animation: sk-bouncedelay 0.9s infinite ease-in-out both;
+  }
+
+  .small-preloader .bounce1, .big-preloader .bounce1 {
+      animation-delay: -0.30s;
+  }
+
+  .small-preloader .bounce2, .big-preloader .bounce2 {
+      animation-delay: -0.15s;
+  }
+
+  .big-preloader {
+      width: 80px;
+      text-align: center;
+  }
+
+  .big-preloader > div {
+      width: 16px;
+      height: 16px;
+      margin: 2px;
+      background-color: #606060;
+
+      border-radius: 100%;
+      display: inline-block;
+      animation: sk-bouncedelay 0.9s infinite ease-in-out both;
+  }
+
+  @keyframes sk-bouncedelay {
+      0%{ 
+          transform: scale(0);
+      }
+      50% { 
+          transform: scale(1.0);
+      }
+      100% { 
+          transform: scale(0.0);
+      }
+  }
