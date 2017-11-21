@@ -527,14 +527,33 @@ $(document).ready( function() {
 		});
 	
 	$('.link-sign-out, .link-return').click( function() {
+		var promise;
+		
+		// Sign out cognito user
 		if (COGNITO_USER) {
 			COGNITO_USER.signOut();
+			promise = Promise.resolve();
 		}
 		
-		AWS.config.credentials = null;
+		// Sign out google user
+		if(true) {
+			var auth2 = gapi.auth2.getAuthInstance();
+			promise = auth2.signOut()
+		}
 		
-		//window.location.replace('/login.html');
-		setUnauthenticatedMode();
+		promise
+			.catch( function(err) {
+				onError(err);
+				return true;
+			})
+			.then( function() {
+				if (AWS.config.credentials) {
+					AWS.config.credentials.clearCachedId();
+				}
+				AWS.config.credentials = null;
+				setUnauthenticatedMode();
+			});
+
 		return true;	
 	});	
 
@@ -566,20 +585,25 @@ $(document).ready( function() {
 			}
 		})
 			.then( function() {
-				return signIn($('#signInEmail').val(), $('#signInPassword').val(), code);
+				console.log('SignIn 0/3');
+				return signInCognito($('#signInEmail').val(), $('#signInPassword').val(), code);
 			})
 			.then( function() {
+				console.log('SignIn 1/3');
 				return initS3();
 			})
 			.then( function() {
+				console.log('SignIn 2/3');
 				setAuthenticatedMode();
 				return initTree();
 			})
 			.then( function() {
+				console.log('SignIn 3/3');
 				window.routerOpen();
 				$('#btnSignIn').prop('disabled', false);
 				$('#preloaderSignIn').hide();
 				$('#modalSignIn').modal('hide');
+				console.log('SignIn Ok');
 			})
 			.catch( function (err) {
 				console.log(err);
@@ -798,6 +822,31 @@ $(document).ready( function() {
 	});
 });
 
+function googleSignInSuccess(user) {
+	console.log('googleSignInSuccess');
+	console.log(user);
+	console.log(user.getAuthResponse());
+	signInGoogle(user)
+		.then( function() {
+			return initS3();
+		})
+		.then( function() {
+			setAuthenticatedMode();
+			return initTree();
+		})
+		.then( function() {
+			window.routerOpen();
+		})
+		.catch( function(err) {
+			onError(err);
+		})
+}
+
+function googleSignInFailure(err) {
+	console.log('googleSignInFailure');
+	console.log(err);
+}
+
 // It's used with reCAPTCHA
 function btnSignUpClick() {
 	console.log('btnSignUpClick()');
@@ -984,7 +1033,7 @@ function resendConfirmationCode(email) {
 }
 
 // Returns Promise (ok, error)
-function signIn(email, password, confirmationCode) {
+function signInCognito(email, password, confirmationCode) {
 	//console.log(email, password);
 	var promise = new Promise( function(resolve, reject) {
 		//AWSCognito.config.region = 'us-west-2';	
@@ -1046,6 +1095,50 @@ function signIn(email, password, confirmationCode) {
 			.catch( function(err) {
 				reject(err);
 			});
+    });
+    
+    return promise;
+}
+
+// Returns Promise (ok, error)
+function signInGoogle(user) {
+	var promise = new Promise( function(resolve, reject) {
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
+			Logins : {
+				'accounts.google.com': user.getAuthResponse().id_token
+			}
+		});
+		console.log(AWS.config.credentials);
+		AWS.config.credentials.get( function(err) {
+			if (err) {
+				// No error messages
+				console.log('error there!', err);
+				cognitoUser.signOut();
+				// Remove CognitoIdentityServiceProvider.* from LSO
+				// TODO
+				reject(err);
+				return;
+			}
+			
+			var accessKeyId = AWS.config.credentials.accessKeyId;
+			var secretAccessKey = AWS.config.credentials.secretAccessKey;
+			var sessionToken = AWS.config.credentials.sessionToken;
+			
+			s3 = new AWS.S3({
+				apiVersion: '2006-03-01',
+				accessKeyId: accessKeyId,
+				secretAccessKey: secretAccessKey,
+				sessionToken: sessionToken,
+				region: "eu-west-1"
+			});
+			
+			// Used in my.tmp.js
+			USERID = AWS.config.credentials.identityId;
+			TREE_USERID = USERID;
+			TREE_KEY = TREE_USERID + '/' + TREE_FILENAME;	
+			resolve(true);		
+		});
     });
     
     return promise;
