@@ -264,21 +264,6 @@ var settings = {
 };
 
 
-/*
-// TODO: fix overwriting if object with this name already exists.
-function createObjectS3(path, body, errCallback) {
-	var params = {
-		Body: body,
-		Bucket: "ab-doc-storage",
-		Key: path
-	};
-	return s3.putObject(params, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}
-	});
-};*/
-
 function createObjectS3Params(params, errCallback) {
 	params.Bucket = STORAGE_BUCKET;
 	
@@ -288,18 +273,6 @@ function createObjectS3Params(params, errCallback) {
 		}
 	});
 };
-
-/*function getObjectS3(path, errCallback) {
-	var params = {
-		Bucket: "ab-doc-storage",
-		Key: path
-	};
-	return s3.getObject(params, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}		
-	});
-}*/
 
 function getObjectS3Params(params, errCallback) {
 	params.Bucket = STORAGE_BUCKET;
@@ -424,28 +397,6 @@ function listS3Files(prefix) {
 	return promise;
 }
 
-// prefix should not end with "/"
-/*function loadTree(prefix, username, tree, callback, errCallback) {
-	withS3Files(prefix+"/", function(files) {
-		var head = {id: newId(), name: username, s3path: prefix, open: true, head: true, icon: "/css/ztree/img/diy/1_open.png"};
-		tree.addNodes(null, head, true);
-		files.map( function(f) {
-			var pathArray = f.Key.split("/");
-			var node = {
-				id: newId(),
-				name: pathArray[pathArray.length - 1]
-			};
-			function filter(n) {
-				return buildPath(n) === pathArray.slice(0, pathArray.length - 1).join("/");
-			}
-			var parent = tree.getNodesByFilter(filter, true);
-			tree.addNodes(parent, node, true);
-		});
-		
-		callback();
-	}, errCallback);
-}*/
-
 // zTree /\
 
 function _errorPopover(c) {
@@ -510,6 +461,12 @@ $(document).ready( function() {
 			return initTree();
 		})
 		.then( function() {
+			// If we have COGNITO_USER, we set authenticated mode
+			// If not, authenticated mode is set from googleSignInSuccess
+			// TODO: not good. Make global USERNAME variable and use it in setAuthenticatedMode
+			if (COGNITO_USER) {
+				setAuthenticatedMode(COGNITO_USER.username);
+			}
 			routerOpen();
 			updateUsedSpace();
 		})
@@ -597,11 +554,11 @@ $(document).ready( function() {
 			})
 			.then( function() {
 				console.log('SignIn 2/3');
-				setAuthenticatedMode();
 				return initTree();
 			})
 			.then( function() {
 				console.log('SignIn 3/3');
+				setAuthenticatedMode(COGNITO_USER.username);
 				window.routerOpen();
 				$('#btnSignIn').prop('disabled', false);
 				$('#preloaderSignIn').hide();
@@ -696,10 +653,10 @@ $(document).ready( function() {
 				return initS3();
 			})
 			.then( function() {
-				setAuthenticatedMode();
 				return initTree();
 			})
 			.then( function() {
+				setAuthenticatedMode(COGNITO_USER.username);
 				routerOpen();
 				$('#modalSignIn').modal('hide');
 			})
@@ -834,11 +791,12 @@ function googleSignInSuccess(user) {
 			return initS3();
 		})
 		.then( function() {
-			setAuthenticatedMode();
 			return initTree();
 		})
 		.then( function() {
+			setAuthenticatedMode(user.getBasicProfile().getEmail());
 			window.routerOpen();
+			$('#modalSignIn').modal('hide');
 		})
 		.catch( function(err) {
 			onError(err);
@@ -872,10 +830,10 @@ function btnSignUpClick() {
 			return initS3();
 		})
 		.then( function() {
-			setAuthenticatedMode();
 			return initTree();
 		})
 		.then( function() {
+			setAuthenticatedMode(COGNITO_USER.username);
 			routerOpen();
 			$('#btnSignUp').prop('disabled', false);
 			$('#preloaderSignIn').hide();
@@ -1273,7 +1231,6 @@ function initRootDoc(srcLocation, dstKey) {
 function initTree() {
 	TREE_READONLY = TREE_USERID !== USERID;
 	var promise = new Promise( function(resolve, reject) {
-		setAuthenticatedMode();
 		// Trying to load tree
 		loadABTree(TREE_KEY).then(
 			function(abTree) {
@@ -1312,8 +1269,6 @@ function initTree() {
 			ROOT_DOC_GUID = zNodes[0].id;
 			
 			$.fn.zTree.init($("#abTree"), settings, zNodes);
-			
-			setAuthenticatedMode();
 			
 			TREE_READY = true;
 			
