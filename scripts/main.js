@@ -1178,13 +1178,28 @@ $( function() {
 	setInterval( function() {
 		if(AWS.config.credentials) {
 			console.log('Refreshing credentials');
-			AWS.config.credentials.refresh( function(err) {
+			AWS.config.credentials.get( function(err) {
 				if (err) {
 					console.log(err);
+					return;
 				}
+				
+				var accessKeyId = AWS.config.credentials.accessKeyId;
+				var secretAccessKey = AWS.config.credentials.secretAccessKey;
+				var sessionToken = AWS.config.credentials.sessionToken;
+				
+				s3 = new AWS.S3({
+					apiVersion: '2006-03-01',
+					accessKeyId: accessKeyId,
+					secretAccessKey: secretAccessKey,
+					sessionToken: sessionToken,
+					region: "eu-west-1"
+				});
+				
+				console.log('s3', s3);
 			});
 		}
-	}, 900000);
+	}, 9000000);
 });
 
 // Returns Promise(ok, err)
