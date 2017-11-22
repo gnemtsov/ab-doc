@@ -240,7 +240,7 @@ var TREE_READONLY;
 var FILES_MODIFIED = false;
 var COGNITO_USER;
 var ROOT_DOC_GUID = 'root-doc';
-var DEFAULT_ROOT_DOC_LOCATION = '/root-doc.html';
+var DEFAULT_ROOT_DOC_LOCATION = 'root/'+LANG+'.html';
 var $updated;
 var sizeIndicator;
 

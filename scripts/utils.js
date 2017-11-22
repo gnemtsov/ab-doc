@@ -1,8 +1,8 @@
 // Data for translation
 var _translatorData = {
 	"rootName": {
-		"ru": "Дом",
-		"en": "Home"
+		"ru": "Добро пожаловать в AB-DOC!",
+		"en": "Welcome to AB-DOC!"
 	},
 	"about": {
 		"ru": "О программе",
