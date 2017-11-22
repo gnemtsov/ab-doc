@@ -1173,17 +1173,18 @@ function initS3() {
 		});
 }
 
-// Refresh credentials every 30 mins.
+// Refresh credentials every 15 mins.
 $( function() {
 	setInterval( function() {
 		if(AWS.config.credentials) {
+			console.log('Refreshing credentials');
 			AWS.config.credentials.refresh( function(err) {
 				if (err) {
 					console.log(err);
 				}
 			});
 		}
-	}, 1800000);
+	}, 900000);
 });
 
 // Returns Promise(ok, err)
