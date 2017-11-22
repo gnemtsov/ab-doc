@@ -58,21 +58,31 @@ button, select {
     z-index: 1001;
 }
 
-.navbar-dark .navbar-text {
+.navbar-dark .navbar-nav .navbar-text, 
+.navbar-dark .navbar-nav .nav-link:focus, 
+.navbar-dark .navbar-nav .nav-link:hover {
     color: #ffffff;				
 }
 
 .nav-item {
-    margin-left: 4px;
-    margin-right: 4px;
+    margin: 0 0.5rem;
 }
 
 .nav-item > select.form-control {
-    font-size: 14px;
     padding: 4px;
     margin-top: 4px;
 }
 
+.dropdown-toggle::after{
+    margin-left: .5em;
+    vertical-align: .2em;
+}
+#account-dropdown .dropdown-toggle::after{
+    display: none;
+}
+#account-dropdown .dropdown-toggle.loaded::after{
+    display: inherit;
+}
 
 a.navbar-brand img{
     height: 42px;
@@ -111,7 +121,12 @@ a.navbar-brand img{
     opacity: 1;
 }
   
-
+.navbar-dark .navbar-nav .show>.nav-link{
+    color: #f6ad6e;
+}
+.dropdown-item.active, .dropdown-item:active{
+    background-color: white;
+}
 /*---------------------------------------------------------*/
 /*-------------------------tree----------------------------*/
 /*---------------------------------------------------------*/
@@ -198,6 +213,10 @@ a.navbar-brand img{
     background-size: contain;
     background-image: none;
     background-attachment: inherit;
+}
+
+.ztree li a.level0 span.button.ico_open, .ztree li a.level0 span.button.ico_close, .ztree li span.button.ico_open, .ztree li span.button.ico_close, .ztree li span.button.ico_docu {
+    margin-right: 3px;
 }
 
 .ztree li a.level0 span.button.ico_open {

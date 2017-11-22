@@ -1,12 +1,20 @@
 // Data for translation
 var _translatorData = {
+	"rootName": {
+		"ru": "Дом",
+		"en": "Home"
+	},
 	"about": {
 		"ru": "О программе",
 		"en": "About"
 	},
+	"account": {
+		"ru": "Учетная запись",
+		"en": "Account"
+	},
 	"back": {
-		"ru": "На главную",
-		"en": "Back to main page"
+		"ru": "Главная",
+		"en": "Home"
 	},
 	"loginPage": {
 		"ru": "Вход",
@@ -77,7 +85,7 @@ var _translatorData = {
 		"en": "Set new password"
 	},
 	"signUp": {
-		"ru": "Нет учётной записи?",
+		"ru": "Создать учетную запись",
 		"en": "Create account"
 	},	
 	"registration": {
@@ -110,7 +118,7 @@ var _translatorData = {
 	},
 	
 	"exit": {
-		"ru": "Выход",
+		"ru": "Выйти",
 		"en": "Exit"
 	},
 	"somethingWentWrong": {

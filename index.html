@@ -26,7 +26,7 @@
 	</head>
  	<body>
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark bd-navbar">
-			<a class="navbar-brand" href="/"><img src="/img/Logo.png"></a>
+			<a class="navbar-brand" href="#"><img src="/img/Logo.png"></a>
 			<div id="sizeIndicator" class="authenticated-mode"></div>
 			<div id="update" class="authenticated-mode">
 				<img id="icon-pending" src="img/icons/update-pending.svg">
@@ -37,26 +37,23 @@
 			</button>
 			<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
 				<ul class="navbar-nav">
-					<li class="nav-item authenticated-mode">
-						<span class="navbar-text" id="username">Name</span>
+					<li id="account-dropdown" class="nav-item dropdown">
+						<a id="username" class="nav-link navbar-text dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"></a>
+						<div class="dropdown-menu">
+							<a class="dropdown-item link-sign-in unauthenticated-mode" data-translate="enter" href="#"></a>
+							<a class="dropdown-item link-sign-up unauthenticated-mode" data-translate="signUp" href="#"></a>
+							<a class="dropdown-item link-sign-out authenticated-mode" data-translate="exit" href="#"></a>
+							<!--<div class="dropdown-divider"></div>-->
+						</div>
+					</li>
+					<li id="navbar-about" class="nav-item">
+						<a class="navbar-text link-about" data-translate="about" href="#"></a>
 					</li>
 					<li class="nav-item">
 						<select class="form-control" id="selectLang" size="1">
-							<option value="ru">Ру</option>
+							<option value="ru">Ru</option>
 							<option value="en">En</option>
 						</select>
-					</li>
-					<li class="nav-item unauthenticated-mode">
-						<a class="navbar-text link-sign-in" data-translate="enter" href="#"></a>
-					</li>
-					<li class="nav-item unauthenticated-mode">
-						<a class="navbar-text link-sign-up" data-translate="signUp" href="#"></a>
-					</li>
-					<li class="nav-item">
-						<a class="navbar-text link-about" data-translate="about" href="#"></a>
-					</li>
-					<li class="nav-item authenticated-mode">
-						<a class="navbar-text link-sign-out" data-translate="exit" href="#"></a>
 					</li>
 				</ul>
 			</div>

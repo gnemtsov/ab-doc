@@ -301,6 +301,10 @@ var ACTIVITY = {
 
 
 $(document).ready( function() {
+	var $main = $('#main'),
+		$about = $('#about'),
+		$preloader = $('.preloader-container');
+
 	setUnknownMode();
 	
 	initS3()
@@ -333,6 +337,15 @@ $(document).ready( function() {
 		return true;	
 	});	
 
+	$('body').on('click', 'a.navbar-brand', function (e) {
+		// Open root on brand logo click
+		e.preventDefault();
+		$preloader.hide();		
+		$about.hide();
+		$main.show();
+		routerOpen(ROOT_DOC_GUID);
+	});
+	
 	$('body').on('click', 'a.link-sign-in', function (e) {
 		// Signing in
 		e.preventDefault();
@@ -603,65 +616,22 @@ $(document).ready( function() {
 		return false;
 	});
 	
-	// aboutPages is used to cache about-pages....
-	// ... Maybe it's not needed, page is reloaded when lang is changed
-	var aboutPages = [];
-	$('.link-about').on('click', function() {
-		$('.preloader-container').hide();
+	$('.link-about').on('click', function(e) {
+		e.preventDefault();
+
+		$main.hide();
+		$preloader.hide();		
+		$about.show();
 		
-		if ($('#main').is(':visible')) {
-			$('#main').hide();
-			$('.link-about').html(_translatorData['back'][LANG]);
-			
-			$('#about').html('');
-			$('#about').show();
-			if (aboutPages[LANG]) {
-				$('#about').html(aboutPages[LANG]);
-			} else {
-				$('.preloader-container').show();
-				var getPromise = new Promise(function (resolve, reject) {
-					var xhr = new XMLHttpRequest();
-					xhr.open('GET', '/about/' + LANG + '.html');
-					xhr.onload = function () {
-						if (this.status >= 200 && this.status < 300) {
-							resolve(xhr.response);
-							console.log(xhr.response);
-						} else {
-							reject({
-								status: this.status,
-								statusText: xhr.statusText
-							});
-						}
-					};
-					xhr.onerror = function () {
-						reject({
-							status: this.status,
-							statusText: xhr.statusText
-						});
-					};
-					xhr.send();
-				});
-				getPromise
-					.then( function(data) {
-						aboutPages[LANG] = data;
-						return data;
-					})
-					.catch( function(err) {
-						return 'not found';
-					})
-					.then( function(data) {
-						$('.preloader-container').hide();
-						$('#about').html(data);
-					});
-			}
-		} else {
-			$('#main').show();
-			$('#about').hide();
-			$('.preloader-container').hide();
-			$('.link-about').html(_translatorData['about'][LANG]);
+		if (!$about.html().trim().length) {
+			$preloader.show();
+			$.get('about/' + LANG + '.html', function(data){
+				$preloader.hide();
+				$about.html(data);
+			});
 		}
-		return true;
 	});
+
 });
 
 function setProperty(obj, p, val) {
@@ -1021,6 +991,7 @@ function initTree() {
 			zNodes[0].head = true;
 			//zNodes[0].iconOpen = '/img/icons/home-opened.svg';
 			//zNodes[0].iconClose= '/img/icons/home-closed.svg';
+			zNodes[0].name = zNodes[0].name.length ? zNodes[0].name : _translatorData['rootName'][LANG];
 			zNodes[0].open = true;
 			
 			ROOT_DOC_GUID = zNodes[0].id;
@@ -1087,6 +1058,7 @@ function setAuthenticatedMode() {
 	$('.unauthenticated-mode').hide();
 	
 	$('#username').text(COGNITO_USER.username);
+	$('#username').addClass('loaded');
 }
 
 // Changes UI for using in unauthenticated mode (only doc)
@@ -1098,6 +1070,9 @@ function setUnauthenticatedMode() {
 	
 	$('.unauthenticated-mode').show();
 	$('.authenticated-mode').hide();
+
+	$('#username').text(_translatorData['account'][LANG]);
+	$('#username').addClass('loaded');
 }
 
 function setUnknownMode() {
