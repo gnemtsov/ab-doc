@@ -46,6 +46,17 @@ button, select {
     overflow-x: hidden;
     owerflow-y: auto;
 }
+#top-header{
+    margin-top: 4rem;
+    margin-bottom: 3rem;    
+}
+#about p {
+    margin-bottom: 2rem;
+}
+span.about-block-border{
+    padding: 2px 4px;
+    border: 1px solid #d65d43;
+}
 
 
 /*---------------------------------------------------------*/
