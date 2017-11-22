@@ -660,7 +660,7 @@
 				var editor_options = {
 					placeholder: g._translatorData['typeYourText'][g.LANG],
 					theme: 'bubble',
-					scrollingContainer: document.documentElement,
+					scrollingContainer: '#document',
 					readOnly: self.readOnly,
 					bounds: '#document-wrap',
 					modules: {
@@ -718,6 +718,11 @@
 					self.editor.on('text-change', function () {
 						ACTIVITY.push('document modify', 'pending');
 					});
+
+					//prevent default on quill toolbar click
+					$('body').on('mousedown', '.ql-toolbar', function(e){
+					    e.preventDefault();
+					});					
 
 					TIMERS.doc = TIMERS.off || setInterval(function () {
 						if(ACTIVITY.get('document modify') === 'pending'){
@@ -805,7 +810,8 @@
 	var Parchment = Quill.import('parchment'),
 	Delta = Quill.import('delta');
 
-	//Our version of Break blot: Break2. This is just modified version of quill break blot (https://github.com/quilljs/quill/blob/develop/blots/break.js). It is transpiled with babel for compatibilty and minified.
+	//Our version of Break blot: Break2. This is just modified version of quill break blot (https://github.com/quilljs/quill/blob/develop/blots/break.js). 
+	//It is transpiled with babel for compatibilty and minified.
 	var _createClass=function(){function a(b,c){for(var e,d=0;d<c.length;d++)e=c[d],e.enumerable=e.enumerable||!1,e.configurable=!0,'value'in e&&(e.writable=!0),Object.defineProperty(b,e.key,e)}return function(b,c,d){return c&&a(b.prototype,c),d&&a(b,d),b}}(),_get=function a(b,c,d){null===b&&(b=Function.prototype);var e=Object.getOwnPropertyDescriptor(b,c);if(e===void 0){var f=Object.getPrototypeOf(b);return null===f?void 0:a(f,c,d)}if('value'in e)return e.value;var g=e.get;return void 0===g?void 0:g.call(d)};function _classCallCheck(a,b){if(!(a instanceof b))throw new TypeError('Cannot call a class as a function')}function _possibleConstructorReturn(a,b){if(!a)throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called');return b&&('object'==typeof b||'function'==typeof b)?b:a}function _inherits(a,b){if('function'!=typeof b&&null!==b)throw new TypeError('Super expression must either be null or a function, not '+typeof b);a.prototype=Object.create(b&&b.prototype,{constructor:{value:a,enumerable:!1,writable:!0,configurable:!0}}),b&&(Object.setPrototypeOf?Object.setPrototypeOf(a,b):a.__proto__=b)}var Break2=function(a){function b(){return _classCallCheck(this,b),_possibleConstructorReturn(this,(b.__proto__||Object.getPrototypeOf(b)).apply(this,arguments))}return _inherits(b,a),_createClass(b,[{key:'insertInto',value:function insertInto(c,d){_get(b.prototype.__proto__||Object.getPrototypeOf(b.prototype),'insertInto',this).call(this,c,d)}},{key:'length',value:function length(){return 1}},{key:'value',value:function value(){return'\n'}}],[{key:'value',value:function value(){}}]),b}(Parchment.Embed);
 
 	Break2.blotName = 'break2';
@@ -824,8 +830,7 @@
 			links = linkify.find(node.data);
 
 		if(links.length){        
-			var new_delta = new Delta(),
-				task_regexp = new RegExp('https?://[^/?]+/task\\.php\\?t_id=([1-9][0-9]*)', 'i');
+			var new_delta = new Delta();
 				
 			var links_values_escaped = [];
 			links.forEach(function(link, i, links) {
@@ -837,7 +842,7 @@
 				new_delta.insert(text);
 				if(i < links.length){
 					new_delta.insert(
-						task_regexp.test(links[i].value) ? '#' + links[i].value.match(task_regexp)[1] : links[i].value, 
+						links[i].value, 
 						{ link: links[i].href }
 					);
 				}
