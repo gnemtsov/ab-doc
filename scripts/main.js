@@ -520,9 +520,12 @@ $(document).ready( function() {
 					break;
 				default:
 					onError(err);
-					setTimeout(	function() {
+					if (AWS.config.credentials) {
+						AWS.config.credentials.clearCachedId();
+					}
+					/*setTimeout(	function() {
 						window.location.reload(false);
-					}, 2500);
+					}, 2500);*/
 			}
 		});
 	
@@ -1103,6 +1106,7 @@ function signInCognito(email, password, confirmationCode) {
 // Returns Promise (ok, error)
 function signInGoogle(user) {
 	var promise = new Promise( function(resolve, reject) {
+		console.log(user.getAuthResponse());
 		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
 			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
 			Logins : {
@@ -1110,35 +1114,7 @@ function signInGoogle(user) {
 			}
 		});
 		console.log(AWS.config.credentials);
-		AWS.config.credentials.get( function(err) {
-			if (err) {
-				// No error messages
-				console.log('error there!', err);
-				cognitoUser.signOut();
-				// Remove CognitoIdentityServiceProvider.* from LSO
-				// TODO
-				reject(err);
-				return;
-			}
-			
-			var accessKeyId = AWS.config.credentials.accessKeyId;
-			var secretAccessKey = AWS.config.credentials.secretAccessKey;
-			var sessionToken = AWS.config.credentials.sessionToken;
-			
-			s3 = new AWS.S3({
-				apiVersion: '2006-03-01',
-				accessKeyId: accessKeyId,
-				secretAccessKey: secretAccessKey,
-				sessionToken: sessionToken,
-				region: "eu-west-1"
-			});
-			
-			// Used in my.tmp.js
-			USERID = AWS.config.credentials.identityId;
-			TREE_USERID = USERID;
-			TREE_KEY = TREE_USERID + '/' + TREE_FILENAME;	
-			resolve(true);		
-		});
+		resolve(true);
     });
     
     return promise;
@@ -1170,16 +1146,11 @@ function requestResetPassword(email) {
 // Returns Promise(ok, error)
 // Doesn't affect UI
 function initS3() {
+	// Try loading credentials from getCurrentUser()
 	var promise = new Promise( function(resolve, reject) {
-		// Checking if we are signed in
 		var cognitoUser = USER_POOL.getCurrentUser();
 		COGNITO_USER = cognitoUser;
-		if(!cognitoUser) {
-			//setUnauthenticatedMode();
-			//console.log('Not signed in');
-			reject(ABError('NotSignedIn'));
-			return;
-		} else {
+		if (cognitoUser) {
 			cognitoUser.getSession( function(err, session) {
 				if(err) {
 					//onError(err);
@@ -1194,15 +1165,28 @@ function initS3() {
 						'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
 					}
 				});
-				//AWS.config.credentials.clearCachedId();
-					
+				resolve(true);
+			});
+		} else {
+			if (AWS.config.credentials) {
+				resolve(true);
+			} else {
+				reject(ABError('NotSignedIn'));
+			}
+		}
+	});
+	
+	return promise
+		.then(function() {
+			return new Promise( function(resolve, reject) {
 				AWS.config.credentials.get( function(err) {
 					if (err) {
 						// No error messages
 						console.log('error there!');
-						cognitoUser.signOut();
-						// Remove CognitoIdentityServiceProvider.* from LSO
-						// TODO
+						if (COGNITO_USER) {
+							cognitoUser.signOut();
+						}
+						AWS.config.credentials.clearCachedId();
 						reject(err);
 						return;
 					}
@@ -1219,6 +1203,8 @@ function initS3() {
 						region: "eu-west-1"
 					});
 					
+					console.log('s3', s3);
+					
 					// Used in my.tmp.js
 					USERID = AWS.config.credentials.identityId;
 					TREE_USERID = USERID;
@@ -1226,10 +1212,7 @@ function initS3() {
 					resolve(true);		
 				});
 			});
-		}
-	});
-	
-	return promise;
+		});
 }
 
 // Refresh credentials every 30 mins.
@@ -1334,12 +1317,6 @@ function initTree() {
 			
 			TREE_READY = true;
 			
-			// Routing when page is loaded
-			/*var wantGUID = window.location.href.split('#/')[1];
-			if (wantGUID) {
-				TryLoadGUID(wantGUID);
-			}*/
-			
 			resolve(true);
 		}).catch( function(err) {
 			reject(err);
@@ -1381,7 +1358,7 @@ $(function() {
 //------------------------------------------------
 
 // Changes UI for using in authenticated mode (tree + doc)
-function setAuthenticatedMode() {
+function setAuthenticatedMode(username) {
 	// TODO
 	console.log('authenticated');
 	
@@ -1391,7 +1368,7 @@ function setAuthenticatedMode() {
 	$('.authenticated-mode').show();
 	$('.unauthenticated-mode').hide();
 	
-	$('#username').text(COGNITO_USER.username);
+	$('#username').text(username);
 }
 
 // Changes UI for using in unauthenticated mode (only doc)
