@@ -590,8 +590,8 @@ padding-left: 6px;
     -moz-box-sizing: border-box; /* в Firefox нужен префикс */
     box-sizing: border-box;
     border-style: none;
-    min-height: 100px;
-    min-width: 100px;
+    height: 150px;
+    width: 100px;
     padding: 2px;
     margin-bottom: 0.5rem;
     margin-left: 1.6rem;
@@ -599,6 +599,10 @@ padding-left: 6px;
     z-index: 1; /*dropzone must be higher than editor to reseive dragenter events*/
 }
 
+#dropzone:not(.used) {
+    -webkit-transition: width 500ms;
+    transition: width 500ms;
+}
 #dropzone.used {
     width: 300px;
     background-color: #f8f8f8;
@@ -606,8 +610,6 @@ padding-left: 6px;
 }
 
 #dropzone.highlighted, #dropzone.superhighlighted {
-    width: 300px;
-    min-height: 150px;
     padding: 0px;
 }
 #dropzone.highlighted.used, #dropzone.superhighlighted.used {
@@ -618,6 +620,8 @@ padding-left: 6px;
     border: 2px dashed #C0C0C0;		
 }
 #dropzone.superhighlighted {
+    width: 300px;
+    height: 150px;
     background-color: #ffe7d3;
 /*    background-color: #ffdcbe;*/
     border: 2px dashed #000000;		
@@ -658,13 +662,21 @@ padding-left: 6px;
 
 #dropzone #dropzone-message{
     text-align: center;
-    margin-top: 40px;
+    max-height: 100%;
+    max-width: 100%;
     padding: 10px;
     font-size: 1.3rem;
-    display: none;
+    visibility: hidden;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 100ms;
+    transition-delay: 500ms; /*show message when block width transition finished*/
+    overflow: hidden;
 }
-#dropzone.highlighted #dropzone-message, #dropzone.superhighlighted #dropzone-message{
-    display: block;
+#dropzone.superhighlighted #dropzone-message{
+    margin-top: 40px;
+    visibility : visible;
+    opacity: 1;
 }
 #dropzone.used #dropzone-message{
     display: none;

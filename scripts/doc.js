@@ -112,7 +112,8 @@
 				second = false;
 			$doc_wrap.on({
                 dragenter: function (e) {
-					e.preventDefault();					
+					e.preventDefault();
+					console.log(first, second);
 					if (self.imgMoving) {
 						return;
 					}						
@@ -192,6 +193,7 @@
 				},
                 drop: function (e, file, drop_index) {
 					e.stopPropagation();
+					$doc_wrap.trigger('dragleave');
 
 					if (!self.imgMoving) {
 						e.preventDefault();
