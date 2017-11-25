@@ -606,10 +606,6 @@
 		self.imgMoving = false;		
 		$.extend(self, params);
 
-		if(TIMERS.hasOwnProperty('doc')){
-			clearInterval(TIMERS.doc);
-		}
-
 		//-------------prepare document template--------------//
 		if($doc_wrap instanceof $){
 			$doc_wrap.off().empty(); //empty and remove also unbind old event handlers
@@ -726,7 +722,7 @@
 					    e.preventDefault();
 					});					
 
-					TIMERS.doc = TIMERS.off || setInterval(function () {
+					TIMERS.set(function () { console.log(Date());
 						if(ACTIVITY.get('document modify') === 'pending'){
 
 							ACTIVITY.push('document modify', 'saving');
@@ -746,7 +742,7 @@
 								ACTIVITY.flush('document modify');					
 							});
 						}
-					}, 3000);
+					}, 3000, 'doc');
 
 				}
 				preloaderOnEditor(false);

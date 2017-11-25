@@ -77,8 +77,38 @@ var s3,
 	sizeIndicator;
 
 //TIMERS object to track all timers and prevent memory leaks
-//all timers can be disabled for debugging
-var TIMERS = { off: false && !PRODUCTION};
+var TIMERS = {
+	on: true,    //timers are ON when true
+	set: function(callback, interval, name){ //call TIMERS.set('name') to create new timer
+		if(['on', 'set', 'execute', 'destroy', 'Timer'].indexOf(name) !== -1){
+			throw new Error('Invalid timer name: ' + name); 
+		}
+		if(this.hasOwnProperty(name) && this[name].id !== 0){  //automatically clears previous timer
+			this[name].destroy();
+		}
+		if(this.on || PRODUCTION){
+			this[name] = new this.Timer(callback, interval);
+		} else {
+			this[name] = {
+				id: 0,
+				execute: callback,
+				destroy: function(){ void(0); }
+			}
+		}
+	},
+	execute: function(name){ //call TIMERS.execute('name') to run timer's code
+		this[name].execute();
+	},
+	destroy: function(name){
+		this[name].destroy(); //call TIMERS.destroy('name') to manually clear timer
+	},
+
+	Timer: function(callback, interval){ //timer constructor
+		this.id = setInterval(callback, interval);
+		this.execute = callback;
+		this.destroy = function(){ clearInterval(this.id); };
+	}
+};
 
 //ACTIVITY object stores activities states and updates indicator in navbar.
 //Activities: doc edit, file [guid] upload, file [guid] delete or whatever.
@@ -825,7 +855,7 @@ function initS3() {
 
 // Refresh credentials every 15 mins.
 $( function() {
-	TIMERS.credentials = TIMERS.off || setInterval( function() {
+	TIMERS.set( function() {
 		if(AWS.config.credentials) {
 			console.log('Refreshing credentials');
 			AWS.config.credentials.get( function(err) {
@@ -849,7 +879,7 @@ $( function() {
 				console.log('s3', s3);
 			});
 		}
-	}, 9000000);
+	}, 9000000, 'credentials');
 });
 
 // Returns Promise(ok, err)
@@ -1436,7 +1466,7 @@ $(function () {
 
 
 $(function() {
-	TIMERS.tree = TIMERS.off || setInterval(function () {
+	TIMERS.set(function () {
 		// Save tree column's size
 		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
@@ -1479,15 +1509,15 @@ $(function() {
 			}
 		}
 
-	}, 3000);
+	}, 3000, 'tree');
 	
 	// USED SPACE
 	// Update it less frequently	
-	TIMERS.space = TIMERS.off || setInterval(function () {
+	TIMERS.set(function () {
 		if (USER_USED_SPACE_CHANGED) {
 			updateUsedSpace();
 		}
-	}, 5000);
+	}, 5000, 'space');
 });
 
 
