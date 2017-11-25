@@ -1,3 +1,5 @@
+"use strict";
+
 // Data for translation
 
 var _translatorData = {

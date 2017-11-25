@@ -1,9 +1,13 @@
+"use strict";
+
 //------------------------------------------------
 //------------- console.log on/off ---------------
 //------------------------------------------------
+
 $(function() {
 	if (window.location.hostname === 'ab-doc.com') {
 		console.log = function() {};
+		PRODUCTION = true;
 	}
 });
 // ====================
@@ -18,173 +22,7 @@ var poolData = {
 
 var USER_POOL = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
-// zTree \/
-var settings = {
-	view: {
-		selectedMulti: true,
-		addHoverDom: addHoverDom,
-		removeHoverDom: removeHoverDom,
-		showLine: false
-	},
-	edit: {
-		enable: true,
-		showRemoveBtn: showRemoveBtn,
-		showRenameBtn: showRenameBtn,
-	},
-	data: {
-		simpleData: {
-			enable: true
-		}
-	},
-	callback: {
-		beforeDrag: beforeDrag,
-		beforeDrop: beforeDrop,
-		beforeEditName: beforeEditName,
-		beforeRename: beforeRename,
-		beforeRemove: beforeRemove,
-		onClick: onClick,
-		onDrop: onDrop,
-		onNodeCreated: onNodeCreated,
-		onRename: onRename
-	}
-};
 
-
-
-function createObjectS3Params(params, errCallback) {
-	params.Bucket = STORAGE_BUCKET;
-	
-	return s3.upload(params, {partSize: 6 * 1024 * 1024, queueSize: 2}, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}
-	});
-};
-
-function getObjectS3Params(params, errCallback) {
-	params.Bucket = STORAGE_BUCKET;
-	
-	console.log(params);
-	
-	return s3.getObject(params, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}		
-	});
-}
-
-function deleteRecursiveS3(key) {
-	console.log('deleteRecursiveS3', key);
-	return listS3Files(key)
-		.then( function(files) {
-			var params = {
-				Bucket: STORAGE_BUCKET,
-				Delete: {
-					Objects: []
-				}
-			};
-			
-			if (files.length > 0) {
-				files.forEach( function(f) {
-					params.Delete.Objects.push({Key: f.Key});
-				});
-				
-				console.log(params);
-				
-				return Promise.resolve(params);
-			}
-			
-			return Promise.reject('nothing to delete');
-		})
-		.then(
-			function(params) {
-				return s3.deleteObjects(params).promise();
-			},
-			function(err) {
-				return Promise.resolve('nothing to delete'); // It's ok
-			}
-		);
-}
-
-// Loads list of files with specified prefix and passes each one to callback
-// Old. Use listS3Files instead
-function withS3Files(prefix, callback, errCallback) {
-	var files = [];
-	var params = {
-		Bucket: STORAGE_BUCKET,
-		Prefix: prefix,
-		MaxKeys: 1000
-	};
-	
-	// Ugly recursion!!!!!!!!
-	// TODO: rewrite it all!!!!!!!!
-	function f(err, data) {
-		console.log('withS3Files f(' + err + ', ' + data + ')');
-		if (err) {
-			if (errCallback instanceof Function) {
-				errCallback(err);
-			}
-			return;
-		}
-		// Data must be undefined when calling this function directly
-		// It starts objects loading from S3
-		// Then this function is only used as a callback in s3.listObjects
-		if (!data) {
-			s3.listObjectsV2(params, f);
-			return;
-		}
-		
-		files = files.concat(data.Contents);
-		if (data.isTruncated) {
-			params.Marker = data.NextMarker;
-			s3.listObjectsV2(params, f);
-		} else {
-			files.forEach(callback);
-		}
-	};
-	f(undefined, undefined);	
-}
-
-// Loads list of files with spicified prefix and returns Promise(files, error)
-function listS3Files(prefix) {
-	var files = [];
-	var params = {
-		Bucket: STORAGE_BUCKET,
-		Prefix: prefix,
-		MaxKeys: 1000
-	};
-	
-	var promise = new Promise( function(resolve, reject) {
-		// It's ok
-		function f(err, data) {
-			console.log('listS3Files f(' + err + ', ' + data + ')');
-			if (err) {
-				reject(err);
-				return;
-			}
-			// Data must be undefined when calling this function directly
-			// It starts objects loading from S3
-			// Then this function is only used as a callback in s3.listObjects
-			if (!data) {
-				s3.listObjectsV2(params, f);
-				return;
-			}
-			
-			files = files.concat(data.Contents);
-			if (data.isTruncated) {
-				params.Marker = data.NextMarker;
-				s3.listObjectsV2(params, f);
-			} else {
-				resolve(files);
-			}
-		};
-		f(undefined, undefined);
-	});
-	
-	return promise;
-}
-
-// zTree /\
 function _errorPopover(c) {
 	$('nav').popover({
 		content: c,
@@ -221,27 +59,26 @@ function onWarning(msg) {
 	}, 2500);
 }
 
-var s3;
-var USERID; // Id of a currently logged in user
-var TREE_USERID; // Id of a user, whose tree is shown
-var AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/";
-var STORAGE_BUCKET = "ab-doc-storage";
-var LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en';
-var TREE_MODIFIED = false;
-var TREE_READY = false; // Is tree.json loaded?
-var TREE_FILENAME = "tree.json";
-var TREE_KEY;
-var TREE_READONLY;
-var FILES_MODIFIED = false;
-var COGNITO_USER;
-var ROOT_DOC_GUID = 'root-doc';
-var DEFAULT_ROOT_DOC_LOCATION = 'root/'+LANG+'.html';
-var $updated;
-var sizeIndicator;
+var s3,
+	USERID, // Id of a currently logged in user
+	TREE_USERID, // Id of a user, whose tree is shown
+	AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/",
+	STORAGE_BUCKET = "ab-doc-storage",
+	LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en',
+	PRODUCTION = false,
+	TREE_READY = false, // Is tree.json loaded?
+	TREE_FILENAME = "tree.json",
+	TREE_KEY,
+	TREE_READONLY,
+	FILES_MODIFIED = false,
+	COGNITO_USER,
+	ROOT_DOC_GUID = 'root-doc',
+	DEFAULT_ROOT_DOC_LOCATION = 'root/'+LANG+'.html',
+	sizeIndicator;
 
 //TIMERS object to track all timers and prevent memory leaks
 //all timers can be disabled for debugging
-var TIMERS = { off: false };
+var TIMERS = { off: false && !PRODUCTION};
 
 //ACTIVITY object stores activities states and updates indicator in navbar.
 //Activities: doc edit, file [guid] upload, file [guid] delete or whatever.
@@ -282,7 +119,8 @@ var ACTIVITY = {
 
 	refresh: function(){
 		var keys = Object.keys(this.lines),
-			pending = saving = false;
+			pending = false,
+			saving = false;
 
 		for (var i = 0; i < keys.length; i++) {
 			pending = pending || this.lines[ keys[i] ].indexOf('pending') !== -1;
@@ -1072,7 +910,7 @@ function initTree() {
 					//return Promise.resolve([]);
 					return initRootDoc(DEFAULT_ROOT_DOC_LOCATION, USERID + '/' + ROOT_DOC_GUID + '/index.html')
 						.then( function() {
-							TREE_MODIFIED = true;
+							ACTIVITY.push('tree modify', 'pending');
 							return [{
 								id: ROOT_DOC_GUID,
 								name: ""
@@ -1097,7 +935,7 @@ function initTree() {
 			
 			ROOT_DOC_GUID = zNodes[0].id;
 			
-			$.fn.zTree.init($("#abTree"), settings, zNodes);
+			$.fn.zTree.init($("#abTree"), zTreeSettings, zNodes);
 			
 			TREE_READY = true;
 			
@@ -1106,7 +944,6 @@ function initTree() {
 			reject(err);
 		});
 		
-		$updated = $('#updated');
 	});
 	
 	return promise;
@@ -1153,6 +990,7 @@ function setAuthenticatedMode(username) {
 	$('.unauthenticated-mode').hide();
 	
 	$('#username').text(username);
+	$('#username').addClass('loaded');
 }
 
 // Changes UI for using in unauthenticated mode (only doc)
@@ -1214,17 +1052,6 @@ function loadABTree(key) {
 	return promise;
 }
 
-// Saves abTree (JSON) with a specified key (String) from STORAGE_BUCKET
-// Returns a Promise
-function saveABTree(abTree, key) {
-	var params = {
-		Body: JSON.stringify(abTree),
-		Bucket: STORAGE_BUCKET,
-		Key: key
-	};
-	return s3.putObject(params).promise();
-}
-
 // Searches for document in all user's folders
 // Returns Promise(userId | null, error)
 // !!! null - not found, error - something bad happened!
@@ -1256,6 +1083,8 @@ function findOwner(guid) {
 //---------------------------------------
 //--------------- Routing ---------------
 //---------------------------------------
+
+
 
 function routerOpen(wantGUID) {
 	// showing preloader on Editor
@@ -1299,6 +1128,7 @@ function routerOpen(wantGUID) {
 				var node = zTree.getNodesByParam('id', wantGUID)[0];
 				if (node) {
 					zTree.selectNode(node);
+					ZTREE_SELECTED_NODE = node;
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
@@ -1575,8 +1405,6 @@ $(function () {
 		});
 		
 		$(document).mousemove(function(event) {
-			//event.preventDefault(); TODO<--------------------do something with this
-			
 			// splitterDragging is true only in 'split' mode
 			if (splitterDragging) {
 				var newX = event.clientX;
@@ -1614,7 +1442,7 @@ $(function() {
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
 		
 		// TREE
-		if (TREE_MODIFIED) {
+		if (ACTIVITY.get('tree modify') === 'pending') {
 			if (TREE_USERID === USERID) {
 				var zTree = $.fn.zTree.getZTreeObj("abTree");
 				var nodes = zTree.getNodesByParam('id', ROOT_DOC_GUID);
@@ -1635,19 +1463,20 @@ $(function() {
 					abTree = [];
 				}
 				
-				$updated.show();
-				saveABTree(abTree, TREE_KEY).then(
+				ACTIVITY.push('tree modify', 'saving');
+				s3.putObject({
+					Body: JSON.stringify(abTree),
+					Bucket: STORAGE_BUCKET,
+					Key: TREE_KEY
+				}).promise().then(
 					function (ok) {
-						$updated.fadeOut('slow', function () {
-							$(this).hide();
-						});
+						ACTIVITY.flush('tree modify');
 					},
 					function (err) {
 						onError(err);
 					}
 				);
 			}
-			TREE_MODIFIED = false;
 		}
 
 	}, 3000);
@@ -1660,431 +1489,6 @@ $(function() {
 		}
 	}, 5000);
 });
-
-//---------------------------------------
-//----------- zTree callbacks -----------
-//---------------------------------------
-
-function beforeDrag(id, nodes) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	
-	var ok = true;
-	nodes.forEach(function(x, i, arr) {
-		// We can't drag head of the tree
-		if (x.head === true) {
-			ok = false;
-		}
-	});
-	
-	return ok;
-}
-
-// It always moves files on drop.
-function beforeDrop (treeId, treeNodes, targetNode, moveType) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	
-	// We can't drop item out the tree
-	if (targetNode === null) {
-		return false;
-	}
-	
-	// If targetNode is the head, there are 3 possible situations:
-	// 1, 2: dropping before it or after it - not ok
-	// 3: dropping inside it - ok
-	if (targetNode.head && moveType != 'inner') {
-		return false;
-	}
-	
-	tree = $.fn.zTree.getZTreeObj(treeId);
-	
-	// Renaming is temporarly disabled
-	/*
-	var neighbours;
-	if (moveType == 'inner') {
-		// children of targetNode
-		neighbours = targetNode.children ? targetNode.children : [];
-	} else {
-		// neighbours of targetNode
-		neighbours = targetNode.getParentNode().children;
-	}
-	
-	// Verifying names to be unique within neighbours.
-	// Non-unique names are changed.
-	// TODO: rename 'item(n)' to 'item(n+1)'
-	treeNodes.map( function(n) {
-		// Check if name is unique. If not, add number to it.
-		var ok = false;
-		var i = 0;
-		var newName;
-		do {
-			newName = i ? n.name + '(' + i + ')' : n.name;
-			var x = neighbours.find( function(e) {
-				return e.name == newName;
-			});
-			if (x) {
-				i++;
-			} else {
-				ok = true;
-			}
-		} while (!ok);
-		
-		n.name = newName;
-		tree.updateNode(n);
-		neighbours.push(n);
-	});*/
-	
-	return true;
-}
-
-function beforeEditName(treeId, treeNode) {
-	console.log('beforeEditName');
-	if (TREE_READONLY) {
-		return false;
-	}
-	
-	var zTree = $.fn.zTree.getZTreeObj(treeId);
-	// Select text in node, which name we are going to edit.
-	var inputId = treeNode.tId + "_input";
-	// Input is not created yet, so we set timeout.
-	setTimeout( function() {
-		$('#' + inputId).select();
-	}, 20);
-	
-	return true;
-}
-
-/* Returns node which lies under the current node.
- * 
- *  1       || next
- *  |       \/
- *  |-2
- *  |-3
- *  | |
- *  | |-4
- *  | |-5
- *  | |-6
- *  |
- *  |-7
- *  |-8
- *    |
- *    |-9
- *      |
- *      |-10
- * 
- */
-function nextNode(treeNode) {
-	if (treeNode.isParent) {
-		return treeNode.children[0];
-	}
-	var n = treeNode;
-	for(;;) {
-		var nn = n.getNextNode();
-		if(nn) {
-			return nn;
-		}
-		var pn = n.getParentNode();
-		if(pn) {
-			n = pn;
-		} else {
-			return null;
-		}
-	}
-}
-
-function onClick(event, treeId, treeNode, clickFlag) {
-	// expand the node
-	tree = $.fn.zTree.getZTreeObj(treeId);
-	tree.expandNode(treeNode, !treeNode.open, false, true, true);
-	
-	// shift - select
-	/*if((event.originalEvent.shiftKey) && (tree.lastClicked)) {
-		function pathToIndexes(path) {
-			var indexes = [];
-			path.map( function(p) {
-				indexes.push(p.getIndex());
-			});
-			return indexes;
-		}
-
-		function compareIndexes(a, b) {
-			for(var i = 0;;i++) {
-				if(a[i] < b[i]) {
-					return -1;
-				}
-				if(a[i] > b[i]) {
-					return 1;
-				}
-				// a is over, b is not over
-				if((a.length == i+1) && (b.length >= i+1)) {
-					return -1;
-				}
-				// b is over, a is not over
-				if((b.length == i+1) && (a.length >= i+1)) {
-					return 1;
-				}
-				// a is over, b is over
-				if((a.length == i+1) && (b.length == i+1)) {
-					return 0;
-				}
-				//a is not over, b is not over -> next iteration
-			}
-		}
-		
-		var r = compareIndexes(
-			pathToIndexes(treeNode.getPath()),
-			pathToIndexes(tree.lastClicked.getPath())
-		);
-		
-		var start;
-		var finish;
-		if (r != 0) {
-			if (r < 0) {
-				start = treeNode;
-				finish = tree.lastClicked;
-			} else {
-				finish = treeNode;
-				start = tree.lastClicked;				
-			}
-			
-			var n = start;
-			while(n != finish) {
-				console.log(n);
-				tree.selectNode(n, true, true);
-				n = nextNode(n);
-			}
-			tree.selectNode(finish, true, true);
-		}
-	}*/
-	// my!
-	tree.lastClicked = treeNode;
-	
-	routerOpen(treeNode.id);
-}
-
-function showRemoveBtn(id, node) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	return !node.head;
-}
-
-function showRenameBtn(id, node) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	return true;
-}
-
-var lastId = -1;
-function newId() {
-	lastId++;
-	return lastId;
-}
-
-function addHoverDom(treeId, treeNode) {
-	if (TREE_READONLY) {
-		return;
-	}
-	
-	var sObj = $("#" + treeNode.tId + "_span");
-	if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) {
-		return;
-	}
-	
-	var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
-		+ "' title='add node' onfocus='this.blur();'></span>";
-		
-	sObj.after(addStr);
-	
-	// Add new item
-	var btn = $("#addBtn_"+treeNode.tId);
-	if (btn) btn.bind("click", function() {
-		var zTree = $.fn.zTree.getZTreeObj(treeId);
-		var name; 
-		var path; 
-		var ok = false;
-		var i = 1;
-		while(!ok) {
-			name = "new item " + i;
-			path = buildPath(treeNode) + "/" + name;
-			function filter(n) {
-				return buildPath(n) === path;
-			}
-			if(!zTree.getNodesByFilter(filter, true)) {
-				ok = true;
-			}
-			i++;
-		}
-		var guid = GetGUID();
-		zTree.addNodes(treeNode, {id: guid, name: name, files: []});
-		var newNode = zTree.getNodeByParam('id', guid);
-		
-		routerOpen(guid);
-		zTree.editName(newNode);
-		$('#' + newNode.tId + '_input').select();
-		
-		$updated.show();
-		TREE_MODIFIED = true;
-
-		return false;
-	});
-};
-
-function removeHoverDom(treeId, treeNode) {
-	$("#addBtn_"+treeNode.tId).unbind().remove();
-};
-
-function buildPath(treeNode) {
-	var parents = treeNode.getPath();
-	var path = "";
-	
-	parents.map( function(n, i, arr) {
-		path += n.s3path ? n.s3path : n.name;
-		path += i < arr.length-1 ? "/" : "";
-	});
-	
-	return path;
-}
-
-function buildPrefixPath(treeNode) {
-	var parents = treeNode.getPath();
-	var path = "";
-	
-	parents.slice(0, parents.length-1).map( function(n, i, arr) {
-		path += n.s3path ? n.s3path : n.name;
-		path += i < arr.length-1 ? "/" : "";
-	});
-	
-	return path;
-}
-
-function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	
-	$updated.addClass('pending');
-	$updated.show();
-	TREE_MODIFIED = true;
-};
-
-function onNodeCreated(event, treeId, treeNode) {
-
-};
-
-function beforeRemove(treeId, treeNode) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	
-	var tree = $.fn.zTree.getZTreeObj(treeId);
-	$('#buttonDelete').click( function() {
-		
-		// recursively go through all children
-		var f = function(n) {
-			if (n.children) {
-				n.children.map(f)
-			}
-			
-			deleteRecursiveS3(USERID + '/' + n.id)
-				.then( function(ok) {
-					USER_USED_SPACE_CHANGED = true;
-				})
-				.catch( function(err) {
-					onError(err);
-				});
-		};
-		f(treeNode);
-	
-		if (treeNode.id == $('#editor').attr('guid')) {
-			routerOpen(tree.getNodes()[0].id);
-		}
-	
-		var $node = $('#' + treeNode.tId + '_a');
-		$node.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
-		$node.fadeOut('slow', function () {
-			tree.removeNode(treeNode, false);
-		});
-		
-		$updated.addClass('pending');
-		$updated.show();
-		TREE_MODIFIED = true;
-	});
-	var message = _translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + _translatorData["deleteQuestion2"][LANG];
-	if (treeNode.isParent) {
-		message += _translatorData["deleteQuestion3"][LANG];
-	}
-	$("#pDeleteMessage").html(message);
-	$("#modalDelete").modal("show");
-	return false;
-};
-
-function beforeRename(treeId, treeNode, newName, isCancel) {
-	if (TREE_READONLY) {
-		return false;
-	}
-	
-	if(isCancel) {
-		return true;
-	}
-	
-	// Get array of neighbours
-	var prevs = [];
-	var p = treeNode.getPreNode();
-	//console.log('starting p loop...');
-	while(p !== null) {
-		prevs.push(p);
-		p = p.getPreNode();
-		//console.log('p loop');
-	}
-	
-	var nexts = [];
-	var n = treeNode.getNextNode();
-	//console.log('starting n loop...');
-	while(n !== null) {
-		nexts.push(n);
-		n = n.getNextNode();
-		//console.log('n loop');
-	}
-	
-	neighbours = prevs.concat(nexts);
-	
-	// Refuse if one of the neighbours have the same name.
-	var ok = true;
-	neighbours.forEach( function(n) {
-		if (n.name === newName) {
-			ok = false;
-		}
-	});
-	
-	//console.log(ok);
-	
-	return ok;
-}
-
-function onRename(event, treeId, treeNode, isCancel) {
-	var zTree = $.fn.zTree.getZTreeObj(treeId);
-	
-	// GUID of a document currently opened in editor
-	var openedGUID = $('#editor').attr('guid');
-	
-	if (!isCancel) {
-		$updated.addClass('pending');
-		$updated.show();
-		TREE_MODIFIED = true;
-		
-		if (treeNode.id == openedGUID) {
-			$('#selectedDoc').html(treeNode.name);
-		}
-	}
-	
-	// Renamed node is selected in tree now. Select the node, opened in editor.
-	zTree.selectNode(zTree.getNodeByParam('id', openedGUID), false, true);
-}
 
 
 //------------------------------------------------

@@ -1,9 +1,9 @@
+"use strict";
+
 /******************************************************************/
 /*********************Document and attachments*********************/
 /******************************************************************/
 (function (g, $, Quill) {
-	
-	"use strict";
 
 	//the following should be part of the object but typing "self" many times sucks
 	var	$doc_wrap, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;

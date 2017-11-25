@@ -1,268 +1,269 @@
+"use strict";
+
 // Data for translation
 var _translatorData = {
-	"rootName": {
-		"ru": "Добро пожаловать в AB-DOC!",
-		"en": "Welcome to AB-DOC!"
-	},
-	"about": {
-		"ru": "О программе",
-		"en": "About"
-	},
-	"account": {
-		"ru": "Учетная запись",
-		"en": "Account"
-	},
-	"back": {
-		"ru": "Главная",
-		"en": "Home"
-	},
-	"loginPage": {
-		"ru": "Вход",
-		"en": "Log in"
-	},
-	"welcomeMessage": {
-		"ru": 'Чтобы работать с документами нужно <a class="link-sign-in" href="#">войти</a> или <a class="link-sign-up" href="#">создать учетную запись</a>.',
-		"en": 'Please <a class="link-sign-in" href="#">log in</a> or <a class="link-sign-up" href="#">create account</a> to start working.'
-	},
-	"email": {
-		"ru": "Почта",
-		"en": "Email"
-	},
-	"yourEmail": {
-		"ru": "Ваш email",
-		"en": "Your email"		
-	},
-	"password": {
-		"ru": "Пароль",
-		"en": "Password"
-	},
-	"yourPassword": {
-		"ru": "Ваш пароль",
-		"en": "Your password"		
-	},
-	"confirmationCode": {
-		"ru": "Код подтверждения",
-		"en": "Confirmation code"
-	},
-	"yourConfirmationCode": {
-		"ru": "Ваш код подтверждения",
-		"en": "Your confirmation code"
-	},
-	"alertUserDoesntExist": {
-		"ru": "Пользователь с таким именем не зарегистрирован.",
-		"en": "Username is not registered."
-	},
-	"alertWrongPassword": {
-		"ru": "Неправильное имя пользователя или пароль.",
-		"en": "Wrong username or password."
-	},
-	"alertWrongCode": {
-		"ru": "Неверный код подтверждения.",
-		"en": "Wrong confirmation code."
-	},
-	"alertUnknownLoginError": {
-		"ru": "Произошла ошибка. Попробуйте войти ещё раз.",
-		"en": "Unknown error. Try again."
-	},
-	"alertUnknownError": {
-		"ru": "Произошла ошибка. Попробуйте ещё раз.",
-		"en": "Unknown error. Try again."
-	},
-	"alertNoUsername": {
-		"ru": "Укажите ваш email.",
-		"en": "Enter your email."
-	},
-	"enter": {
-		"ru": "Войти",
-		"en": "Log in"
-	},
-	"sendCode": {
-		"ru": "Выслать код",
-		"en": "Send confirmation code"
-	},
-	"resetPassword": {
-		"ru": "Сменить пароль",
-		"en": "Set new password"
-	},
-	"signUp": {
-		"ru": "Создать учетную запись",
-		"en": "Create account"
-	},	
-	"registration": {
-		"ru": "Регистрация",
-		"en": "Create account"
-	},
-	"alertWrongRepeat": {
-		"ru": "Пароли не совпали.",
-		"en": "Passwords didn't match."
-	},	
-	"alertBadPassword": {
-		"ru": "Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
-		"en": "Minimum password length is 8 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
-	},
-	"alertUserExists": {
-		"ru": "Пользователь с таким именем уже существует.",
-		"en": "This username is already taken."
-	},
-	"alertExpiredCode": {
-		"ru": "Код подтверждения устарел. Вам был выслан новый.",
-		"en": "Your confirmation code is expired. New confirmation code was sent to you."
-	},
-	"repeatPassword": {
-		"ru": "Повторите пароль",
-		"en": "Repeat password"
-	},
-	"signUp2": {
-		"ru": "Создать учётную запись",
-		"en": "Create account"
-	},
-	
-	"exit": {
-		"ru": "Выйти",
-		"en": "Exit"
-	},
-	"somethingWentWrong": {
-		"ru": "Что-то пошло не так.",
-		"en": "Somenthing went wrong."
-	},
-	"return": {
-		"ru": "Вернуться",
-		"en": "Return"
-	},
-	"document": {
-		"ru": "Документ",
-		"en": "Document"
-	},
-	"changesPending": {
-		"ru": "Есть несохраненные изменения!",
-		"en": "There are unsaved changes!"
-	},
-	"typeYourText": {
-		"ru": "Напишите что-нибудь удивительное...",
-		"en": "Compose something awesome..."
-	},
-	
-	"deleteTitle": {
-		"ru": "Удаление",
-		"en": "Delete"
-	},
-	"deleteQuestion1": {
-		"ru": "Документ",
-		"en": "You are going to delete document"
-	},
-	"deleteQuestion2": {
-		"ru": " будет удалён, продолжить?",
-		"en": ", continue?"
-	},
-	"deleteQuestion3": {
-		"ru": " Также будут удалены все вложенные документы и папки.",
-		"en": " All sub-documents are going to be deleted too."
-	},
-	"ok": {
-		"ru": "Ок",
-		"en": "Ok"
-	},
-	"cancel": {
-		"ru": "Отмена",
-		"en": "Cancel"
-	},
-	"emptyDropzoneMessage" :{
-		"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
-		"en": "Drop your files here, you can place pictures right in the text"
-	},
-	"noSpace": {
-		"ru": "Недостаточно места для загрузки файла",
-		"en": "No space left to upload this file"
-	},
-	"areYouSure": {
-		"ru": "Вы уверены?",
-		"en": "Are you sure?"
-	},
-	"yes": {
-		"ru": "да",
-		"en": "yes"
-	},
-	"no": {
-		"ru": "нет",
-		"en": "no"
-	},
-	"forgotPassword": {
-		"ru": "Забыли пароль?",
-		"en": "Forgot password?"
-	}
-	
-}
+    "about": {
+        "ru": "О программе",
+        "en": "About"
+    },
+    "account": {
+        "ru": "Учетная запись",
+        "en": "Account"
+    },
+    "alertBadPassword": {
+        "ru": "Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
+        "en": "Minimum password length is 8 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
+    },
+    "alertExpiredCode": {
+        "ru": "Код подтверждения устарел. Вам был выслан новый.",
+        "en": "Your confirmation code is expired. New confirmation code was sent to you."
+    },
+    "alertNoUsername": {
+        "ru": "Укажите ваш email.",
+        "en": "Enter your email."
+    },
+    "alertUnknownError": {
+        "ru": "Произошла ошибка. Попробуйте ещё раз.",
+        "en": "Unknown error. Try again."
+    },
+    "alertUnknownLoginError": {
+        "ru": "Произошла ошибка. Попробуйте войти ещё раз.",
+        "en": "Unknown error. Try again."
+    },
+    "alertUserDoesntExist": {
+        "ru": "Пользователь с таким именем не зарегистрирован.",
+        "en": "Username is not registered."
+    },
+    "alertUserExists": {
+        "ru": "Пользователь с таким именем уже существует.",
+        "en": "This username is already taken."
+    },
+    "alertWrongCode": {
+        "ru": "Неверный код подтверждения.",
+        "en": "Wrong confirmation code."
+    },
+    "alertWrongPassword": {
+        "ru": "Неправильное имя пользователя или пароль.",
+        "en": "Wrong username or password."
+    },
+    "alertWrongRepeat": {
+        "ru": "Пароли не совпали.",
+        "en": "Passwords didn't match."
+    },
+    "areYouSure": {
+        "ru": "Вы уверены?",
+        "en": "Are you sure?"
+    },
+    "back": {
+        "ru": "Главная",
+        "en": "Home"
+    },
+    "cancel": {
+        "ru": "Отмена",
+        "en": "Cancel"
+    },
+    "changesPending": {
+        "ru": "Есть несохраненные изменения!",
+        "en": "There are unsaved changes!"
+    },
+    "confirmationCode": {
+        "ru": "Код подтверждения",
+        "en": "Confirmation code"
+    },
+    "deleteQuestion1": {
+        "ru": "Документ",
+        "en": "You are going to delete document"
+    },
+    "deleteQuestion2": {
+        "ru": " будет удалён, продолжить?",
+        "en": ", continue?"
+    },
+    "deleteQuestion3": {
+        "ru": " Также будут удалены все вложенные документы и папки.",
+        "en": " All sub-documents are going to be deleted too."
+    },
+    "deleteTitle": {
+        "ru": "Удаление",
+        "en": "Delete"
+    },
+    "document": {
+        "ru": "Документ",
+        "en": "Document"
+    },
+    "email": {
+        "ru": "Почта",
+        "en": "Email"
+    },
+    "emptyDropzoneMessage": {
+        "ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
+        "en": "Drop your files here, you can place pictures right in the text"
+    },
+    "enter": {
+        "ru": "Войти",
+        "en": "Log in"
+    },
+    "exit": {
+        "ru": "Выйти",
+        "en": "Exit"
+    },
+    "forgotPassword": {
+        "ru": "Забыли пароль?",
+        "en": "Forgot password?"
+    },
+    "loginPage": {
+        "ru": "Вход",
+        "en": "Log in"
+    },
+    "no": {
+        "ru": "нет",
+        "en": "no"
+    },
+    "noSpace": {
+        "ru": "Недостаточно места для загрузки файла",
+        "en": "No space left to upload this file"
+    },
+    "ok": {
+        "ru": "Ок",
+        "en": "Ok"
+    },
+    "password": {
+        "ru": "Пароль",
+        "en": "Password"
+    },
+    "registration": {
+        "ru": "Регистрация",
+        "en": "Create account"
+    },
+    "repeatPassword": {
+        "ru": "Повторите пароль",
+        "en": "Repeat password"
+    },
+    "resetPassword": {
+        "ru": "Сменить пароль",
+        "en": "Set new password"
+    },
+    "return": {
+        "ru": "Вернуться",
+        "en": "Return"
+    },
+    "rootName": {
+        "ru": "Добро пожаловать в AB-DOC!",
+        "en": "Welcome to AB-DOC!"
+    },
+    "sendCode": {
+        "ru": "Выслать код",
+        "en": "Send confirmation code"
+    },
+    "signUp": {
+        "ru": "Создать учетную запись",
+        "en": "Create account"
+    },
+    "signUp2": {
+        "ru": "Создать учётную запись",
+        "en": "Create account"
+    },
+    "somethingWentWrong": {
+        "ru": "Что-то пошло не так.",
+        "en": "Somenthing went wrong."
+    },
+    "typeYourText": {
+        "ru": "Напишите что-нибудь удивительное...",
+        "en": "Compose something awesome..."
+    },
+    "welcomeMessage": {
+        "ru": "Чтобы работать с документами нужно <a class=\"link-sign-in\" href=\"#\">войти</a> или <a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
+        "en": "Please <a class=\"link-sign-in\" href=\"#\">log in</a> or <a class=\"link-sign-up\" href=\"#\">create account</a> to start working."
+    },
+    "yes": {
+        "ru": "да",
+        "en": "yes"
+    },
+    "yourConfirmationCode": {
+        "ru": "Ваш код подтверждения",
+        "en": "Your confirmation code"
+    },
+    "yourEmail": {
+        "ru": "Ваш email",
+        "en": "Your email"
+    },
+    "yourPassword": {
+        "ru": "Ваш пароль",
+        "en": "Your password"
+    }
+};
 // ====================
 
-
-// s3 file uploader
-// set updateFlag to true to update size indicator
-// Returns Promise(key) with abort() method.
-function s3Uploader(params, onprogress, updateFlag) {
-    //console.log(params);
-    
-    if (params.ContentDisposition) {
-        params.ContentDisposition = "attachment; filename*=UTF-8''" + encodeRFC5987ValueChars(params.ContentDisposition);
-    }
-    
-    var request = createObjectS3Params(params);
-    request.on('httpUploadProgress', function (progress, response) {
-        var progressPercents = progress.loaded * 100.0 / progress.total;
-        
-        if (onprogress instanceof Function) {
-            //onprogress.call(this, Math.round(progressPercents));
-            onprogress.call(this, progressPercents);
-        }	
-    });
-
-    var reqPromise = request.promise();
-    var promise = reqPromise
-        .then( function (data) {
-            return Promise.resolve(params.Key);
-        });
-
-    
-    // TODO Body can be File or ArrayBuffer. Maybe this line should be rewritten....
-    // size undefined in console
-    var size = (params.Body.size) ? (params.Body.size) : (params.Body.byteLength);
-    // update pending used space
-    // console.log('Body: ', params.Body, 'size: ', size);
-    if (updateFlag) {
-        updateUsedSpacePending(size);
-    }
-    promise
-        .then(function(ok) {
-            if (updateFlag) {
-                updateUsedSpacePending(-size);
-                updateUsedSpaceDelta(size);
-            }
-        });
-    promise
-        .catch(function(err) {
-            if (updateFlag) {
-                updateUsedSpacePending(-size);
-            }
-        });
-    promise.abort = function () {
-        request.abort();
-        console.log('Upload aborted');
-        if (updateFlag) {
-            updateUsedSpacePending(-size);
-        }
-    };
-    
-    return promise;
+function deleteRecursiveS3(key) {
+	console.log('deleteRecursiveS3', key);
+	return listS3Files(key)
+		.then( function(files) {
+			var params = {
+				Bucket: STORAGE_BUCKET,
+				Delete: {
+					Objects: []
+				}
+			};
+			
+			if (files.length > 0) {
+				files.forEach( function(f) {
+					params.Delete.Objects.push({Key: f.Key});
+				});
+				
+				console.log(params);
+				
+				return Promise.resolve(params);
+			}
+			
+			return Promise.reject('nothing to delete');
+		})
+		.then(
+			function(params) {
+				return s3.deleteObjects(params).promise();
+			},
+			function(err) {
+				return Promise.resolve('nothing to delete'); // It's ok
+			}
+		);
 }
 
-function createObjectS3Params(params, errCallback) {
-	params.Bucket = STORAGE_BUCKET;
+// Loads list of files with spicified prefix and returns Promise(files, error)
+function listS3Files(prefix) {
+	var files = [];
+	var params = {
+		Bucket: STORAGE_BUCKET,
+		Prefix: prefix,
+		MaxKeys: 1000
+	};
 	
-	return s3.upload(params, {partSize: 6 * 1024 * 1024, queueSize: 2}, function(err, data) {
-		if (err && (errCallback instanceof Function)) {
-			errCallback(err);
-		}
+	var promise = new Promise( function(resolve, reject) {
+		// It's ok
+		function f(err, data) {
+			console.log('listS3Files f(' + err + ', ' + data + ')');
+			if (err) {
+				reject(err);
+				return;
+			}
+			// Data must be undefined when calling this function directly
+			// It starts objects loading from S3
+			// Then this function is only used as a callback in s3.listObjects
+			if (!data) {
+				s3.listObjectsV2(params, f);
+				return;
+			}
+			
+			files = files.concat(data.Contents);
+			if (data.isTruncated) {
+				params.Marker = data.NextMarker;
+				s3.listObjectsV2(params, f);
+			} else {
+				resolve(files);
+			}
+		};
+		f(undefined, undefined);
 	});
-};
+	
+	return promise;
+}
 
 
 function GetContentDisposition(str){
