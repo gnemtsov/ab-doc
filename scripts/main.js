@@ -42,7 +42,7 @@ function onError(err) {
 		console.log("Error!", err);
 	}
 	
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
 	$('nav').popover('show');
 	setTimeout(function() {
@@ -51,7 +51,7 @@ function onError(err) {
 }
 
 function onWarning(msg) {
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	_errorPopover(msg);
 	$('nav').popover('show');
 	setTimeout(function() {
@@ -60,6 +60,8 @@ function onWarning(msg) {
 }
 
 var s3,
+	abDoc,
+	abTree,
 	USERID, // Id of a currently logged in user
 	TREE_USERID, // Id of a user, whose tree is shown
 	AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/",
@@ -75,6 +77,12 @@ var s3,
 	ROOT_DOC_GUID = 'root-doc',
 	DEFAULT_ROOT_DOC_LOCATION = 'root/'+LANG+'.html',
 	sizeIndicator;
+
+var $selectedDoc = $('#selectedDoc'),
+	$doc_wrap = $('#document-wrap');
+
+var $preloader_main = $('#main-preloader'),
+	$preloader_editor = $('#editor-preloader');
 
 //TIMERS object to track all timers and prevent memory leaks
 //all timers can be disabled for debugging
@@ -135,8 +143,7 @@ var ACTIVITY = {
 
 $(document).ready( function() {
 	var $main = $('#main'),
-		$about = $('#about'),
-		$preloader = $('.preloader-container');
+		$about = $('#about');
 
 	setUnknownMode();
 	
@@ -204,7 +211,7 @@ $(document).ready( function() {
 	$('body').on('click', 'a.navbar-brand', function (e) {
 		// Open root on brand logo click
 		e.preventDefault();
-		$preloader.hide();		
+		$preloader_main.hide();		
 		$about.hide();
 		$main.show();
 		routerOpen(ROOT_DOC_GUID);
@@ -422,9 +429,9 @@ $(document).ready( function() {
 		$about.show();
 		
 		if (!$about.html().trim().length) {
-			$preloader.show();
+			$preloader_main.show();
 			$.get('about/' + LANG + '.html', function(data){
-				$preloader.hide();
+				$preloader_main.hide();
 				$about.html(data);
 			});
 		}
@@ -983,7 +990,7 @@ function setAuthenticatedMode(username) {
 	// TODO
 	console.log('authenticated');
 	
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	$('.app-container').show();
 	
 	$('.authenticated-mode').show();
@@ -997,7 +1004,7 @@ function setAuthenticatedMode(username) {
 function setUnauthenticatedMode() {
 	console.log('unauthenticated');
 	
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	$('.app-container').show();
 	
 	$('.unauthenticated-mode').show();
@@ -1132,7 +1139,7 @@ function routerOpen(wantGUID) {
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-						$('#document-wrap').abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
+						$doc_wrap.abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}
@@ -1156,6 +1163,25 @@ function routerOpen(wantGUID) {
 					onError(err);
 				});		
 			});
+	}
+}
+
+function routerOpen(doc){
+	preloaderOnEditor(true);
+	
+	if(doc === undefined) {
+		doc = window.location.pathname.slice(1); // drop first '/'
+	}
+	history.pushState(null, null, '/' + doc);
+
+	switch(doc){
+
+		case 'about.html':
+			break;
+
+		default:
+			$("#abTree").abTree(doc);
+			$doc_wrap.abDoc(doc, TREE_USERID, TREE_USERID !== USERID);
 	}
 }
 
@@ -1503,11 +1529,11 @@ $( function() {
 // Turns preloader on editor on and off
 function preloaderOnEditor(on) {
 	if (on) {
-		$('#document-wrap').hide();
-		$('#editor-preloader').show();
+		$doc_wrap.hide();
+		$preloader_editor.show();
 	} else {
-		$('#editor-preloader').hide();
-		$('#document-wrap').show();
+		$preloader_editor.hide();
+		$doc_wrap.show();
 	}
 }
 
