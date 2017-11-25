@@ -112,7 +112,8 @@
 				second = false;
 			$doc_wrap.on({
                 dragenter: function (e) {
-					e.preventDefault();					
+					e.preventDefault();
+					console.log(first, second);
 					if (self.imgMoving) {
 						return;
 					}						
@@ -192,6 +193,7 @@
 				},
                 drop: function (e, file, drop_index) {
 					e.stopPropagation();
+					$doc_wrap.trigger('dragleave');
 
 					if (!self.imgMoving) {
 						e.preventDefault();
@@ -604,10 +606,6 @@
 		self.imgMoving = false;		
 		$.extend(self, params);
 
-		if(TIMERS.hasOwnProperty('doc')){
-			clearInterval(TIMERS.doc);
-		}
-
 		//-------------prepare document template--------------//
 		if($doc_wrap instanceof $){
 			$doc_wrap.off().empty(); //empty and remove also unbind old event handlers
@@ -724,7 +722,7 @@
 					    e.preventDefault();
 					});					
 
-					TIMERS.doc = TIMERS.off || setInterval(function () {
+					TIMERS.set(function () { console.log(Date());
 						if(ACTIVITY.get('document modify') === 'pending'){
 
 							ACTIVITY.push('document modify', 'saving');
@@ -744,7 +742,7 @@
 								ACTIVITY.flush('document modify');					
 							});
 						}
-					}, 3000);
+					}, 3000, 'doc');
 
 				}
 				preloaderOnEditor(false);
