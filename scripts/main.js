@@ -50,21 +50,16 @@ var settings = {
 };
 
 
-/*
-// TODO: fix overwriting if object with this name already exists.
-function createObjectS3(path, body, errCallback) {
-	var params = {
-		Body: body,
-		Bucket: "ab-doc-storage",
-		Key: path
-	};
-	return s3.putObject(params, function(err, data) {
+
+function createObjectS3Params(params, errCallback) {
+	params.Bucket = STORAGE_BUCKET;
+	
+	return s3.upload(params, {partSize: 6 * 1024 * 1024, queueSize: 2}, function(err, data) {
 		if (err && (errCallback instanceof Function)) {
 			errCallback(err);
 		}
 	});
-};*/
-
+};
 
 function getObjectS3Params(params, errCallback) {
 	params.Bucket = STORAGE_BUCKET;
@@ -312,6 +307,12 @@ $(document).ready( function() {
 			return initTree();
 		})
 		.then( function() {
+			// If we have COGNITO_USER, we set authenticated mode
+			// If not, authenticated mode is set from googleSignInSuccess
+			// TODO: not good. Make global USERNAME variable and use it in setAuthenticatedMode
+			if (COGNITO_USER) {
+				setAuthenticatedMode(COGNITO_USER.username);
+			}
 			routerOpen();
 			updateUsedSpace();
 		})
@@ -322,18 +323,43 @@ $(document).ready( function() {
 					break;
 				default:
 					onError(err);
+					if (AWS.config.credentials) {
+						AWS.config.credentials.clearCachedId();
+					}
+					/*setTimeout(	function() {
+						window.location.reload(false);
+					}, 2500);*/
 			}
 		});
 	
 	$('.link-sign-out, .link-return').click( function() {
+		var promise;
+		
+		// Sign out cognito user
 		if (COGNITO_USER) {
 			COGNITO_USER.signOut();
+			promise = Promise.resolve();
 		}
 		
-		AWS.config.credentials = null;
+		// Sign out google user
+		if(true) {
+			var auth2 = gapi.auth2.getAuthInstance();
+			promise = auth2.signOut()
+		}
 		
-		//window.location.replace('/login.html');
-		setUnauthenticatedMode();
+		promise
+			.catch( function(err) {
+				onError(err);
+				return true;
+			})
+			.then( function() {
+				if (AWS.config.credentials) {
+					AWS.config.credentials.clearCachedId();
+				}
+				AWS.config.credentials = null;
+				setUnauthenticatedMode();
+			});
+
 		return true;	
 	});	
 
@@ -374,20 +400,25 @@ $(document).ready( function() {
 			}
 		})
 			.then( function() {
-				return signIn($('#signInEmail').val(), $('#signInPassword').val(), code);
+				console.log('SignIn 0/3');
+				return signInCognito($('#signInEmail').val(), $('#signInPassword').val(), code);
 			})
 			.then( function() {
+				console.log('SignIn 1/3');
 				return initS3();
 			})
 			.then( function() {
-				setAuthenticatedMode();
+				console.log('SignIn 2/3');
 				return initTree();
 			})
 			.then( function() {
+				console.log('SignIn 3/3');
+				setAuthenticatedMode(COGNITO_USER.username);
 				window.routerOpen();
 				$('#btnSignIn').prop('disabled', false);
 				$('#preloaderSignIn').hide();
 				$('#modalSignIn').modal('hide');
+				console.log('SignIn Ok');
 			})
 			.catch( function (err) {
 				console.log(err);
@@ -477,10 +508,10 @@ $(document).ready( function() {
 				return initS3();
 			})
 			.then( function() {
-				setAuthenticatedMode();
 				return initTree();
 			})
 			.then( function() {
+				setAuthenticatedMode(COGNITO_USER.username);
 				routerOpen();
 				$('#modalSignIn').modal('hide');
 			})
@@ -527,77 +558,6 @@ $(document).ready( function() {
 			})
 	});	
 	
-	$('#btnSignUp').click( function() {
-		$('#alertSignUpError').hide();
-		$('#btnSignUp').prop('disabled', true);
-		$('#preloaderSignUp').show();
-		var code;
-		if ($('#signUpConfirmationCode').is(':visible')) {
-			code = $('#signUpConfirmationCode').val();
-		}
-		var email = $('#signUpEmail').val(),
-			password = $('#signUpPassword').val(),
-			password2 = $('#signUpRepeatPassword').val();
-		signUp(email, password, password2, code)
-			.then( function() {
-				return signIn(email, password);
-			})
-			.then( function() {
-				return initS3();
-			})
-			.then( function() {
-				setAuthenticatedMode();
-				return initTree();
-			})
-			.then( function() {
-				routerOpen();
-				$('#btnSignUp').prop('disabled', false);
-				$('#preloaderSignIn').hide();
-				$('#modalSignUp').modal('hide');
-			})
-			.catch( function (err) {
-				console.log(err.name, 'Here!');
-				switch(err.name) {
-					case 'CodeMismatchException':
-						$('#alertSignUpError').html(_translatorData['alertWrongCode'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'InvalidParameterException':
-						$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'InvalidPasswordException':
-						$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'UsernameExistsException':
-						$('#alertSignUpError').html(_translatorData['alertUserExists'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'ConfirmationRequired':
-						$('#divSignUpConfirmationCode').show();
-						break;
-					case 'WrongRepeat':
-						$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
-						$('#alertSignUpError').show();
-						break;
-					case 'ExpiredCodeException':
-						$('#alertSignUpError').html(_translatorData['alertExpiredCode'][LANG]);
-						$('#alertSignUpError').show();
-						resendConfirmationCode($('#signUpEmail').val())
-							.catch( function(err) {
-								onError(err);
-							});
-						break;
-					default:
-						$('#alertSignUpError').html(_translatorData['alertUnknownError'][LANG]);
-						$('#alertSignUpError').show();
-				}
-				$('#btnSignUp').prop('disabled', false);
-				$('#preloaderSignUp').hide();
-			})
-	});
-	
 	$('#modalDelete').on('shown.bs.modal', function() {
 		$('#buttonDelete').focus();
 	});
@@ -633,6 +593,106 @@ $(document).ready( function() {
 	});
 
 });
+
+function googleSignInSuccess(user) {
+	console.log('googleSignInSuccess');
+	console.log(user);
+	console.log(user.getAuthResponse());
+	signInGoogle(user)
+		.then( function() {
+			return initS3();
+		})
+		.then( function() {
+			return initTree();
+		})
+		.then( function() {
+			setAuthenticatedMode(user.getBasicProfile().getEmail());
+			window.routerOpen();
+			$('#modalSignIn').modal('hide');
+		})
+		.catch( function(err) {
+			onError(err);
+		})
+}
+
+function googleSignInFailure(err) {
+	console.log('googleSignInFailure');
+	console.log(err);
+}
+
+// It's used with reCAPTCHA
+function btnSignUpClick() {
+	console.log('btnSignUpClick()');
+	
+	$('#alertSignUpError').hide();
+	$('#btnSignUp').prop('disabled', true);
+	$('#preloaderSignUp').show();
+	var code;
+	if ($('#signUpConfirmationCode').is(':visible')) {
+		code = $('#signUpConfirmationCode').val();
+	}
+	var email = $('#signUpEmail').val(),
+		password = $('#signUpPassword').val(),
+		password2 = $('#signUpRepeatPassword').val();
+	signUp(email, password, password2, code)
+		.then( function() {
+			return signIn(email, password);
+		})
+		.then( function() {
+			return initS3();
+		})
+		.then( function() {
+			return initTree();
+		})
+		.then( function() {
+			setAuthenticatedMode(COGNITO_USER.username);
+			routerOpen();
+			$('#btnSignUp').prop('disabled', false);
+			$('#preloaderSignIn').hide();
+			$('#modalSignUp').modal('hide');
+		})
+		.catch( function (err) {
+			console.log(err.name, 'Here!');
+			switch(err.name) {
+				case 'CodeMismatchException':
+					$('#alertSignUpError').html(_translatorData['alertWrongCode'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'InvalidParameterException':
+					$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'InvalidPasswordException':
+					$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'UsernameExistsException':
+					$('#alertSignUpError').html(_translatorData['alertUserExists'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'ConfirmationRequired':
+					$('#signUpConfirmationCode').parent().show();
+					break;
+				case 'WrongRepeat':
+					$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
+					$('#alertSignUpError').show();
+					break;
+				case 'ExpiredCodeException':
+					$('#alertSignUpError').html(_translatorData['alertExpiredCode'][LANG]);
+					$('#alertSignUpError').show();
+					resendConfirmationCode($('#signUpEmail').val())
+						.catch( function(err) {
+							onError(err);
+						});
+					break;
+				default:
+					$('#alertSignUpError').html(_translatorData['alertUnknownError'][LANG]);
+					$('#alertSignUpError').show();
+			}
+			$('#btnSignUp').prop('disabled', false);
+			$('#preloaderSignUp').hide();
+		})
+}
 
 function setProperty(obj, p, val) {
 	if (obj[p] !== undefined) {
@@ -746,7 +806,7 @@ function resendConfirmationCode(email) {
 }
 
 // Returns Promise (ok, error)
-function signIn(email, password, confirmationCode) {
+function signInCognito(email, password, confirmationCode) {
 	//console.log(email, password);
 	var promise = new Promise( function(resolve, reject) {
 		//AWSCognito.config.region = 'us-west-2';	
@@ -814,6 +874,23 @@ function signIn(email, password, confirmationCode) {
 }
 
 // Returns Promise (ok, error)
+function signInGoogle(user) {
+	var promise = new Promise( function(resolve, reject) {
+		console.log(user.getAuthResponse());
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId : 'us-west-2:f96a0ddb-ab25-4344-a0f9-3feb9ea80fa9',
+			Logins : {
+				'accounts.google.com': user.getAuthResponse().id_token
+			}
+		});
+		console.log(AWS.config.credentials);
+		resolve(true);
+    });
+    
+    return promise;
+}
+
+// Returns Promise (ok, error)
 function requestResetPassword(email) {
 	var promise = new Promise( function(resolve, reject) {
 		var userData = {
@@ -839,16 +916,11 @@ function requestResetPassword(email) {
 // Returns Promise(ok, error)
 // Doesn't affect UI
 function initS3() {
+	// Try loading credentials from getCurrentUser()
 	var promise = new Promise( function(resolve, reject) {
-		// Checking if we are signed in
 		var cognitoUser = USER_POOL.getCurrentUser();
 		COGNITO_USER = cognitoUser;
-		if(!cognitoUser) {
-			//setUnauthenticatedMode();
-			//console.log('Not signed in');
-			reject(ABError('NotSignedIn'));
-			return;
-		} else {
+		if (cognitoUser) {
 			cognitoUser.getSession( function(err, session) {
 				if(err) {
 					//onError(err);
@@ -863,15 +935,30 @@ function initS3() {
 						'cognito-idp.us-west-2.amazonaws.com/us-west-2_eb7axoHmO' : session.getIdToken().getJwtToken()
 					}
 				});
-				AWS.config.credentials.clearCachedId();
-					
+				resolve(true);
+			});
+		} else {
+			if (AWS.config.credentials) {
+				resolve(true);
+			} else {
+				reject(ABError('NotSignedIn'));
+			}
+		}
+	});
+	
+	return promise
+		.then(function() {
+			return new Promise( function(resolve, reject) {
 				AWS.config.credentials.get( function(err) {
 					if (err) {
 						// No error messages
 						console.log('error there!');
-						cognitoUser.signOut();
+						if (COGNITO_USER) {
+							cognitoUser.signOut();
+						}
+						AWS.config.credentials.clearCachedId();
 						reject(err);
-						return
+						return;
 					}
 					
 					var accessKeyId = AWS.config.credentials.accessKeyId;
@@ -886,6 +973,8 @@ function initS3() {
 						region: "eu-west-1"
 					});
 					
+					console.log('s3', s3);
+					
 					// Used in my.tmp.js
 					USERID = AWS.config.credentials.identityId;
 					TREE_USERID = USERID;
@@ -893,23 +982,36 @@ function initS3() {
 					resolve(true);		
 				});
 			});
-		}
-	});
-	
-	return promise;
+		});
 }
 
-// Refresh credentials every 30 mins.
+// Refresh credentials every 15 mins.
 $( function() {
 	TIMERS.credentials = TIMERS.off || setInterval( function() {
 		if(AWS.config.credentials) {
-			AWS.config.credentials.refresh( function(err) {
+			console.log('Refreshing credentials');
+			AWS.config.credentials.get( function(err) {
 				if (err) {
 					console.log(err);
+					return;
 				}
+				
+				var accessKeyId = AWS.config.credentials.accessKeyId;
+				var secretAccessKey = AWS.config.credentials.secretAccessKey;
+				var sessionToken = AWS.config.credentials.sessionToken;
+				
+				s3 = new AWS.S3({
+					apiVersion: '2006-03-01',
+					accessKeyId: accessKeyId,
+					secretAccessKey: secretAccessKey,
+					sessionToken: sessionToken,
+					region: "eu-west-1"
+				});
+				
+				console.log('s3', s3);
 			});
 		}
-	}, 1800000);
+	}, 9000000);
 });
 
 // Returns Promise(ok, err)
@@ -957,7 +1059,6 @@ function initRootDoc(srcLocation, dstKey) {
 function initTree() {
 	TREE_READONLY = TREE_USERID !== USERID;
 	var promise = new Promise( function(resolve, reject) {
-		setAuthenticatedMode();
 		// Trying to load tree
 		loadABTree(TREE_KEY).then(
 			function(abTree) {
@@ -998,15 +1099,7 @@ function initTree() {
 			
 			$.fn.zTree.init($("#abTree"), settings, zNodes);
 			
-			setAuthenticatedMode();
-			
 			TREE_READY = true;
-			
-			// Routing when page is loaded
-			/*var wantGUID = window.location.href.split('#/')[1];
-			if (wantGUID) {
-				TryLoadGUID(wantGUID);
-			}*/
 			
 			resolve(true);
 		}).catch( function(err) {
@@ -1037,8 +1130,10 @@ $(function() {
 		$('#btnConfirmResetPassword').prop('disabled', false);
 	});
 	$('#modalSignUp').on('show.bs.modal', function(event) {
-		$('#divSignUpConfirmationCode').hide();
 		$('#signUpConfirmationCode').val('');
+		//$('#divSignUpConfirmationCode').hide();
+		// The above line stopped working. Don't know why.
+		$('#signUpConfirmationCode').parent().hide();
 	});
 });
 
@@ -1047,7 +1142,7 @@ $(function() {
 //------------------------------------------------
 
 // Changes UI for using in authenticated mode (tree + doc)
-function setAuthenticatedMode() {
+function setAuthenticatedMode(username) {
 	// TODO
 	console.log('authenticated');
 	
@@ -1057,8 +1152,7 @@ function setAuthenticatedMode() {
 	$('.authenticated-mode').show();
 	$('.unauthenticated-mode').hide();
 	
-	$('#username').text(COGNITO_USER.username);
-	$('#username').addClass('loaded');
+	$('#username').text(username);
 }
 
 // Changes UI for using in unauthenticated mode (only doc)

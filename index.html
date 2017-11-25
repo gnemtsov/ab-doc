@@ -16,6 +16,15 @@
 		<link rel="manifest" href="manifest.json?ver=v1510233512">
 		<link rel="shortcut icon" href="favicon.ico?ver=v1510233511">
 		<meta name="theme-color" content="#ffffff">
+
+		<!-- reCAPTCHA -->
+		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+		<!-- Google -->
+		<meta name="google-signin-scope" content="profile email">
+		<meta name="google-signin-client_id" content="1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com">
+		<script src="https://apis.google.com/js/platform.js" async defer></script>
+
   
 		<!-- Styles -->
 		<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css?ver=v1511128732">
@@ -141,6 +150,7 @@
 											<button id="btnSignIn" class="btn btn-success" type="submit" value="SignIn" data-translate="enter"></button>
 											<div class="small-preloader" id="preloaderSignIn" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 											<a class="ml-1" id="forgotPassword" href="#" data-translate="forgotPassword"></a>
+											<div class="g-signin2" data-onsuccess="googleSignInSuccess" data-onfailure="googleSignInFailure" data-theme="dark"></div>
 										</div>
 									</div>
 									<div class="forgot-password">
@@ -217,7 +227,15 @@
 									</div>
 									<div class="form-group input-group">
 										<span class="input-group-btn">
-											<button id="btnSignUp" class="btn btn-success" type="submit" data-translate="signUp2"></button>
+											<button id="btnSignUp"
+											        class="btn btn-success g-recaptcha"
+											        type="submit"
+											        data-translate="signUp2"
+											        data-sitekey="6LeIHzkUAAAAAHHbl2gHi1TBKAIQJ_7yg9zDqxHD"
+											        data-callback="btnSignUpClick"
+											        data-size="invisible"
+											        data-badge="inline">
+											</button>
 											<div id="preloaderSignUp" class="small-preloader" style="display: none;"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
 										</span>
 									</div>
