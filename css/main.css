@@ -374,7 +374,7 @@ ul.tmpTargetzTree {
     margin-bottom: 2rem;
 }
 
-#document-wrap{
+#abDoc{
     flex-grow: 1;
 }
 
@@ -475,105 +475,105 @@ ul.tmpTargetzTree {
 /*==================*/
 /*  bubble toolbar  */
 /*==================*/
-#document-wrap .ql-bubble .ql-tooltip{
+#abDoc .ql-bubble .ql-tooltip{
     z-index: 1;
   }
 
-#document-wrap .ql-bubble .ql-tooltip{
+#abDoc .ql-bubble .ql-tooltip{
   background-color: none;    
 }
 
-#document-wrap .ql-bubble .ql-toolbar {
+#abDoc .ql-bubble .ql-toolbar {
 border-radius: 5px;
 background-color: #444;
 }
 
-#document-wrap .ql-bubble .ql-picker-options{
+#abDoc .ql-bubble .ql-picker-options{
 background-color: #444;
 padding: 0px;
 }
 
-#document-wrap .ql-bubble .ql-tooltip:not(.ql-flip) .ql-tooltip-arrow {
+#abDoc .ql-bubble .ql-tooltip:not(.ql-flip) .ql-tooltip-arrow {
     border-bottom: 6px solid #444;
 }
 
-#document-wrap .ql-bubble .ql-toolbar .ql-formats {
+#abDoc .ql-bubble .ql-toolbar .ql-formats {
     padding: 0px !important;
     margin: 0px !important;
 }
-#document-wrap .ql-editor.ql-blank::before {
+#abDoc .ql-editor.ql-blank::before {
     color: #C4C4C5;
     font-style: normal;
 }
 
-#document-wrap .ql-bubble .ql-fill, .ql-bubble .ql-stroke.ql-fill {
+#abDoc .ql-bubble .ql-fill, .ql-bubble .ql-stroke.ql-fill {
     fill: #fff;
 }
 
-#document-wrap .ql-bubble .ql-stroke, #document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
+#abDoc .ql-bubble .ql-stroke, #abDoc .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
     stroke: #fff;
 }
 
-#document-wrap .ql-bubble .ql-picker-label{
+#abDoc .ql-bubble .ql-picker-label{
 padding-left: 6px;
 }
 
-#document-wrap .ql-bubble .ql-picker.ql-size .ql-picker-label::before, #document-wrap .ql-bubble .ql-picker.ql-size .ql-picker-item::before {
+#abDoc .ql-bubble .ql-picker.ql-size .ql-picker-label::before, #abDoc .ql-bubble .ql-picker.ql-size .ql-picker-item::before {
     color: #fff;
     padding: 6px;
 }
-#document-wrap .ql-bubble .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg{
+#abDoc .ql-bubble .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg{
 right: 4px;
 }
 
-#document-wrap .ql-bubble.ql-toolbar button, #document-wrap .ql-bubble .ql-toolbar button {
+#abDoc .ql-bubble.ql-toolbar button, #abDoc .ql-bubble .ql-toolbar button {
     height: 34px; 
     width: 34px;
     padding: 6px;
     border-right: 1px solid #FFFFFF;
 }
 
-#document-wrap .ql-bubble .ql-toolbar .ql-formats:first-child button:first-child, 
-#document-wrap .ql-bubble.ql-toolbar .ql-formats:first-child button:first-child {
+#abDoc .ql-bubble .ql-toolbar .ql-formats:first-child button:first-child, 
+#abDoc .ql-bubble.ql-toolbar .ql-formats:first-child button:first-child {
     border-radius: 5px 0px 0px 5px;
 }
-#document-wrap .ql-bubble .ql-toolbar .ql-formats:last-child button:last-child, 
-#document-wrap .ql-bubble.ql-toolbar .ql-formats:last-child button:last-child {
+#abDoc .ql-bubble .ql-toolbar .ql-formats:last-child button:last-child, 
+#abDoc .ql-bubble.ql-toolbar .ql-formats:last-child button:last-child {
     border-radius: 0px 5px 5px 0px;
     border-right: none;
 }
 
 
-#document-wrap .ql-bubble .ql-picker.ql-size {
+#abDoc .ql-bubble .ql-picker.ql-size {
     height: 34px; 
     border-right: 1px solid #FFFFFF;
 }
 
-#document-wrap .ql-bubble .ql-color-picker {
+#abDoc .ql-bubble .ql-color-picker {
     height: 34px; 
     width: 34px;
     border-right: 1px solid #FFFFFF;
 }
-#document-wrap .ql-bubble .ql-color-picker svg{
+#abDoc .ql-bubble .ql-color-picker svg{
     margin: 0px;
 }
 
-#document-wrap .ql-bubble .ql-color-picker .ql-picker-label{
+#abDoc .ql-bubble .ql-color-picker .ql-picker-label{
     padding: 6px !important;
 }
 
-#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label{
+#abDoc .ql-bubble .ql-picker.ql-expanded .ql-picker-label{
 color: #fff;
 }
-#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-fill{
+#abDoc .ql-bubble .ql-picker.ql-expanded .ql-picker-label .ql-fill{
 fill: #fff;
 }
 
-#document-wrap .ql-bubble .ql-picker.ql-expanded .ql-picker-options{
+#abDoc .ql-bubble .ql-picker.ql-expanded .ql-picker-options{
 margin-top: 0px;
 }
 
-#document-wrap .ql-bubble .ql-picker-options .ql-picker-item{
+#abDoc .ql-bubble .ql-picker-options .ql-picker-item{
 padding-left: 6px;
 }
 

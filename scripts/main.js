@@ -79,7 +79,8 @@ var s3,
 	sizeIndicator;
 
 var $selectedDoc = $('#selectedDoc'),
-	$doc_wrap = $('#document-wrap');
+	$abTree = $('#abTree'),
+	$abDoc = $('#abDoc');
 
 var $preloader_main = $('#main-preloader'),
 	$preloader_editor = $('#editor-preloader');
@@ -177,11 +178,7 @@ $(document).ready( function() {
 
 	setUnknownMode();
 	
-	initS3()
-		.then( function(ok) {
-			return initTree();
-		})
-		.then( function() {
+	initS3().then( function() {
 			// If we have COGNITO_USER, we set authenticated mode
 			// If not, authenticated mode is set from googleSignInSuccess
 			// TODO: not good. Make global USERNAME variable and use it in setAuthenticatedMode
@@ -943,8 +940,11 @@ function initTree() {
 				if (err.name == 'NoSuchKey') {
 					// No tree. It user's first visit.
 					// Create root-doc
+
+					//TODO refactor, this should be part of Sign Up process!!
+
 					ROOT_DOC_GUID = GetGUID();
-					//return Promise.resolve([]);
+					//return Promise.resolve([]);					
 					return initRootDoc(DEFAULT_ROOT_DOC_LOCATION, USERID + '/' + ROOT_DOC_GUID + '/index.html')
 						.then( function() {
 							ACTIVITY.push('tree modify', 'pending');
@@ -1122,7 +1122,7 @@ function findOwner(guid) {
 //---------------------------------------
 
 
-
+/*
 function routerOpen(wantGUID) {
 	// showing preloader on Editor
 	preloaderOnEditor(true);
@@ -1169,7 +1169,7 @@ function routerOpen(wantGUID) {
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-						$doc_wrap.abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
+						$abDoc.abDoc(TREE_USERID, node.id, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}
@@ -1195,23 +1195,36 @@ function routerOpen(wantGUID) {
 			});
 	}
 }
+*/
 
-function routerOpen(doc){
-	preloaderOnEditor(true);
-	
+function routerOpen(doc){	
+	var location = window.location.pathname.slice(1); // drop first '/'
 	if(doc === undefined) {
-		doc = window.location.pathname.slice(1); // drop first '/'
+		doc = location;
+	} else if(doc !== location) {
+		history.pushState(null, null, '/' + doc);
 	}
-	history.pushState(null, null, '/' + doc);
 
 	switch(doc){
 
-		case 'about.html':
+		case 'about': //about
 			break;
 
-		default:
-			$("#abTree").abTree(doc);
-			$doc_wrap.abDoc(doc, TREE_USERID, TREE_USERID !== USERID);
+		default: //doc contains GUID, init/reinit abDoc
+			preloaderOnEditor(true);
+			if(abTree === undefined) {
+				abTree = $abTree.abTree(TREE_USERID, doc, TREE_USERID !== USERID);
+			} else {
+				var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
+				if(docNODE === undefined){
+					$preloader_editor.hide();
+					onWarning(_translatorData["document not found"][LANG]);
+				} else {
+					$selectedDoc[0].innerHTML = docNODE.name;
+					abTree.tree.selectNode(docNODE);
+					$abDoc.abDoc(TREE_USERID, doc, TREE_USERID !== USERID);
+				}
+			}
 	}
 }
 
@@ -1492,7 +1505,7 @@ $(function () {
 
 
 $(function() {
-	TIMERS.set(function () {
+	/*TIMERS.set(function () {
 		// Save tree column's size
 		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
@@ -1535,7 +1548,7 @@ $(function() {
 			}
 		}
 
-	}, 3000, 'tree');
+	}, 3000, 'tree');*/
 	
 	// USED SPACE
 	// Update it less frequently	
@@ -1559,11 +1572,11 @@ $( function() {
 // Turns preloader on editor on and off
 function preloaderOnEditor(on) {
 	if (on) {
-		$doc_wrap.hide();
+		$abDoc.hide();
 		$preloader_editor.show();
 	} else {
 		$preloader_editor.hide();
-		$doc_wrap.show();
+		$abDoc.show();
 	}
 }
 
