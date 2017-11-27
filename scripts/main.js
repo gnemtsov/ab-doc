@@ -97,10 +97,18 @@ var TIMERS = {
 		}
 	},
 	execute: function(name){ //call TIMERS.execute('name') to run timer's code
-		this[name].execute();
+		if (this.hasOwnProperty(name)) {
+			this[name].execute();
+		} else {
+			console.log('TIMERS.execute: ' + name + ' doesn`t exist'); 
+		}
 	},
 	destroy: function(name){
-		this[name].destroy(); //call TIMERS.destroy('name') to manually clear timer
+		if (this.hasOwnProperty(name)) {
+			this[name].destroy(); //call TIMERS.destroy('name') to manually clear timer
+		} else {
+			console.log('TIMERS.destroy: ' + name + ' doesn`t exist'); 
+		}	
 	},
 
 	Timer: function(callback, interval){ //timer constructor
@@ -1125,6 +1133,8 @@ function routerOpen(wantGUID) {
 	}
 	
 	if (TREE_READY) {
+		TIMERS.execute('doc');
+		
 		var ok = false;
 		var zTree = $.fn.zTree.getZTreeObj("abTree");
 		var node = zTree.getNodesByParam('id', wantGUID)[0];
