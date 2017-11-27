@@ -90,6 +90,10 @@ var _translatorData = {
         "ru": "Документ",
         "en": "Document"
     },
+    "document not found": {
+        "ru": "Документ не найден",
+        "en": "Document not found"
+    },
     "email": {
         "ru": "Почта",
         "en": "Email"

@@ -5,13 +5,12 @@
 /******************************************************************/
 (function (g, $, Quill) {
 
-	//the following should be part of the object but typing "self" many times sucks
-	var	$doc_wrap, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;
+	var	$abDoc /*doc container*/, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;
 
 	// function creates object (calls abDoc.init - constructor)
-	var abDoc = function (docGUID, ownerid, readOnly) {
+	var abDoc = function (ownerid, docGUID, readOnly) {
 		var params = {  //external params
-			docWrap: this,
+			docContainer: this,
 			docGUID : docGUID,
 			ownerid : ownerid,
 			readOnly : readOnly,
@@ -110,7 +109,7 @@
 			//why first and second booleans? see https://github.com/bensmithett/dragster
             var first = false,
 				second = false;
-			$doc_wrap.on({
+			$abDoc.on({
                 dragenter: function (e) {
 					e.preventDefault();
 					console.log(first, second);
@@ -193,7 +192,7 @@
 				},
                 drop: function (e, file, drop_index) {
 					e.stopPropagation();
-					$doc_wrap.trigger('dragleave');
+					$abDoc.trigger('dragleave');
 
 					if (!self.imgMoving) {
 						e.preventDefault();
@@ -607,8 +606,8 @@
 		$.extend(self, params);
 
 		//-------------prepare document template--------------//
-		if($doc_wrap instanceof $){
-			$doc_wrap.off().empty(); //empty and remove also unbind old event handlers
+		if($abDoc instanceof $){
+			$abDoc.off().empty(); //empty and remove also unbind old event handlers
 			$editor.remove();
 			$drop_zone.remove();
 			$clip_icon.remove();
@@ -617,7 +616,7 @@
 			$files_message.remove();
 		}
 
-		$doc_wrap = $(self.docWrap);
+		$abDoc = $(self.docContainer);
 		$editor = $('<div id="editor"></div>');
 		$drop_zone = $('<div id="dropzone"></div>');
 		$clip_icon = $('<img id="clip-icon" src="img/icons/paperclip.svg">');
@@ -625,14 +624,14 @@
 		$files_wrap = $('<div id="files_wrap"></div>');
 		$files_message = $('<div id="dropzone-message">'+g._translatorData['emptyDropzoneMessage'][g.LANG]+'</div>');
 
-		$doc_wrap.empty();
+		$abDoc.empty();
 		$drop_zone.append(
 			$clip_icon,
 			$clip_input,
 			$files_wrap,
 			$files_message
 		);	
-		$doc_wrap.append(
+		$abDoc.append(
 			$drop_zone,
 			$editor
 		);
@@ -660,7 +659,7 @@
 					theme: 'bubble',
 					scrollingContainer: '#document',
 					readOnly: self.readOnly,
-					bounds: '#document-wrap',
+					bounds: '#abDoc',
 					modules: {
 						toolbar: ['bold', 'italic', 'underline', 'strike', { 'size': [] }, { 'color': [] }, { 'background': [] }, 'blockquote', 'code-block', 'link', { 'list': 'ordered' }, { 'list': 'bullet' }, 'clean'],
 						clipboard: {
@@ -722,10 +721,11 @@
 					    e.preventDefault();
 					});					
 
-					TIMERS.set(function () { console.log(Date());
+					TIMERS.set(function () { 
 						if(ACTIVITY.get('document modify') === 'pending'){
-
+							
 							ACTIVITY.push('document modify', 'saving');
+
 							var params = {
 								Bucket: STORAGE_BUCKET,
 								Key: USERID + '/' + self.docGUID + '/index.html',
@@ -733,8 +733,7 @@
 								ContentType: 'text/html',
 								ContentDisposition: GetContentDisposition('index.html'),
 								ACL: 'public-read'
-							};	
-
+							};
 							Promise.all([ 
 								s3.upload(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })

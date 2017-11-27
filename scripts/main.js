@@ -42,7 +42,7 @@ function onError(err) {
 		console.log("Error!", err);
 	}
 	
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
 	$('nav').popover('show');
 	setTimeout(function() {
@@ -51,7 +51,7 @@ function onError(err) {
 }
 
 function onWarning(msg) {
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	_errorPopover(msg);
 	$('nav').popover('show');
 	setTimeout(function() {
@@ -60,6 +60,8 @@ function onWarning(msg) {
 }
 
 var s3,
+	abDoc,
+	abTree,
 	USERID, // Id of a currently logged in user
 	TREE_USERID, // Id of a user, whose tree is shown
 	AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/",
@@ -75,6 +77,13 @@ var s3,
 	ROOT_DOC_GUID = 'root-doc',
 	DEFAULT_ROOT_DOC_LOCATION = 'root/'+LANG+'.html',
 	sizeIndicator;
+
+var $selectedDoc = $('#selectedDoc'),
+	$abTree = $('#abTree'),
+	$abDoc = $('#abDoc');
+
+var $preloader_main = $('#main-preloader'),
+	$preloader_editor = $('#editor-preloader');
 
 //TIMERS object to track all timers and prevent memory leaks
 var TIMERS = {
@@ -173,16 +182,11 @@ var ACTIVITY = {
 
 $(document).ready( function() {
 	var $main = $('#main'),
-		$about = $('#about'),
-		$preloader = $('.preloader-container');
+		$about = $('#about');
 
 	setUnknownMode();
 	
-	initS3()
-		.then( function(ok) {
-			return initTree();
-		})
-		.then( function() {
+	initS3().then( function() {
 			// If we have COGNITO_USER, we set authenticated mode
 			// If not, authenticated mode is set from googleSignInSuccess
 			// TODO: not good. Make global USERNAME variable and use it in setAuthenticatedMode
@@ -242,7 +246,7 @@ $(document).ready( function() {
 	$('body').on('click', 'a.navbar-brand', function (e) {
 		// Open root on brand logo click
 		e.preventDefault();
-		$preloader.hide();		
+		$preloader_main.hide();		
 		$about.hide();
 		$main.show();
 		routerOpen(ROOT_DOC_GUID);
@@ -460,9 +464,9 @@ $(document).ready( function() {
 		$about.show();
 		
 		if (!$about.html().trim().length) {
-			$preloader.show();
+			$preloader_main.show();
 			$.get('about/' + LANG + '.html', function(data){
-				$preloader.hide();
+				$preloader_main.hide();
 				$about.html(data);
 			});
 		}
@@ -944,8 +948,11 @@ function initTree() {
 				if (err.name == 'NoSuchKey') {
 					// No tree. It user's first visit.
 					// Create root-doc
+
+					//TODO refactor, this should be part of Sign Up process!!
+
 					ROOT_DOC_GUID = GetGUID();
-					//return Promise.resolve([]);
+					//return Promise.resolve([]);					
 					return initRootDoc(DEFAULT_ROOT_DOC_LOCATION, USERID + '/' + ROOT_DOC_GUID + '/index.html')
 						.then( function() {
 							ACTIVITY.push('tree modify', 'pending');
@@ -1021,7 +1028,7 @@ function setAuthenticatedMode(username) {
 	// TODO
 	console.log('authenticated');
 	
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	$('.app-container').show();
 	
 	$('.authenticated-mode').show();
@@ -1035,7 +1042,7 @@ function setAuthenticatedMode(username) {
 function setUnauthenticatedMode() {
 	console.log('unauthenticated');
 	
-	$('.preloader-container').hide();
+	$preloader_main.hide();
 	$('.app-container').show();
 	
 	$('.unauthenticated-mode').show();
@@ -1123,7 +1130,7 @@ function findOwner(guid) {
 //---------------------------------------
 
 
-
+/*
 function routerOpen(wantGUID) {
 	// showing preloader on Editor
 	preloaderOnEditor(true);
@@ -1172,7 +1179,7 @@ function routerOpen(wantGUID) {
 					// ...And load document
 					try {
 						$('#selectedDoc')[0].innerHTML = node.name;
-						$('#document-wrap').abDoc(node.id, TREE_USERID, TREE_USERID !== USERID);
+						$abDoc.abDoc(TREE_USERID, node.id, TREE_USERID !== USERID);
 					} catch(err) {
 						onError(err);
 					}
@@ -1196,6 +1203,38 @@ function routerOpen(wantGUID) {
 					onError(err);
 				});		
 			});
+	}
+}
+*/
+
+function routerOpen(doc){	
+	var location = window.location.pathname.slice(1); // drop first '/'
+	if(doc === undefined) {
+		doc = location;
+	} else if(doc !== location) {
+		history.pushState(null, null, '/' + doc);
+	}
+
+	switch(doc){
+
+		case 'about': //about
+			break;
+
+		default: //doc contains GUID, init/reinit abDoc
+			preloaderOnEditor(true);
+			if(abTree === undefined) {
+				abTree = $abTree.abTree(TREE_USERID, doc, TREE_USERID !== USERID);
+			} else {
+				var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
+				if(docNODE === undefined){
+					$preloader_editor.hide();
+					onWarning(_translatorData["document not found"][LANG]);
+				} else {
+					$selectedDoc[0].innerHTML = docNODE.name;
+					abTree.tree.selectNode(docNODE);
+					$abDoc.abDoc(TREE_USERID, doc, TREE_USERID !== USERID);
+				}
+			}
 	}
 }
 
@@ -1476,7 +1515,7 @@ $(function () {
 
 
 $(function() {
-	TIMERS.set(function () {
+	/*TIMERS.set(function () {
 		// Save tree column's size
 		localStorage.setItem('ab-doc.columns.treeWidth', TREE_WIDTH);
 		localStorage.setItem('ab-doc.columns.mode', COLUMNS_MODE);
@@ -1519,7 +1558,7 @@ $(function() {
 			}
 		}
 
-	}, 3000, 'tree');
+	}, 3000, 'tree');*/
 	
 	// USED SPACE
 	// Update it less frequently	
@@ -1543,11 +1582,11 @@ $( function() {
 // Turns preloader on editor on and off
 function preloaderOnEditor(on) {
 	if (on) {
-		$('#document-wrap').hide();
-		$('#editor-preloader').show();
+		$abDoc.hide();
+		$preloader_editor.show();
 	} else {
-		$('#editor-preloader').hide();
-		$('#document-wrap').show();
+		$preloader_editor.hide();
+		$abDoc.show();
 	}
 }
 
