@@ -28,7 +28,7 @@
     g.ROUTER = {};
     g.s3 = {};
 
-    var abAuth, abTree, abDoc;
+    var abAuth, abTree;
     var $lang_select, $container, $welcome, $app, $about, $abTree, $selectedDoc, $abDoc;
     var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
         $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
@@ -159,24 +159,28 @@
     
                 case 'about': //about
                 this.updatePath('/about');
-                    $about.show();            
                     if (!$about.html().trim().length) {
-                        $about.html($big_preloader);
+                        $container.prepend($big_preloader);            
                         $.get('/about/' + LANG + '.html', function(data){
                             $about.html(data);
+                            $big_preloader.remove();
+                            $about.show();
                         });
+                    } else {
+                        $about.show();
                     }
                     break;
     
-                default: //app: load tree and document
+                default: //doc is empty or GUID, load tree and document
 
+                    //in brackets won't go!
                     //impossible: owner not set and readonly=false
                     //owner doc readonly
-                    //+ + + (1)
-                    //+ - - (2)
+                    //+ + + 1
+                    //+ - - 2
                     //- + - (impossible)
                     //- - + (4)
-                    //+ + - (5)
+                    //+ + - 5
                     //+ - + (6)
                     //- + + (7)
                     //- - - (impossible)
@@ -184,30 +188,28 @@
                     if((!this.owner || !doc) && this.readonly){ //(4, 6, 7)
                         this.open('','welcome');
                         return;
-                    } else if(this.owner && doc !== undefined && doc !== ''){ //(1, 5)
-                        this.updatePath('/'+this.owner+'/'+doc);                            
-                    } else { //(2)
-                        //TODO define doc and update path
-                        console.log('//TODO define doc and update path');
-                    }
+                    } 
                     
-                    console.log('load tree&doc:', this.owner, doc, this.readonly);
-                    return;
-
-                    $app.show();
-                    if(abTree === undefined) {
-                        abTree = $abTree.abTree(owner, doc, readonly);
-                    } else {
-                        var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
-                        if(docNODE === undefined){
-                            $preloader_editor.hide();
-                            onWarning(_translatorData["document not found"][LANG]);
-                        } else {
-                            $selectedDoc[0].innerHTML = docNODE.name;
-                            abTree.tree.selectNode(docNODE);
-                            $abDoc.abDoc(owner, doc, readonly);
-                        }
+                    $container.prepend($big_preloader);
+ 
+                    abTree = $abTree.abTree(this.owner, this.readOnly); //TODO no doc, no constructor
+                    
+                    if(doc === undefined || doc === ''){ //2
+                        doc = abTree.rootGUID;                        
                     }
+
+                    this.updatePath('/'+this.owner+'/'+doc);                            
+                                        
+                    var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
+                    if(docNODE === undefined){
+                        onWarning(_translatorData["document not found"][LANG]);
+                    } else {
+                        abTree.tree.selectNode(docNODE);
+                        $selectedDoc[0].innerHTML = docNODE.name;                        
+                        $abDoc.abDoc(owner, doc, readonly);
+                    }                    
+                    $big_preloader.remove();
+                    $app.show();
             }
 
         },

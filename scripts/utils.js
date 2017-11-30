@@ -76,6 +76,10 @@ var _translatorData = {
         "ru": "Код подтверждения",
         "en": "Confirmation code"
     },
+    "couldNotLoadTree": {
+		"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com",
+		"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com"
+	},
     "deleteQuestion1": {
         "ru": "Документ",
         "en": "You are going to delete document"
@@ -478,6 +482,7 @@ function capitalizeFirstLetter(string) {
 }
 
 //errors handlers
+//TODO revise needed
 function ABError(name) {
 	var err = new Error(name);
 	err.name = name;
@@ -495,6 +500,16 @@ function onError(err) {
 		$('nav').popover('hide');
 	}, 5000);
 }
+
+function onFatalError(err, msg) {
+    if (err) {
+        console.log("Fatal error!", err);
+    }
+
+    $('#root').hide(); //TODO ??
+    _errorPopover(_translatorData[msg][LANG]);
+    $('nav').popover('show');
+}    
 
 function onWarning(msg) {
 	_errorPopover(msg);

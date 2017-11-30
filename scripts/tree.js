@@ -4,14 +4,29 @@
 /******************************Tree********************************/
 /******************************************************************/
 (function (g, $) {
+	//----------- abTree object--------------//
+	var	$abTree /*tree UL*/;
 
+	// function creates object (calls abTree.init - constructor)
+	var abTree = function (ownerid, docGUID, readOnly) {
+		var params = {  //external params
+			treeContainer: this,
+			docGUID : docGUID,
+			ownerid : ownerid,
+			readOnly : readOnly,
+			treeKey: ownerid + '/tree.json'
+		};
+		return new abTree.init(params);
+	};
+
+	// object prototype
+	abTree.prototype = {
+	}	
+	
 	//----------- zTree callbacks -----------//
+	abTree.prototype.beforeDrag = function (id, nodes) {
+		var self = this;
 
-	function beforeDrag(id, nodes) {
-		if (TREE_READONLY) {
-			return false;
-		}
-		
 		var ok = true;
 		nodes.forEach(function(x, i, arr) {
 			// We can't drag head of the tree
@@ -24,11 +39,7 @@
 	}
 
 	// It always moves files on drop.
-	function beforeDrop (treeId, treeNodes, targetNode, moveType) {
-		if (TREE_READONLY) {
-			return false;
-		}
-		
+	abTree.prototype.beforeDrop = function  (treeId, treeNodes, targetNode, moveType) {
 		// We can't drop item out the tree
 		if (targetNode === null) {
 			return false;
@@ -43,58 +54,20 @@
 		
 		var tree = $.fn.zTree.getZTreeObj(treeId);
 		
-		// Renaming is temporarly disabled
-		/*
-		var neighbours;
-		if (moveType == 'inner') {
-			// children of targetNode
-			neighbours = targetNode.children ? targetNode.children : [];
-		} else {
-			// neighbours of targetNode
-			neighbours = targetNode.getParentNode().children;
-		}
-		
-		// Verifying names to be unique within neighbours.
-		// Non-unique names are changed.
-		// TODO: rename 'item(n)' to 'item(n+1)'
-		treeNodes.map( function(n) {
-			// Check if name is unique. If not, add number to it.
-			var ok = false;
-			var i = 0;
-			var newName;
-			do {
-				newName = i ? n.name + '(' + i + ')' : n.name;
-				var x = neighbours.find( function(e) {
-					return e.name == newName;
-				});
-				if (x) {
-					i++;
-				} else {
-					ok = true;
-				}
-			} while (!ok);
-			
-			n.name = newName;
-			tree.updateNode(n);
-			neighbours.push(n);
-		});*/
-		
 		return true;
 	}
 
-	function beforeEditName(treeId, treeNode) {
-		console.log('beforeEditName');
-		if (TREE_READONLY) {
-			return false;
-		}
+	abTree.prototype.beforeEditName = function (treeId, treeNode) {
+		var self = this;
 		
-		var zTree = $.fn.zTree.getZTreeObj(treeId);
+		console.log('beforeEditName');
+		
 		// Select text in node, which name we are going to edit.
 		var inputId = treeNode.tId + "_input";
 		// Input is not created yet, so we set timeout.
 		setTimeout( function() {
 			$('#' + inputId).select();
-			if (treeNode.tId === ZTREE_SELECTED_NODE.tId) {
+			if (treeNode.tId === self.selectedNode.tId) {
 				$('#' + inputId).on('input', function() {
 					$('#selectedDoc').text($(this).val());
 				});
@@ -123,7 +96,7 @@
 	*      |-10
 	* 
 	*/
-	function nextNode(treeNode) {
+	abTree.prototype.nextNode = function (treeNode) {
 		if (treeNode.isParent) {
 			return treeNode.children[0];
 		}
@@ -142,100 +115,23 @@
 		}
 	}
 
-	function onClick(event, treeId, treeNode, clickFlag) {
+	abTree.prototype.onClick = function (event, treeId, treeNode, clickFlag) {
+		var self = this;
+		
 		// expand the node
-		var tree = $.fn.zTree.getZTreeObj(treeId);
-		tree.expandNode(treeNode, !treeNode.open, false, true, true);
+		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		
-		// shift - select
-		/*if((event.originalEvent.shiftKey) && (tree.lastClicked)) {
-			function pathToIndexes(path) {
-				var indexes = [];
-				path.map( function(p) {
-					indexes.push(p.getIndex());
-				});
-				return indexes;
-			}
-
-			function compareIndexes(a, b) {
-				for(var i = 0;;i++) {
-					if(a[i] < b[i]) {
-						return -1;
-					}
-					if(a[i] > b[i]) {
-						return 1;
-					}
-					// a is over, b is not over
-					if((a.length == i+1) && (b.length >= i+1)) {
-						return -1;
-					}
-					// b is over, a is not over
-					if((b.length == i+1) && (a.length >= i+1)) {
-						return 1;
-					}
-					// a is over, b is over
-					if((a.length == i+1) && (b.length == i+1)) {
-						return 0;
-					}
-					//a is not over, b is not over -> next iteration
-				}
-			}
-			
-			var r = compareIndexes(
-				pathToIndexes(treeNode.getPath()),
-				pathToIndexes(tree.lastClicked.getPath())
-			);
-			
-			var start;
-			var finish;
-			if (r != 0) {
-				if (r < 0) {
-					start = treeNode;
-					finish = tree.lastClicked;
-				} else {
-					finish = treeNode;
-					start = tree.lastClicked;				
-				}
-				
-				var n = start;
-				while(n != finish) {
-					console.log(n);
-					tree.selectNode(n, true, true);
-					n = nextNode(n);
-				}
-				tree.selectNode(finish, true, true);
-			}
-		}*/
-		// my!
-		tree.lastClicked = treeNode;
+		self.tree.lastClicked = treeNode;
 		
-		ROUTER_OPEN(treeNode.id);
+		routerOpen(treeNode.id);
 	}
 
-	function showRemoveBtn(id, node) {
-		if (TREE_READONLY) {
-			return false;
-		}
+	abTree.prototype.showRemoveBtn = function (id, node) {
 		return !node.head;
 	}
 
-	function showRenameBtn(id, node) {
-		if (TREE_READONLY) {
-			return false;
-		}
-		return true;
-	}
-
-	var lastId = -1;
-	function newId() {
-		lastId++;
-		return lastId;
-	}
-
-	function addHoverDom(treeId, treeNode) {
-		if (TREE_READONLY) {
-			return;
-		}
+	abTree.prototype.addHoverDom = function (treeId, treeNode) {
+		var self = this;
 		
 		var sObj = $("#" + treeNode.tId + "_span");
 		if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) {
@@ -250,28 +146,27 @@
 		// Add new item
 		var btn = $("#addBtn_"+treeNode.tId);
 		if (btn) btn.bind("click", function() {
-			var zTree = $.fn.zTree.getZTreeObj(treeId);
-			var name; 
-			var path; 
-			var ok = false;
-			var i = 1;
+			var name,
+				path,
+				ok = false,
+				i = 1;
 			while(!ok) {
 				name = "new item " + i;
-				path = buildPath(treeNode) + "/" + name;
+				path = self.buildPath(treeNode) + "/" + name;
 				function filter(n) {
-					return buildPath(n) === path;
+					return self.buildPath(n) === path;
 				}
-				if(!zTree.getNodesByFilter(filter, true)) {
+				if(!self.tree.getNodesByFilter(filter, true)) {
 					ok = true;
 				}
 				i++;
 			}
 			var guid = GetGUID();
-			zTree.addNodes(treeNode, {id: guid, name: name, files: []});
-			var newNode = zTree.getNodeByParam('id', guid);
+			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
+			var newNode = self.tree.getNodeByParam('id', guid);
 			
-			ROUTER_OPEN(guid);
-			zTree.editName(newNode);
+			//routerOpen(guid);
+			self.tree.editName(newNode);
 			$('#' + newNode.tId + '_input').select();
 			
 			ACTIVITY.push('tree modify', 'pending');
@@ -280,11 +175,11 @@
 		});
 	};
 
-	function removeHoverDom(treeId, treeNode) {
+	abTree.prototype.removeHoverDom = function(treeId, treeNode) {
 		$("#addBtn_"+treeNode.tId).unbind().remove();
 	};
 
-	function buildPath(treeNode) {
+	abTree.prototype.buildPath = function(treeNode) {
 		var parents = treeNode.getPath();
 		var path = "";
 		
@@ -296,7 +191,7 @@
 		return path;
 	}
 
-	function buildPrefixPath(treeNode) {
+	abTree.prototype.buildPrefixPath = function(treeNode) {
 		var parents = treeNode.getPath();
 		var path = "";
 		
@@ -308,29 +203,23 @@
 		return path;
 	}
 
-	function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
-		if (TREE_READONLY) {
-			return false;
-		}
+	abTree.prototype.onDrop = function(event, treeId, treeNodes, targetNode, moveType, isCopy) {
+		var self = this;
 		
 		ACTIVITY.push('tree modify', 'pending');
 		
-		var zTree = $.fn.zTree.getZTreeObj(treeId);
 		// Dropped node is selected in tree now. Select the node, opened in editor. 
-		zTree.selectNode(ZTREE_SELECTED_NODE, false, true);
+		self.tree.selectNode(self.selectedNode, false, true);
 		console.log('Ok');
 	};
 
-	function onNodeCreated(event, treeId, treeNode) {
+	abTree.prototype.onNodeCreated = function(event, treeId, treeNode) {
 
 	};
 
-	function beforeRemove(treeId, treeNode) {
-		if (TREE_READONLY) {
-			return false;
-		}
+	abTree.prototype.beforeRemove = function(treeId, treeNode) {
+		var self = this;
 		
-		var tree = $.fn.zTree.getZTreeObj(treeId);
 		$('#buttonDelete').click( function() {
 			
 			// recursively go through all children
@@ -350,13 +239,13 @@
 			f(treeNode);
 		
 			if (treeNode === ZTREE_SELECTED_NODE) {
-				ROUTER_OPEN(tree.getNodes()[0].id);
+				routerOpen(tree.getNodes()[0].id);
 			}
 		
 			var $node = $('#' + treeNode.tId + '_a');
 			$node.html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 			$node.fadeOut('slow', function () {
-				tree.removeNode(treeNode, false);
+				self.tree.removeNode(treeNode, false);
 			});
 			
 			ACTIVITY.push('tree modify', 'pending');
@@ -370,11 +259,7 @@
 		return false;
 	};
 
-	function beforeRename(treeId, treeNode, newName, isCancel) {
-		if (TREE_READONLY) {
-			return false;
-		}
-		
+	abTree.prototype.beforeRename = function(treeId, treeNode, newName, isCancel) {
 		if(isCancel) {
 			return true;
 		}
@@ -413,172 +298,167 @@
 		return ok;
 	}
 
-	var ZTREE_SELECTED_NODE;
-
-	function onRename(event, treeId, treeNode, isCancel) {
-		var zTree = $.fn.zTree.getZTreeObj(treeId);
-		
-		// GUID of a document currently opened in editor
-		var openedGUID = $('#editor').attr('guid');
+	abTree.prototype.onRename = function(event, treeId, treeNode, isCancel) {
+		var self = this;
 		
 		if (!isCancel) {
 			ACTIVITY.push('tree modify', 'pending');
 			
-			if (treeNode.id == openedGUID) {
+			if (treeNode.id === $abDoc.docGUID) {
 				$('#selectedDoc').html(treeNode.name);
 			}
 		}
 		
 		// Renamed node is selected in tree now. Select the node, opened in editor.
-		zTree.selectNode(ZTREE_SELECTED_NODE, false, true);
+		self.selectNode(self.selectedNode, false, true);
 	}
 
 
-	//----------- abTree object--------------//
-
-	var	$abTree /*tree UL*/, $selectedDoc;
-
-	// function creates object (calls abTree.init is constructor)
-	var abTree = function (docGUID) {
-		var params = {  //external params
-			treeContainer: this,
-			docGUID : docGUID
-		};
-		return new abTree.init(params);
-	};
-
-	// object prototype
-	abTree.prototype = {
-
-		
-	}	
+	// Mark this node as selected, call tree.selectNode
+	abTree.prototype.selectNode = function(node) {
+		this.selectedNode = node;
+		this.tree.selectNode(node, false, true);
+	}
 
 	//** constructor **/
 	abTree.init = function(params) {
-
 		var self = this;
 		$.extend(self, params);
 
+		$abTree = $(self.treeContainer);		
 
-				
-
-/*
-				self.treeKey = ownerid + '/tree.json'
-				self.readOnly = ,
-				
-				$abTree = $(self.treeContainer);		
-				$selectedDoc = $('#selectedDoc');
-		
-				var params = {
-					Bucket: STORAGE_BUCKET,
-					Key: self.treeKey
+		var s3Params = {
+			Bucket: STORAGE_BUCKET,
+			Key: self.treeKey
+		}
+		var promise = s3.getObject(s3Params).promise()
+			.then( function(data) {
+				self.zNodes = JSON.parse(data.Body.toString('utf-8'));
+				return Promise.resolve();
+			})
+			.catch( function(err) {
+				if (err.name === 'NoSuchKey') {
+					var newRootDocGUID = GetGUID();
+					self.zNodes =  [{id: newRootDocGUID, name: g._translatorData['rootName'][LANG]}];
+					console.log('NoSuchKey');
+					var getPromise = $.get('root/' + g.LANG + '.html');
+					return getPromise
+						.then( function(data) {
+							console.log('Get promise .then', data);
+							
+							var params = {
+								Body: data,
+								Bucket: STORAGE_BUCKET,
+								Key: USERID + '/' + newRootDocGUID + '/index.html',
+								ACL: 'public-read'
+							};
+							
+							return s3.putObject(params).promise();
+						})
+				} else {
+					onFatalError(err, 'couldNotLoadTree');
+					return Promise.reject(err);
 				}
-				s3.getObject(params, function (err, data) {
-					if (err) { onError(err); } 
-					else {
+			})
+			.then( function() {
+				console.log(self.zNodes);
+				self.rootGUID = self.zNodes[0].id;
+				self.zNodes[0].head = true;
+				self.zNodes[0].open = true;
+				if(!self.zNodes[0].name.length){
+					self.zNodes[0].name = g._translatorData['rootName'][LANG];
+				}
+				if(self.docGUID === ''){
+					self.docGUID = self.rootGUID;
+				}
 		
-						self.zNodes = JSON.parse(data.Body.toString('utf-8'));
-						self.zNodes[0].head = true;
-						self.zNodes[0].open = true;
-						if(!self.zNodes[0].name.length){
-							self.zNodes[0].name = g._translatorData['rootName'][LANG];
+				self.zSettings = {
+					view: {
+						selectedMulti: true,
+						addHoverDom: self.readOnly ? false : self.addHoverDom.bind(self),
+						removeHoverDom: self.removeHoverDom.bind(self),
+						showLine: false
+					},
+					edit: {
+						enable: !self.readOnly,
+						showRemoveBtn: self.readOnly ? false : self.showRemoveBtn.bind(self),
+						showRenameBtn: !self.readOnly
+					},
+					data: {
+						simpleData: {
+							enable: true
 						}
-						self.rootGUID = self.zNodes[0].id;
-						if(self.docGUID === ''){
-							self.docGUID = self.rootGUID;
-						}
-				
-						self.zSettings = {
-							view: {
-								selectedMulti: true,
-								addHoverDom: addHoverDom,
-								removeHoverDom: removeHoverDom,
-								showLine: false
-							},
-							edit: {
-								enable: self.readOnly,
-								showRemoveBtn: showRemoveBtn,
-								showRenameBtn: showRenameBtn,
-							},
-							data: {
-								simpleData: {
-									enable: true
-								}
-							},
-							callback: {
-								beforeDrag: beforeDrag,
-								beforeDrop: beforeDrop,
-								beforeEditName: beforeEditName,
-								beforeRename: beforeRename,
-								beforeRemove: beforeRemove,
-								onClick: onClick,
-								onDrop: onDrop,
-								onNodeCreated: onNodeCreated,
-								onRename: onRename
-							}
-						};
-										
-		
-						
-						self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
-		
-						//self.attachSomeHandlers();
-						
-						if(!self.readOnly){ //init timer if not readOnly
-		
-							TIMERS.set(function () {
-								if(ACTIVITY.get('tree modify') === 'pending'){
-		
-									ACTIVITY.push('tree modify', 'saving');
-		
-									var data,
-										all_nodes = self.tree.getNodesByParam('id', self.rootGUID);
-		
-									if (all_nodes) {
-										var f = function(n) {
-											var abNode = {
-												id : n.id,
-												name : n.name,
-												children : n.children ? n.children.map(f) : []
-											};
-											
-											return abNode;
-										};
-										
-										data = all_nodes.map(f);
-									} else {
-										data = [];
-									}
-																
-									var params = {
-										Bucket: STORAGE_BUCKET,
-										Key: self.treeKey,
-										Body: JSON.stringify(data),
-										ContentType: 'application/json',
-										ContentDisposition: GetContentDisposition('tree.json'),
-										ACL: 'public-read'
-									};
-			
-									Promise.all([ 
-										s3.upload(params).promise(), 
-										new Promise(function(res, rej) { setTimeout(res, 800); })
-									]).then(function(){
-										ACTIVITY.flush('tree modify');					
-									});
-		
-								}
-							}, 3000, 'tree');
-		
-						}
-		
-						g.ROUTER_OPEN(self.docGUID); //route to doc
-						
+					},
+					callback: {
+						beforeDrag: self.readOnly ? false : self.beforeDrag.bind(self),
+						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
+						beforeEditName: self.readOnly ? false : self.beforeEditName.bind(self),
+						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),
+						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
+						onClick: self.onClick.bind(self),
+						onDrop: self.onDrop.bind(self),
+						onNodeCreated: self.onNodeCreated.bind(self),
+						onRename: self.onRename.bind(self)
 					}
-				});	
-		
-*/
+				};
+							
+				console.log(self.zSettings);
+				
+				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
 
+				//self.attachSomeHandlers();
+				
+				if(!self.readOnly){ //init timer if not readOnly
+
+					TIMERS.set(function () {
+						if(ACTIVITY.get('tree modify') === 'pending'){
+
+							ACTIVITY.push('tree modify', 'saving');
+
+							var data,
+								all_nodes = self.tree.getNodesByParam('id', self.rootGUID);
+
+							if (all_nodes) {
+								var f = function(n) {
+									var abNode = {
+										id : n.id,
+										name : n.name,
+										children : n.children ? n.children.map(f) : []
+									};
+									
+									return abNode;
+								};
+								
+								data = all_nodes.map(f);
+							} else {
+								data = [];
+							}
+														
+							var params = {
+								Bucket: STORAGE_BUCKET,
+								Key: self.treeKey,
+								Body: JSON.stringify(data),
+								ContentType: 'application/json',
+								ContentDisposition: GetContentDisposition('tree.json'),
+								ACL: 'public-read'
+							};
+
+							Promise.all([ 
+								s3.upload(params).promise(), 
+								new Promise(function(res, rej) { setTimeout(res, 800); })
+							]).then(function(){
+								ACTIVITY.flush('tree modify');					
+							});
+
+						}
+					}, 3000, 'tree');
+				}
+				g.routerOpen(self.docGUID);
+			});
 		
+		Promise.all([promise]);
+		console.log(self);
+		console.log('Finished init');
 	}
 
 	// trick borrowed from jQuery so we don't have to use the 'new' keyword
