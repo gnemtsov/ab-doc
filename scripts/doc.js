@@ -7,7 +7,7 @@
 
 	var	$abDoc /*doc container*/, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;
 
-	// function creates object (calls abDoc.init - constructor)
+	// function creates object (calls abDoc.init is constructor)
 	var abDoc = function (ownerid, docGUID, readOnly) {
 		var params = {  //external params
 			docContainer: this,
@@ -69,7 +69,7 @@
 				if(!file.modified){ //file is uploading
 					$meta.append('<span class="file-size file-progress" style="width: '+file.percent+'">' + GetSize(file.size) + '</span>');
 					if(file.abortable){
-						$meta.append('<img class="file-action" data-action="abort" src="img/icons/close.svg">');
+						$meta.append('<img class="file-action" data-action="abort" src="/img/icons/close.svg">');
 					}
 				} else { //file is stored in S3
 					var $a = $('<a href="' + AWS_CDN_ENDPOINT + file.key + '"></a>');
@@ -77,7 +77,7 @@
 					$name.wrap($a);
 					$meta.append('<span class="file-size">' + GetSize(file.size) + '</span>'); 
 					$meta.append('<span class="file-modified">'+file.modified.toLocaleString()+'</span>'); 
-					$meta.append('<img class="file-action" data-action="delete" src="img/icons/trash.svg">'); 
+					$meta.append('<img class="file-action" data-action="delete" src="/img/icons/trash.svg">'); 
 				}
 
 				$files_wrap.append($file_container);
@@ -619,7 +619,7 @@
 		$abDoc = $(self.docContainer);
 		$editor = $('<div id="editor"></div>');
 		$drop_zone = $('<div id="dropzone"></div>');
-		$clip_icon = $('<img id="clip-icon" src="img/icons/paperclip.svg">');
+		$clip_icon = $('<img id="clip-icon" src="/img/icons/paperclip.svg">');
 		$clip_input = $('<input id="clip-input" name="clip" multiple="multiple" type="file">');
 		$files_wrap = $('<div id="files_wrap"></div>');
 		$files_message = $('<div id="dropzone-message">'+g._translatorData['emptyDropzoneMessage'][g.LANG]+'</div>');
@@ -805,7 +805,8 @@
 
 	//---------------------------------------Quill stuff start--------------------------------------------//
 	var Parchment = Quill.import('parchment'),
-	Delta = Quill.import('delta');
+		Delta = Quill.import('delta'),
+		BlockEmbed = Quill.import('blots/block/embed');
 
 	//Our version of Break blot: Break2. This is just modified version of quill break blot (https://github.com/quilljs/quill/blob/develop/blots/break.js). 
 	//It is transpiled with babel for compatibilty and minified.
@@ -852,10 +853,10 @@
 
 	//Video iframe support for Quill: https://quilljs.com/guides/cloning-medium-with-parchment/#videos. 
 	//It is transpiled with babel for compatibilty and minified.
-	var _createClass=function(){function a(b,c){for(var e,d=0;d<c.length;d++)e=c[d],e.enumerable=e.enumerable||!1,e.configurable=!0,'value'in e&&(e.writable=!0),Object.defineProperty(b,e.key,e)}return function(b,c,d){return c&&a(b.prototype,c),d&&a(b,d),b}}(),_get=function a(b,c,d){null===b&&(b=Function.prototype);var e=Object.getOwnPropertyDescriptor(b,c);if(e===void 0){var f=Object.getPrototypeOf(b);return null===f?void 0:a(f,c,d)}if('value'in e)return e.value;var g=e.get;return void 0===g?void 0:g.call(d)};function _classCallCheck(a,b){if(!(a instanceof b))throw new TypeError('Cannot call a class as a function')}function _possibleConstructorReturn(a,b){if(!a)throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called');return b&&('object'==typeof b||'function'==typeof b)?b:a}function _inherits(a,b){if('function'!=typeof b&&null!==b)throw new TypeError('Super expression must either be null or a function, not '+typeof b);a.prototype=Object.create(b&&b.prototype,{constructor:{value:a,enumerable:!1,writable:!0,configurable:!0}}),b&&(Object.setPrototypeOf?Object.setPrototypeOf(a,b):a.__proto__=b)}var VideoBlot=function(a){function b(){return _classCallCheck(this,b),_possibleConstructorReturn(this,(b.__proto__||Object.getPrototypeOf(b)).apply(this,arguments))}return _inherits(b,a),_createClass(b,[{key:'format',value:function format(c,d){'height'===c||'width'===c?d?this.domNode.setAttribute(c,d):this.domNode.removeAttribute(c,d):_get(b.prototype.__proto__||Object.getPrototypeOf(b.prototype),'format',this).call(this,c,d)}}],[{key:'create',value:function create(){var d=_get(b.__proto__||Object.getPrototypeOf(b),'create',this).call(this);return d.setAttribute('frameborder','0'),d.setAttribute('allowfullscreen',!0),d}},{key:'formats',value:function formats(c){var d={};return c.hasAttribute('height')&&(d.height=c.getAttribute('height')),c.hasAttribute('width')&&(d.width=c.getAttribute('width')),d}},{key:'value',value:function value(c){return c.getAttribute('src')}}]),b}(BlockEmbed);
+	/*var _createClass=function(){function a(b,c){for(var e,d=0;d<c.length;d++)e=c[d],e.enumerable=e.enumerable||!1,e.configurable=!0,'value'in e&&(e.writable=!0),Object.defineProperty(b,e.key,e)}return function(b,c,d){return c&&a(b.prototype,c),d&&a(b,d),b}}(),_get=function a(b,c,d){null===b&&(b=Function.prototype);var e=Object.getOwnPropertyDescriptor(b,c);if(e===void 0){var f=Object.getPrototypeOf(b);return null===f?void 0:a(f,c,d)}if('value'in e)return e.value;var g=e.get;return void 0===g?void 0:g.call(d)};function _classCallCheck(a,b){if(!(a instanceof b))throw new TypeError('Cannot call a class as a function')}function _possibleConstructorReturn(a,b){if(!a)throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called');return b&&('object'==typeof b||'function'==typeof b)?b:a}function _inherits(a,b){if('function'!=typeof b&&null!==b)throw new TypeError('Super expression must either be null or a function, not '+typeof b);a.prototype=Object.create(b&&b.prototype,{constructor:{value:a,enumerable:!1,writable:!0,configurable:!0}}),b&&(Object.setPrototypeOf?Object.setPrototypeOf(a,b):a.__proto__=b)}var VideoBlot=function(a){function b(){return _classCallCheck(this,b),_possibleConstructorReturn(this,(b.__proto__||Object.getPrototypeOf(b)).apply(this,arguments))}return _inherits(b,a),_createClass(b,[{key:'format',value:function format(c,d){'height'===c||'width'===c?d?this.domNode.setAttribute(c,d):this.domNode.removeAttribute(c,d):_get(b.prototype.__proto__||Object.getPrototypeOf(b.prototype),'format',this).call(this,c,d)}}],[{key:'create',value:function create(){var d=_get(b.__proto__||Object.getPrototypeOf(b),'create',this).call(this);return d.setAttribute('frameborder','0'),d.setAttribute('allowfullscreen',!0),d}},{key:'formats',value:function formats(c){var d={};return c.hasAttribute('height')&&(d.height=c.getAttribute('height')),c.hasAttribute('width')&&(d.width=c.getAttribute('width')),d}},{key:'value',value:function value(c){return c.getAttribute('src')}}]),b}(Parchment.Embed);
 	VideoBlot.blotName = 'video';
 	VideoBlot.tagName = 'iframe';
-	Quill.register(VideoBlot);
+	Quill.register(VideoBlot);*/
 	//--------------------------------------Quill stuff end-------------------------------------------------//
 
 	

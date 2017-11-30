@@ -28,14 +28,18 @@ button, select {
     background-color: rgb(40, 167, 69);
 }
 
-.app-container {
-    position: absolute;
-    /*top: 100px;*/
-    height: 400px;
-    width: 100%;
+#main-container{
+    position: relative;
+}
+
+#welcome, #about, #app{
     display: none;
 }
 
+/* welcome */
+#welcome {
+    padding-top: 120px;
+}
 
 /* about */
 #about {
@@ -56,6 +60,13 @@ button, select {
 span.about-block-border{
     padding: 2px 4px;
     border: 1px solid #d65d43;
+}
+
+/* app */
+#app {
+    position: absolute;
+    height: 400px;
+    width: 100%;
 }
 
 
@@ -842,6 +853,7 @@ padding-left: 6px;
   .big-preloader {
       width: 80px;
       text-align: center;
+      padding-top: 120px;
   }
 
   .big-preloader > div {

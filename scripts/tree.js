@@ -209,7 +209,7 @@
 		// my!
 		tree.lastClicked = treeNode;
 		
-		routerOpen(treeNode.id);
+		ROUTER_OPEN(treeNode.id);
 	}
 
 	function showRemoveBtn(id, node) {
@@ -270,7 +270,7 @@
 			zTree.addNodes(treeNode, {id: guid, name: name, files: []});
 			var newNode = zTree.getNodeByParam('id', guid);
 			
-			routerOpen(guid);
+			ROUTER_OPEN(guid);
 			zTree.editName(newNode);
 			$('#' + newNode.tId + '_input').select();
 			
@@ -350,7 +350,7 @@
 			f(treeNode);
 		
 			if (treeNode === ZTREE_SELECTED_NODE) {
-				routerOpen(tree.getNodes()[0].id);
+				ROUTER_OPEN(tree.getNodes()[0].id);
 			}
 		
 			var $node = $('#' + treeNode.tId + '_a');
@@ -438,20 +438,19 @@
 
 	var	$abTree /*tree UL*/, $selectedDoc;
 
-	// function creates object (calls abDoc.init - constructor)
-	var abTree = function (ownerid, docGUID, readOnly) {
+	// function creates object (calls abTree.init is constructor)
+	var abTree = function (docGUID) {
 		var params = {  //external params
 			treeContainer: this,
-			docGUID : docGUID,
-			ownerid : ownerid,
-			readOnly : readOnly,
-			treeKey: ownerid + '/tree.json'
+			docGUID : docGUID
 		};
 		return new abTree.init(params);
 	};
 
 	// object prototype
 	abTree.prototype = {
+
+		
 	}	
 
 	//** constructor **/
@@ -460,115 +459,125 @@
 		var self = this;
 		$.extend(self, params);
 
-		$abTree = $(self.treeContainer);		
-		$selectedDoc = $('#selectedDoc');
 
-		var params = {
-			Bucket: STORAGE_BUCKET,
-			Key: self.treeKey
-		}
-		s3.getObject(params, function (err, data) {
-			if (err) { onError(err); } 
-			else {
+				
 
-				self.zNodes = JSON.parse(data.Body.toString('utf-8'));
-				self.zNodes[0].head = true;
-				self.zNodes[0].open = true;
-				if(!self.zNodes[0].name.length){
-					self.zNodes[0].name = g._translatorData['rootName'][LANG];
-				}
-				self.rootGUID = self.zNodes[0].id;
-				if(self.docGUID === ''){
-					self.docGUID = self.rootGUID;
-				}
+/*
+				self.treeKey = ownerid + '/tree.json'
+				self.readOnly = ,
+				
+				$abTree = $(self.treeContainer);		
+				$selectedDoc = $('#selectedDoc');
 		
-				self.zSettings = {
-					view: {
-						selectedMulti: true,
-						addHoverDom: addHoverDom,
-						removeHoverDom: removeHoverDom,
-						showLine: false
-					},
-					edit: {
-						enable: self.readOnly,
-						showRemoveBtn: showRemoveBtn,
-						showRenameBtn: showRenameBtn,
-					},
-					data: {
-						simpleData: {
-							enable: true
-						}
-					},
-					callback: {
-						beforeDrag: beforeDrag,
-						beforeDrop: beforeDrop,
-						beforeEditName: beforeEditName,
-						beforeRename: beforeRename,
-						beforeRemove: beforeRemove,
-						onClick: onClick,
-						onDrop: onDrop,
-						onNodeCreated: onNodeCreated,
-						onRename: onRename
-					}
-				};
-								
-
-				
-				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
-
-				//self.attachSomeHandlers();
-				
-				if(!self.readOnly){ //init timer if not readOnly
-
-					TIMERS.set(function () {
-						if(ACTIVITY.get('tree modify') === 'pending'){
-
-							ACTIVITY.push('tree modify', 'saving');
-
-							var data,
-								all_nodes = self.tree.getNodesByParam('id', self.rootGUID);
-
-							if (all_nodes) {
-								var f = function(n) {
-									var abNode = {
-										id : n.id,
-										name : n.name,
-										children : n.children ? n.children.map(f) : []
-									};
-									
-									return abNode;
-								};
-								
-								data = all_nodes.map(f);
-							} else {
-								data = [];
-							}
-														
-							var params = {
-								Bucket: STORAGE_BUCKET,
-								Key: self.treeKey,
-								Body: JSON.stringify(data),
-								ContentType: 'application/json',
-								ContentDisposition: GetContentDisposition('tree.json'),
-								ACL: 'public-read'
-							};
-	
-							Promise.all([ 
-								s3.upload(params).promise(), 
-								new Promise(function(res, rej) { setTimeout(res, 800); })
-							]).then(function(){
-								ACTIVITY.flush('tree modify');					
-							});
-
-						}
-					}, 3000, 'tree');
-
+				var params = {
+					Bucket: STORAGE_BUCKET,
+					Key: self.treeKey
 				}
-
-				g.routerOpen(self.docGUID); //route to doc
+				s3.getObject(params, function (err, data) {
+					if (err) { onError(err); } 
+					else {
+		
+						self.zNodes = JSON.parse(data.Body.toString('utf-8'));
+						self.zNodes[0].head = true;
+						self.zNodes[0].open = true;
+						if(!self.zNodes[0].name.length){
+							self.zNodes[0].name = g._translatorData['rootName'][LANG];
+						}
+						self.rootGUID = self.zNodes[0].id;
+						if(self.docGUID === ''){
+							self.docGUID = self.rootGUID;
+						}
 				
-			}
-		});	
+						self.zSettings = {
+							view: {
+								selectedMulti: true,
+								addHoverDom: addHoverDom,
+								removeHoverDom: removeHoverDom,
+								showLine: false
+							},
+							edit: {
+								enable: self.readOnly,
+								showRemoveBtn: showRemoveBtn,
+								showRenameBtn: showRenameBtn,
+							},
+							data: {
+								simpleData: {
+									enable: true
+								}
+							},
+							callback: {
+								beforeDrag: beforeDrag,
+								beforeDrop: beforeDrop,
+								beforeEditName: beforeEditName,
+								beforeRename: beforeRename,
+								beforeRemove: beforeRemove,
+								onClick: onClick,
+								onDrop: onDrop,
+								onNodeCreated: onNodeCreated,
+								onRename: onRename
+							}
+						};
+										
+		
+						
+						self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
+		
+						//self.attachSomeHandlers();
+						
+						if(!self.readOnly){ //init timer if not readOnly
+		
+							TIMERS.set(function () {
+								if(ACTIVITY.get('tree modify') === 'pending'){
+		
+									ACTIVITY.push('tree modify', 'saving');
+		
+									var data,
+										all_nodes = self.tree.getNodesByParam('id', self.rootGUID);
+		
+									if (all_nodes) {
+										var f = function(n) {
+											var abNode = {
+												id : n.id,
+												name : n.name,
+												children : n.children ? n.children.map(f) : []
+											};
+											
+											return abNode;
+										};
+										
+										data = all_nodes.map(f);
+									} else {
+										data = [];
+									}
+																
+									var params = {
+										Bucket: STORAGE_BUCKET,
+										Key: self.treeKey,
+										Body: JSON.stringify(data),
+										ContentType: 'application/json',
+										ContentDisposition: GetContentDisposition('tree.json'),
+										ACL: 'public-read'
+									};
+			
+									Promise.all([ 
+										s3.upload(params).promise(), 
+										new Promise(function(res, rej) { setTimeout(res, 800); })
+									]).then(function(){
+										ACTIVITY.flush('tree modify');					
+									});
+		
+								}
+							}, 3000, 'tree');
+		
+						}
+		
+						g.ROUTER_OPEN(self.docGUID); //route to doc
+						
+					}
+				});	
+		
+*/
+
 		
 	}
 

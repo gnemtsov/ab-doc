@@ -3,16 +3,17 @@
 //------------------------------------------------
 //------------- console.log on/off ---------------
 //------------------------------------------------
-
-$(function() {
-	if (window.location.hostname === 'ab-doc.com') {
-		console.log = function() {};
-		PRODUCTION = true;
-	}
-});
+if (window.location.hostname === 'ab-doc.com') {
+	var PRODUCTION = true,
+		STORAGE_BUCKET = "ab-doc-storage";
+	console.log = function() { void(0); };
+} else {
+	var PRODUCTION = false,	
+		STORAGE_BUCKET = "ab-doc-storage-dev";
+}
 // ====================
 
-AWSCognito.config.region = 'us-west-2';
+/*AWSCognito.config.region = 'us-west-2';
 AWS.config.region = 'us-west-2';
 
 var poolData = {
@@ -20,7 +21,10 @@ var poolData = {
     ClientId : '1p7uks7hoothql33e17mssr7q1'
 };
 
-var USER_POOL = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
+var USER_POOL = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);*/
+
+
+
 
 
 function _errorPopover(c) {
@@ -65,7 +69,6 @@ var s3,
 	USERID, // Id of a currently logged in user
 	TREE_USERID, // Id of a user, whose tree is shown
 	AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage/",
-	STORAGE_BUCKET = "ab-doc-storage",
 	LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en',
 	PRODUCTION = false,
 	TREE_READY = false, // Is tree.json loaded?
@@ -84,6 +87,21 @@ var $selectedDoc = $('#selectedDoc'),
 
 var $preloader_main = $('#main-preloader'),
 	$preloader_editor = $('#editor-preloader');
+
+AWS.config = {
+	apiVersions: {  //api versions should be locked!
+		cognitoidentity: '2014-06-30',
+		s3: '2006-03-01' 
+	},
+	region: 'eu-west-1'
+};
+
+var abAuth = $.fn.abAuth();
+AWS.config.credentials = abAuth.creds;
+
+var s3 = new AWS.S3();
+
+
 
 //TIMERS object to track all timers and prevent memory leaks
 var TIMERS = {
@@ -184,8 +202,9 @@ $(document).ready( function() {
 	var $main = $('#main'),
 		$about = $('#about');
 
-	setUnknownMode();
-	
+	routerOpen();	
+
+	/*	
 	initS3().then( function() {
 			// If we have COGNITO_USER, we set authenticated mode
 			// If not, authenticated mode is set from googleSignInSuccess
@@ -209,8 +228,9 @@ $(document).ready( function() {
 					/*setTimeout(	function() {
 						window.location.reload(false);
 					}, 2500);*/
-			}
+/*			}
 		});
+	
 	
 	$('.link-sign-out, .link-return').click( function() {
 		var promise;
@@ -241,28 +261,34 @@ $(document).ready( function() {
 			});
 
 		return true;	
-	});	
+	});	*/
 
 	$('body').on('click', 'a.navbar-brand', function (e) {
 		// Open root on brand logo click
 		e.preventDefault();
-		$preloader_main.hide();		
-		$about.hide();
-		$main.show();
-		routerOpen(ROOT_DOC_GUID);
+		routerOpen();
 	});
 	
-	$('body').on('click', 'a.link-sign-in', function (e) {
-		// Signing in
-		e.preventDefault();
-		$('#modalSignIn').modal('show');
-	});
-	
+	// Call sign up dialog
 	$('body').on('click', 'a.link-sign-up', function (e) {
-		// Signing up
 		e.preventDefault();
-		$('#modalSignUp').modal('show');
+		abAuth.showModal('signUp');
 	});
+	
+	// Call sign in dialog
+	$('body').on('click', 'a.link-sign-in', function (e) {
+		e.preventDefault();
+		abAuth.showModal('signIn');
+	});
+
+	// Sign out
+	$('body').on('click', 'a.link-sign-out', function (e) {
+		e.preventDefault();
+		abAuth.signOut();
+		routerOpen();
+	});
+
+	
 	
 	$('#btnSignIn').click( function() {
 		$('#alertSignInError').hide();
@@ -1215,27 +1241,33 @@ function routerOpen(doc){
 		history.pushState(null, null, '/' + doc);
 	}
 
-	switch(doc){
+	if(!abAuth.isAuthorized()){
+		setUnauthenticatedMode();
+	} else {
+		setAuthenticatedMode(abAuth.cognitoUser.username);				
+		switch(doc){
 
-		case 'about': //about
-			break;
+			case 'about': //about
+				break;
 
-		default: //doc contains GUID, init/reinit abDoc
-			preloaderOnEditor(true);
-			if(abTree === undefined) {
-				abTree = $abTree.abTree(TREE_USERID, doc, TREE_USERID !== USERID);
-			} else {
-				var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
-				if(docNODE === undefined){
-					$preloader_editor.hide();
-					onWarning(_translatorData["document not found"][LANG]);
+			default: //doc contains GUID, init/reinit abDoc
+				preloaderOnEditor(true);
+				if(abTree === undefined) {
+					abTree = $abTree.abTree(TREE_USERID, doc, TREE_USERID !== USERID);
 				} else {
-					$selectedDoc[0].innerHTML = docNODE.name;
-					abTree.tree.selectNode(docNODE);
-					$abDoc.abDoc(TREE_USERID, doc, TREE_USERID !== USERID);
+					var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
+					if(docNODE === undefined){
+						$preloader_editor.hide();
+						onWarning(_translatorData["document not found"][LANG]);
+					} else {
+						$selectedDoc[0].innerHTML = docNODE.name;
+						abTree.tree.selectNode(docNODE);
+						$abDoc.abDoc(TREE_USERID, doc, TREE_USERID !== USERID);
+					}
 				}
-			}
-	}
+		}
+	}	
+
 }
 
 //---------------------------------------

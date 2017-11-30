@@ -1,5 +1,7 @@
 "use strict";
 
+//TODO utils should be abUtils object and all these functions should be methods of this object
+
 // Data for translation
 var _translatorData = {
     "about": {
@@ -10,17 +12,21 @@ var _translatorData = {
         "ru": "Учетная запись",
         "en": "Account"
     },
-    "alertBadPassword": {
-        "ru": "Пароль должен быть не короче 8 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
-        "en": "Minimum password length is 8 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
+    "account confirmation": {
+        "ru": "Подтверждение аккаунта",
+        "en": "Confirm account"
     },
-    "alertExpiredCode": {
-        "ru": "Код подтверждения устарел. Вам был выслан новый.",
-        "en": "Your confirmation code is expired. New confirmation code was sent to you."
-    },
-    "alertNoUsername": {
+    "alertNoEmail": {
         "ru": "Укажите ваш email.",
         "en": "Enter your email."
+    },
+    "alertNoPassword": {
+        "ru": "Укажите пароль.",
+        "en": "Enter password."
+    },
+    "alertNoUsername": {
+        "ru": "Укажите ваше имя пользователя.",
+        "en": "Enter your username."
     },
     "alertUnknownError": {
         "ru": "Произошла ошибка. Попробуйте ещё раз.",
@@ -33,14 +39,6 @@ var _translatorData = {
     "alertUserDoesntExist": {
         "ru": "Пользователь с таким именем не зарегистрирован.",
         "en": "Username is not registered."
-    },
-    "alertUserExists": {
-        "ru": "Пользователь с таким именем уже существует.",
-        "en": "This username is already taken."
-    },
-    "alertWrongCode": {
-        "ru": "Неверный код подтверждения.",
-        "en": "Wrong confirmation code."
     },
     "alertWrongPassword": {
         "ru": "Неправильное имя пользователя или пароль.",
@@ -66,6 +64,14 @@ var _translatorData = {
         "ru": "Есть несохраненные изменения!",
         "en": "There are unsaved changes!"
     },
+    "CodeMismatchException": {
+        "ru": "Неверный код подтверждения.",
+        "en": "Wrong confirmation code."
+    },
+    "confirm": {
+        "ru": "Подтвердить",
+        "en": "Confirm"
+    },
     "confirmationCode": {
         "ru": "Код подтверждения",
         "en": "Confirmation code"
@@ -90,10 +96,6 @@ var _translatorData = {
         "ru": "Документ",
         "en": "Document"
     },
-    "document not found": {
-        "ru": "Документ не найден",
-        "en": "Document not found"
-    },
     "email": {
         "ru": "Почта",
         "en": "Email"
@@ -110,17 +112,37 @@ var _translatorData = {
         "ru": "Выйти",
         "en": "Exit"
     },
+    "ExpiredCodeException": {
+        "ru": "Код подтверждения устарел. Вам был выслан новый.",
+        "en": "Your confirmation code is expired. New confirmation code was sent to you."
+    },
     "forgotPassword": {
         "ru": "Забыли пароль?",
         "en": "Forgot password?"
+    },
+    "InvalidParameterException": {
+        "ru": "Один или несколько параметров введены неверно.",
+        "en": "Some parameters are invalid."
+    },
+    "InvalidPasswordException": {
+        "ru": "Пароль должен быть не короче 6 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
+        "en": "Minimum password length is 6 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
     },
     "loginPage": {
         "ru": "Вход",
         "en": "Log in"
     },
+    "multiple guids found": {
+        "ru": "Обнаружено более 1 документа с данным GUID",
+        "en": "More than 1 document with specified GUID found"
+    },
     "no": {
         "ru": "нет",
         "en": "no"
+    },
+    "no guids found": {
+        "ru": "Документ с этим GUID не найден",
+        "en": "Document with this GUID not found"
     },
     "noSpace": {
         "ru": "Недостаточно места для загрузки файла",
@@ -167,13 +189,21 @@ var _translatorData = {
         "en": "Create account"
     },
     "somethingWentWrong": {
-        "ru": "Что-то пошло не так.",
-        "en": "Somenthing went wrong."
+        "ru": "Что-то пошло не так..",
+        "en": "Somenthing went wrong.."
     },
     "typeYourText": {
         "ru": "Напишите что-нибудь удивительное...",
         "en": "Compose something awesome..."
     },
+    "username": {
+        "ru": "Имя пользователя",
+        "en": "Username"
+    },    
+    "UsernameExistsException": {
+        "ru": "Пользователь с таким именем уже существует.",
+        "en": "This username is already taken."
+    },    
     "welcomeMessage": {
         "ru": "Чтобы работать с документами нужно <a class=\"link-sign-in\" href=\"#\">войти</a> или <a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
         "en": "Please <a class=\"link-sign-in\" href=\"#\">log in</a> or <a class=\"link-sign-up\" href=\"#\">create account</a> to start working."
@@ -193,7 +223,11 @@ var _translatorData = {
     "yourPassword": {
         "ru": "Ваш пароль",
         "en": "Your password"
-    }
+    },
+    "yourUsername": {
+        "ru": "Ваше имя пользователя",
+        "en": "Your username"
+    },    
 };
 // ====================
 
@@ -437,4 +471,49 @@ function mimeTypeToIconURL(type) {
         }
     }
     return '/img/icons/file-attachment.svg';
-}		
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+//errors handlers
+function ABError(name) {
+	var err = new Error(name);
+	err.name = name;
+	return err;
+}
+
+function onError(err) {
+	if (err) {
+		console.log("Error!", err);
+	}
+	
+	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 5000);
+}
+
+function onWarning(msg) {
+	_errorPopover(msg);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 2500);
+}
+
+function _errorPopover(c) {
+	$('nav').popover({
+		content: c,
+		container: 'nav',
+		animation: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		template: '\
+			<div class="popover bg-danger" role="tooltip">\
+				<div class="popover-body text-light"></div>\
+			</div>'
+	});
+}
