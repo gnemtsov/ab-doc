@@ -118,7 +118,7 @@
 		
 		self.tree.lastClicked = treeNode; //TODO remove? it is not used anywhere
 		
-		routerOpen(treeNode.id);
+		ROUTER.open(treeNode.id);
 	}
 
 	abTree.prototype.showRemoveBtn = function (id, node) {
@@ -160,7 +160,8 @@
 			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
 			var newNode = self.tree.getNodeByParam('id', guid);
 			
-			//routerOpen(guid);
+			ROUTER.open(guid);
+			
 			self.tree.editName(newNode);
 			$('#' + newNode.tId + '_input').select();
 			
@@ -234,7 +235,7 @@
 			f(treeNode);
 		
 			if (treeNode === ZTREE_SELECTED_NODE) {
-				routerOpen(tree.getNodes()[0].id);
+				ROUTER.open(tree.getNodes()[0].id);
 			}
 		
 			var $node = $('#' + treeNode.tId + '_a');

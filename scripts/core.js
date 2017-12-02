@@ -26,6 +26,10 @@ if (location.hostname === 'ab-doc.com') { //PROD
 var LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en';
 var s3;
 
+var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
+    $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
+
+
 (function (g, $) {
 
     //TIMERS object
@@ -117,6 +121,8 @@ var s3;
     //call ROUTER.open() to open root of current owner
     //call ROUTER.open(...) to open doc of current owner
     //call ROUTER.setOwner(...).open(...) to open doc of new owner
+    //!!!IMPORTANT!!! Don't forget to set new owner, when it is changed!
+    //TODO Probably needs revision when ACL model will be settled
     g.ROUTER = {
         owner: void(0),
         readonly: true,
@@ -137,8 +143,16 @@ var s3;
         
         open: function(doc){
             var self = this;
-            console.log('From ROUTER: owner, doc.', self.owner, doc);
+            console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
 
+            //"onbeforeunload"
+            /*if ( ($update.hasClass('pending') || $update.hasClass('saving')) &&
+                 !confirm(_translatorData['changesPending'][LANG]) ) {
+                $update.removeClass('pending saving');
+                return; 
+            }*/
+            $update.removeClass('pending saving');
+            
             switch(doc){    
                 case 'welcome': //welcome
                     if(!self.readonly){
@@ -180,7 +194,7 @@ var s3;
                     //- - - (impossible)
 
                     if((!self.owner || !doc) && self.readonly){ //(4, 6, 7)
-                        self.open('','welcome');
+                        self.open('welcome');
                         return;
                     } 
  
@@ -266,10 +280,6 @@ var s3;
         $ztree, $abTree, 
         $splitter, 
         $document, $selectedDoc, $abDoc;
-    
-    var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
-        $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
-
 
     //------Document ready!------//
     $(document).ready( function() {
@@ -382,7 +392,6 @@ var s3;
         $('body').on('click', 'a.link-sign-out', function (e) {
             e.preventDefault();
             abAuth.signOut();
-            ROUTER.open();
         });
 
         // About click

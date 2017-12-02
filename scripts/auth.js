@@ -14,9 +14,98 @@
 		return new abAuth.init();
 	};
 
-	// object prototype
+	//** object prototype **//
 	abAuth.prototype = {
 
+        //-----core functions-----
+
+        //returns auth status: true or false
+        isAuthorized: function(){
+            var self = this;
+            return self.cognitoUser !== undefined &&
+                   self.cognitoUser !== null &&
+                   self.cognitoUser.signInUserSession !== undefined &&
+                   self.cognitoUser.signInUserSession !== null &&
+                   self.cognitoUser.signInUserSession.isValid();
+        },
+
+        //sets user creds after successful login and gets user's attributes
+        //callback will always be called, but with error if getUserAttributes fails
+        loggedIn: function(providerName, token, callback) {
+            var self = this;
+
+            self.cognitoUser.Attributes = {};
+            self.cognitoUser.getUserAttributes(function(error, attributes){
+                if(error) {
+                    onError(error);
+                    callback(error);
+                } else {
+                    self.creds.params.Logins = {};
+                    self.creds.params.Logins[providerName] = token;            
+                    self.creds.expired = true; // Expire credentials to refresh them on the next request
+                    attributes.forEach(function(attr){
+                        var c = attr.Name.indexOf(':') + 1;
+                        self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
+                    });
+                    console.log('Auth.js: loggedIn through ' + providerName);
+                    callback();
+                }
+            });
+        },
+
+        //sign in user with username and password from self.tmpAuthDetails
+        signIn: function() {
+            var self = this;
+
+            if(self.tmpAuthDetails === undefined){
+                onError();
+                return;
+            }
+
+            $submit.started();
+            
+            var authenticationDetails = new CISP.AuthenticationDetails(self.tmpAuthDetails);
+            
+            self.cognitoUser = new CISP.CognitoUser({
+                Username : self.tmpAuthDetails.Username,
+                Pool : self.userPool
+            });
+
+            self.cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: function (session) {
+                    self.tmpAuthDetails = void(0);
+                    self.loggedIn(
+                        self.CognitoProviderName, 
+                        session.getIdToken().getJwtToken(),
+                        function(error){
+                            if(error){
+                                return;
+                            }
+                            self.updateNav();
+                            ROUTER.setOwner(self.cognitoUser.username).open();
+                            $submit.stopped();
+                            $modal.modal('hide');                            
+                        }
+                    );
+                },
+                onFailure: function(error) {
+                    self.tmpAuthDetails = void(0);
+                    $submit.stopped();
+                    self.showAlert(error.code);                                
+                }
+            });
+        },
+
+        //sign out user and ROUTER.open() root
+        signOut: function() {
+            var self = this;
+            self.cognitoUser.signOut();
+            self.updateNav();
+            ROUTER.setOwner().open();
+        },
+
+
+        //-----UI functions-----
         updateNav: function(){
             var self = this;
             if(self.isAuthorized()){
@@ -32,8 +121,9 @@
         },
 
         showAlert: function(code){
+            console.log(code);
             var self = this;
-            if(_translatorData[code]){
+            if(g._translatorData[code]){
                 $alert.text(g._translatorData[code][g.LANG]);
             } else {
                 $alert.text(g._translatorData['alertUnknownError'][g.LANG]);
@@ -154,69 +244,7 @@
 
         },
 
-        isAuthorized: function(){
-            var self = this;
-            return self.session !== undefined && self.session.isValid();
-        },
-
-        loggedIn: function(providerName, token) {
-            var self = this;
-            self.creds.params.Logins = {};
-            self.creds.params.Logins[providerName] = token;            
-            self.creds.expired = true; // Expire credentials to refresh them on the next request
-
-            self.cognitoUser.Attributes = {};
-            self.cognitoUser.getUserAttributes(function(error, attributes){
-                if(error) {
-                    onError(error);
-                } else {
-                    attributes.forEach(function(attr){
-                        var c = attr.Name.indexOf(':') + 1;
-                        self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
-                    });
-                }
-            });
-            console.log('Auth.js: loggedIn through ' + providerName);
-        },
-
-        signIn: function(username, password) {
-            var self = this;
-            $submit.start();
-            
-            var authenticationDetails = new CISP.AuthenticationDetails({
-                Username : username,
-                Password : password,
-            });
-            
-            self.cognitoUser = new CISP.CognitoUser({
-                Username : username,
-                Pool : self.userPool
-            });
-
-            self.cognitoUser.authenticateUser(authenticationDetails, {
-                onSuccess: function (result) {
-                    self.loggedIn(
-                        self.CognitoProviderName, 
-                        result.getAccessToken().getJwtToken()
-                    );
-                    self.updateNav();
-                    ROUTER.open();
-                },
-                onFailure: function(error) {
-                    $submit.stop();
-                    self.showAlert(error.code);                                
-                }
-            });
-        },
-
-        signOut: function(providerName, token) {
-            var self = this;
-            self.cognitoUser.signOut();
-            self.updateNav();
-            ROUTER.open();
-        },
-
-        //handlers
+        //-----events handlers-----
         signUpHandler: function(){
             var self = this;
 
@@ -239,7 +267,7 @@
                 return;
             }
             
-            $submit.start();
+            $submit.started();
 
             var attributeList = [];
             attributeList.push(
@@ -262,7 +290,7 @@
             );
         
             self.userPool.signUp(username, password, attributeList, null, function(error, result){
-                $submit.stop();
+                $submit.stopped();
                 
                 if (error) {
                     if(error.message.indexOf("Value at 'password' failed to satisfy constraint") !== -1){
@@ -272,8 +300,10 @@
                     }
                 } else {
                     self.cognitoUser = result.user;
-                    self.username = username;
-                    self.password = password;
+                    self.tmpAuthDetails = {
+                        Username : username,
+                        Password : password
+                    }
                     self.showModal('confirm');
                 }
             });
@@ -283,23 +313,25 @@
             var self = this;
             var code = $('#formAuthCode').val();
             
-            $submit.start();            
+            $submit.started();            
             self.cognitoUser.confirmRegistration(code, true, function(error, result) {
-                $submit.stop();                
+                $submit.stopped();                
                 if (error) {
                     self.showAlert(error.code);                                
                 } else {
-                    self.signIn(self.username, self.password);                
+                    self.signIn();                
                 }
             });
         },
 
         signInHandler: function(){
             var self = this;
-            var username = $('#formAuthUsername').val(),
-                password = $('#formAuthPassword').val();
 
-            self.signIn(username, password);                
+            self.tmpAuthDetails = {
+                Username : $('#formAuthUsername').val(),
+                Password : $('#formAuthPassword').val()
+            }
+            self.signIn();                
         }
                 
 	}	
@@ -314,13 +346,19 @@
         $alert = $('#alertAuthError');        
         $submit = $('#buttonAuthSubmit');
 
-        $submit.start = function(){
+        $modal.keypress(function(e){
+            if(e.which == 13) {
+                $submit.trigger('click', e);
+            }
+        });
+
+        $submit.started = function(){
             $submit.prop('disabled', true).before($small_preloader);
-        }
-        $submit.stop = function(){
+        };
+        $submit.stopped = function(){
             $submit.prop('disabled', false);
             $small_preloader.remove();
-        }
+        };
         $submit.on('click', function(e){
             e.preventDefault();
             e.stopPropagation();
@@ -362,15 +400,22 @@
                         onError(error);
                         reject(error);
                     } else {
-                        self.session = session;
-                        if(self.session.isValid()){
+                        if(session.isValid()){
                             self.loggedIn(
                                 self.CognitoProviderName, 
-                                self.session.getIdToken().getJwtToken()
+                                session.getIdToken().getJwtToken(),
+                                function(error){
+                                    if(error){
+                                        reject(error);                                        
+                                        return;
+                                    }
+                                    self.updateNav();
+                                    resolve();                                    
+                                }
                             );                    
-                            self.updateNav();
+                        } else {
+                            resolve();
                         }
-                        resolve();
                     }                    
                 });                
             });
