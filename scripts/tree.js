@@ -8,14 +8,9 @@
 	var	$abTree /*tree UL*/;
 
 	// function creates object (calls abTree.init - constructor)
-	var abTree = function (ownerid, docGUID, readOnly) {
-		var params = {  //external params
-			treeContainer: this,
-			docGUID : docGUID,
-			ownerid : ownerid,
-			readOnly : readOnly,
-			treeKey: ownerid + '/tree.json'
-		};
+	var abTree = function (params) {
+		params.treeContainer = this;
+		params.treeKey = params.ownerid + '/tree.json';
 		return new abTree.init(params);
 	};
 
@@ -121,7 +116,7 @@
 		// expand the node
 		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		
-		self.tree.lastClicked = treeNode;
+		self.tree.lastClicked = treeNode; //TODO remove? it is not used anywhere
 		
 		routerOpen(treeNode.id);
 	}
@@ -228,7 +223,7 @@
 					n.children.map(f)
 				}
 				
-				deleteRecursiveS3(USERID + '/' + n.id)
+				deleteRecursiveS3(self.ownerid + '/' + n.id)
 					.then( function(ok) {
 						USER_USED_SPACE_CHANGED = true;
 					})
@@ -304,7 +299,7 @@
 		if (!isCancel) {
 			ACTIVITY.push('tree modify', 'pending');
 			
-			if (treeNode.id === $abDoc.docGUID) {
+			if (treeNode.id === self.selectedNode) {
 				$('#selectedDoc').html(treeNode.name);
 			}
 		}
@@ -325,53 +320,37 @@
 		var self = this;
 		$.extend(self, params);
 
-		$abTree = $(self.treeContainer);		
+		if(!$abTree instanceof $){
+			$abTree.off().empty(); //empty and remove also unbind old event handlers
+		}	
+		$abTree = $(self.treeContainer);
 
-		var s3Params = {
+		var params = {
 			Bucket: STORAGE_BUCKET,
 			Key: self.treeKey
 		}
-		var promise = s3.getObject(s3Params).promise()
+		self.promise = s3.getObject(params).promise()
 			.then( function(data) {
-				self.zNodes = JSON.parse(data.Body.toString('utf-8'));
-				return Promise.resolve();
+				return JSON.parse(data.Body.toString('utf-8'));
 			})
-			.catch( function(err) {
-				if (err.name === 'NoSuchKey') {
-					var newRootDocGUID = GetGUID();
-					self.zNodes =  [{id: newRootDocGUID, name: g._translatorData['rootName'][LANG]}];
-					console.log('NoSuchKey');
-					var getPromise = $.get('root/' + g.LANG + '.html');
-					return getPromise
-						.then( function(data) {
-							console.log('Get promise .then', data);
-							
-							var params = {
-								Body: data,
-								Bucket: STORAGE_BUCKET,
-								Key: USERID + '/' + newRootDocGUID + '/index.html',
-								ACL: 'public-read'
-							};
-							
-							return s3.putObject(params).promise();
-						})
+			.catch( function(error) {
+				if (!self.readOnly && error.code === 'NoSuchKey') {
+					self.virgin = true;
+					return [{id: GetGUID(), name: g._translatorData['rootName'][LANG]}];
 				} else {
-					onFatalError(err, 'couldNotLoadTree');
-					return Promise.reject(err);
+					onFatalError(error, 'couldNotLoadTree');
+					throw error;
 				}
 			})
-			.then( function() {
-				console.log(self.zNodes);
+			.then( function(zNodes) {
+				self.zNodes = zNodes;
 				self.rootGUID = self.zNodes[0].id;
 				self.zNodes[0].head = true;
 				self.zNodes[0].open = true;
 				if(!self.zNodes[0].name.length){
 					self.zNodes[0].name = g._translatorData['rootName'][LANG];
 				}
-				if(self.docGUID === ''){
-					self.docGUID = self.rootGUID;
-				}
-		
+
 				self.zSettings = {
 					view: {
 						selectedMulti: true,
@@ -402,12 +381,8 @@
 					}
 				};
 							
-				console.log(self.zSettings);
-				
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
 
-				//self.attachSomeHandlers();
-				
 				if(!self.readOnly){ //init timer if not readOnly
 
 					TIMERS.set(function () {
@@ -452,13 +427,15 @@
 
 						}
 					}, 3000, 'tree');
+
+					if(self.virgin){
+						ACTIVITY.push('tree modify', 'pending');
+					}
+
 				}
-				g.routerOpen(self.docGUID);
+				return;
 			});
-		
-		Promise.all([promise]);
-		console.log(self);
-		console.log('Finished init');
+
 	}
 
 	// trick borrowed from jQuery so we don't have to use the 'new' keyword

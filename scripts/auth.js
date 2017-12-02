@@ -353,23 +353,26 @@
         self.userPool = new CISP.CognitoUserPool( self.poolData );
         self.cognitoUser = self.userPool.getCurrentUser();
 
-        if (self.cognitoUser != null) {
-            self.cognitoUser.getSession(function(err, session) {
-                if (err) {
-                    onError(err);
-                    return;
-                }
-                
-                self.session = session;
-                if(self.session.isValid()){
-                    self.loggedIn(
-                        self.CognitoProviderName, 
-                        self.session.getIdToken().getJwtToken()
-                    );                    
-                    self.updateNav();
-                } else {
-                    console.log('session is invalid');
-                }
+        if (self.cognitoUser === null) {
+            self.promise = Promise.resolve();
+        } else {
+            self.promise = new Promise(function(resolve, reject){
+                self.cognitoUser.getSession(function(error, session) {
+                    if (error) {
+                        onError(error);
+                        reject(error);
+                    } else {
+                        self.session = session;
+                        if(self.session.isValid()){
+                            self.loggedIn(
+                                self.CognitoProviderName, 
+                                self.session.getIdToken().getJwtToken()
+                            );                    
+                            self.updateNav();
+                        }
+                        resolve();
+                    }                    
+                });                
             });
         }
                 

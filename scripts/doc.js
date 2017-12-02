@@ -8,14 +8,9 @@
 	var	$abDoc /*doc container*/, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;
 
 	// function creates object (calls abDoc.init is constructor)
-	var abDoc = function (ownerid, docGUID, readOnly) {
-		var params = {  //external params
-			docContainer: this,
-			docGUID : docGUID,
-			ownerid : ownerid,
-			readOnly : readOnly,
-			path: TREE_USERID + '/' + docGUID
-		};
+	var abDoc = function (params) {
+		params.docContainer = this;
+		params.path = params.ownerid + '/' + params.docGUID;			
 		return new abDoc.init(params);
 	};
 
@@ -240,7 +235,7 @@
 								var picGUID = GetGUID();
 								s3.upload({
 									Bucket: STORAGE_BUCKET,
-									Key: USERID + '/' + self.docGUID + '/' + picGUID,
+									Key: self.ownerid + '/' + self.docGUID + '/' + picGUID,
 									Body: file,
 									ContentType: file.type,
 									ContentDisposition: GetContentDisposition(file.name),
@@ -398,7 +393,7 @@
 							ACTIVITY.push('file upload', 'saving');							
 
 							var fileGUID = GetGUID(),
-								key = USERID + '/' + self.docGUID + '/attachments/' + fileGUID,
+								key = self.ownerid + '/' + self.docGUID + '/attachments/' + fileGUID,
 								partSize = 6 * 1024 * 1024;
 
 							var file_obj = {
@@ -641,19 +636,29 @@
 			Bucket: STORAGE_BUCKET,
 			Key: self.path + '/index.html'
 		}
-		s3.getObject(params).on(
-			'complete',	
-			function(response) {
-
-				//get data for saved doc or error 'NoSuchKey' for new doc, otherwise exit
-				if(response.error === null){
-					$editor.html(response.data.Body.toString('utf-8'));
-				} else if(response.error.code !== 'NoSuchKey') {
-					onError(response.error.message); 
-					return;
+		self.promise1 = s3.getObject(params).promise()
+			.then( function(data) {
+				return data.Body.toString('utf-8');
+			})
+			.catch( function(error) {
+				if (error.code !== 'NoSuchKey') {
+					onFatalError(error, 'couldNotLoadDoc');
+					throw 'fatal';
+				} else if(self.docGUID === self.rootGUID) {
+					return $.get('/root/' + g.LANG + '.html');				
+				} else {
+					return '';
 				}
+			})
+			.catch( function(error) {
+				if(error === 'fatal'){ //catch fatal error from previous catch
+					throw 'fatal';
+				}
+				return '';
+			})
+			.then( function(html) {
 
-				//init quill
+				//quill config
 				var editor_options = {
 					placeholder: g._translatorData['typeYourText'][g.LANG],
 					theme: 'bubble',
@@ -698,17 +703,16 @@
 						}
 					}
 				};
-				self.editor = new Quill('#editor', editor_options);
 
+				$editor.html(html);
+				self.editor = new Quill('#editor', editor_options);
 				var length = self.editor.getLength();
 				if (self.editor.getText(length - 2, 2) === '\n\n') {
 					self.editor.deleteText(length - 2, 2);
 				}
-							
 				self.attachLoupeHandlers();
 				
-				//attach handlers and init timer
-				if(!self.readOnly){
+				if(!self.readOnly){ //init timer if not readOnly
 
 					self.attachWrapHandlers();
 					self.attachEditorHandlers();
@@ -716,19 +720,18 @@
 						ACTIVITY.push('document modify', 'pending');
 					});
 
-					//prevent default on quill toolbar click
-					$('body').on('mousedown', '.ql-toolbar', function(e){
-					    e.preventDefault();
+					$('body').on('mousedown', '.ql-toolbar', function(e){ //prevent default on quill toolbar click
+						e.preventDefault();
 					});					
 
-					TIMERS.set(function () { 
+					TIMERS.set(function () {
 						if(ACTIVITY.get('document modify') === 'pending'){
 							
 							ACTIVITY.push('document modify', 'saving');
 
 							var params = {
 								Bucket: STORAGE_BUCKET,
-								Key: USERID + '/' + self.docGUID + '/index.html',
+								Key: self.ownerid + '/' + self.docGUID + '/index.html',
 								Body: self.editor.root.innerHTML,
 								ContentType: 'text/html',
 								ContentDisposition: GetContentDisposition('index.html'),
@@ -744,9 +747,10 @@
 					}, 3000, 'doc');
 
 				}
-				preloaderOnEditor(false);
-			}
-		).send();		
+				return;
+
+			});
+
 
 		//---------load attachments list from S3-------------//
 		self.files = new Array();
@@ -754,46 +758,53 @@
 			Bucket: STORAGE_BUCKET,
 			Prefix: self.path + '/attachments/'
 		  };
-		s3.listObjectsV2(params, function(err, data) {
-			if (err){ onError(err); } 
-			else {
-				var headers = new Array();
-				data.Contents.forEach( function(file) {
-					var params = {
-						Bucket: STORAGE_BUCKET, 
-						Key: file.Key
-					};
-					headers.push(
-						s3.headObject(params).promise().then(
-							function(data) {
-								var name = decodeURIComponent(data.ContentDisposition.substring(29)),
-									mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(name)[1]),
-									iconURL = mimeTypeToIconURL(mime);
-								self.files.push({
-									guid: file.Key.split('/').pop(),
-									key: file.Key,
-									name: name,
-									iconURL: iconURL,
-									size: file.Size,									
-									modified: file.LastModified
-								});
-							},
-							function(err) { onError(err); }
-						)
-					);
-				});
+		self.promise2 = s3.listObjectsV2(params).promise()
+		  	.then(
+				function(data){
+					var headers = new Array();
+					data.Contents.forEach( function(file) {
+						var params = {
+							Bucket: STORAGE_BUCKET, 
+							Key: file.Key
+						};
+						headers.push(
+							s3.headObject(params).promise().then(
+								function(data) {
+									var name = decodeURIComponent(data.ContentDisposition.substring(29)),
+										mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(name)[1]),
+										iconURL = mimeTypeToIconURL(mime);
 
-				Promise.all(headers).then(
-					function (data) { 
-						self.updateFilesList(); 
-						if(!self.readOnly){
-							self.attachDropzoneHandlers();
-						}				
-					},
-					function (err) { onError(err); }
-				);
-			}
-		});
+									self.files.push({
+										guid: file.Key.split('/').pop(),
+										key: file.Key,
+										name: name,
+										iconURL: iconURL,
+										size: file.Size,									
+										modified: file.LastModified
+									});
+								},
+								function(error) { 
+									onError(error); 
+									throw error;
+								}
+							)
+						);
+					});
+
+					return Promise.all(headers).then(
+						function (data) { 
+							self.updateFilesList(); 
+							if(!self.readOnly){
+								self.attachDropzoneHandlers();
+							}
+						}
+					);
+				}
+			);
+
+		//set object promise, resolved when both doc and files are resolved
+		//both return nothing (are resolved with value undefined) and it is just fine		
+		self.promise = Promise.all([self.promise1, self.promise2]);
 		
 	}
 
