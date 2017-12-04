@@ -3,6 +3,8 @@
 //TODO utils should be abUtils object and all these functions should be methods of this object
 
 // Data for translation
+// Alphabetical order by key!
+// One sentence - no dot, two sentences - two dots
 var _translatorData = {
     "about": {
         "ru": "О программе",
@@ -17,16 +19,16 @@ var _translatorData = {
         "en": "Confirm account"
     },
     "alertNoEmail": {
-        "ru": "Укажите ваш email.",
-        "en": "Enter your email."
+        "ru": "Укажите ваш email",
+        "en": "Enter your email"
     },
     "alertNoPassword": {
-        "ru": "Укажите пароль.",
-        "en": "Enter password."
+        "ru": "Укажите пароль",
+        "en": "Enter password"
     },
     "alertNoUsername": {
-        "ru": "Укажите ваше имя пользователя.",
-        "en": "Enter your username."
+        "ru": "Укажите ваше имя пользователя",
+        "en": "Enter your username"
     },
     "alertUnknownError": {
         "ru": "Произошла ошибка. Попробуйте ещё раз.",
@@ -37,16 +39,16 @@ var _translatorData = {
         "en": "Unknown error. Try again."
     },
     "alertUserDoesntExist": {
-        "ru": "Пользователь с таким именем не зарегистрирован.",
-        "en": "Username is not registered."
+        "ru": "Пользователь с таким именем не зарегистрирован",
+        "en": "Username is not registered"
     },
     "alertWrongPassword": {
-        "ru": "Неправильное имя пользователя или пароль.",
-        "en": "Wrong username or password."
+        "ru": "Неправильное имя пользователя или пароль",
+        "en": "Wrong username or password"
     },
     "alertWrongRepeat": {
-        "ru": "Пароли не совпали.",
-        "en": "Passwords didn't match."
+        "ru": "Пароли не совпали",
+        "en": "Passwords didn't match"
     },
     "areYouSure": {
         "ru": "Вы уверены?",
@@ -65,8 +67,8 @@ var _translatorData = {
         "en": "There are unsaved changes!"
     },
     "CodeMismatchException": {
-        "ru": "Неверный код подтверждения.",
-        "en": "Wrong confirmation code."
+        "ru": "Неверный код подтверждения",
+        "en": "Wrong confirmation code"
     },
     "confirm": {
         "ru": "Подтвердить",
@@ -77,8 +79,8 @@ var _translatorData = {
         "en": "Confirmation code"
     },
     "couldNotLoadTree": {
-		"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com",
-		"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com"
+		"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com.",
+		"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com."
 	},
     "deleteQuestion1": {
         "ru": "Документ",
@@ -89,8 +91,8 @@ var _translatorData = {
         "en": ", continue?"
     },
     "deleteQuestion3": {
-        "ru": " Также будут удалены все вложенные документы и папки.",
-        "en": " All sub-documents are going to be deleted too."
+        "ru": " Также будут удалены все вложенные документы и папки",
+        "en": " All sub-documents are going to be deleted too"
     },
     "deleteTitle": {
         "ru": "Удаление",
@@ -125,8 +127,8 @@ var _translatorData = {
         "en": "Forgot password?"
     },
     "InvalidParameterException": {
-        "ru": "Один или несколько параметров введены неверно.",
-        "en": "Some parameters are invalid."
+        "ru": "Один или несколько параметров введены неверно",
+        "en": "Some parameters are invalid"
     },
     "InvalidPasswordException": {
         "ru": "Пароль должен быть не короче 6 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
@@ -151,6 +153,10 @@ var _translatorData = {
     "noSpace": {
         "ru": "Недостаточно места для загрузки файла",
         "en": "No space left to upload this file"
+    },
+    "NotAuthorizedException": {
+        "ru": "Отказано в доступе",
+        "en": "Access denied"
     },
     "ok": {
         "ru": "Ок",
@@ -205,8 +211,12 @@ var _translatorData = {
         "en": "Username"
     },    
     "UsernameExistsException": {
-        "ru": "Пользователь с таким именем уже существует.",
-        "en": "This username is already taken."
+        "ru": "Пользователь с таким именем уже существует",
+        "en": "This username is already taken"
+    },    
+    "UserNotFoundException": {
+        "ru": "Пользователь не найден",
+        "en": "Unknown username"
     },    
     "welcomeMessage": {
         "ru": "Чтобы работать с документами нужно <a class=\"link-sign-in\" href=\"#\">войти</a> или <a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
@@ -331,6 +341,14 @@ function GetSize(bytes) {
 	else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(1) + ' Mb'; }
 	else if (bytes < 1099511627776) { return (bytes / 1073741824).toFixed(1) + ' Gb'; }
 	else { return (bytes / 1099511627776).toFixed(1) + ' Tb'; }
+}
+
+//encoding functions source:
+//https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+function fixedEncodeURIComponent (str) {
+    return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+      return '%' + c.charCodeAt(0).toString(16);
+    });
 }
 
 function encodeRFC5987ValueChars(str) {

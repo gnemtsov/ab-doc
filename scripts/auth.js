@@ -47,6 +47,7 @@
                         var c = attr.Name.indexOf(':') + 1;
                         self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
                     });
+                    self.identityId = self.creds.identityId;
                     console.log('Auth.js: loggedIn through ' + providerName);
                     callback();
                 }
@@ -61,9 +62,7 @@
                 onError();
                 return;
             }
-
-            $submit.started();
-            
+         
             var authenticationDetails = new CISP.AuthenticationDetails(self.tmpAuthDetails);
             
             self.cognitoUser = new CISP.CognitoUser({
@@ -82,15 +81,15 @@
                                 return;
                             }
                             self.updateNav();
-                            ROUTER.setOwner(self.cognitoUser.username).open();
-                            $submit.stopped();
+                            ROUTER.setOwner(self.identityId).open();
+                            $submit.release();
                             $modal.modal('hide');                            
                         }
                     );
                 },
                 onFailure: function(error) {
                     self.tmpAuthDetails = void(0);
-                    $submit.stopped();
+                    $submit.release();
                     self.showAlert(error.code);                                
                 }
             });
@@ -128,7 +127,7 @@
             } else {
                 $alert.text(g._translatorData['alertUnknownError'][g.LANG]);
             }
-            $alert.show();
+            $alert.fadeIn('fast');
         },
 
         showModal: function(type){
@@ -141,28 +140,32 @@
                         getInputHTML('text', {
                             id: 'formAuthUsername',
                             label: 'username',
-                            placeholder: 'yourUsername'
+                            placeholder: 'yourUsername',
+                            value: 'testuser'
                         }) 
                     );
                     $form.append(
                         getInputHTML('text', {
                             id: 'formAuthEmail',
                             label: 'email',
-                            placeholder: 'yourEmail'
+                            placeholder: 'yourEmail',
+                            value: 'support@erp-lab.com'
                         }) 
                     );
                     $form.append(
                         getInputHTML('password', {
                             id: 'formAuthPassword',
                             label: 'password',
-                            placeholder: 'yourPassword'
+                            placeholder: 'yourPassword',
+                            value: 'test1Pass'
                         }) 
                     );
                     $form.append(
                         getInputHTML('password', {
                             id: 'formAuthPassword2',
                             label: 'password',
-                            placeholder: 'repeatPassword'
+                            placeholder: 'repeatPassword',
+                            value: 'test1Pass'
                         }) 
                     );
                     $form.append(
@@ -267,8 +270,6 @@
                 return;
             }
             
-            $submit.started();
-
             var attributeList = [];
             attributeList.push(
                 new CISP.CognitoUserAttribute({
@@ -290,7 +291,7 @@
             );
         
             self.userPool.signUp(username, password, attributeList, null, function(error, result){
-                $submit.stopped();
+                $submit.release();
                 
                 if (error) {
                     if(error.message.indexOf("Value at 'password' failed to satisfy constraint") !== -1){
@@ -313,9 +314,8 @@
             var self = this;
             var code = $('#formAuthCode').val();
             
-            $submit.started();            
             self.cognitoUser.confirmRegistration(code, true, function(error, result) {
-                $submit.stopped();                
+                $submit.release();                
                 if (error) {
                     self.showAlert(error.code);                                
                 } else {
@@ -352,16 +352,11 @@
             }
         });
 
-        $submit.started = function(){
-            $submit.prop('disabled', true).before($small_preloader);
-        };
-        $submit.stopped = function(){
-            $submit.prop('disabled', false);
-            $small_preloader.remove();
-        };
         $submit.on('click', function(e){
             e.preventDefault();
             e.stopPropagation();
+            $submit.prop('disabled', true).before($small_preloader);
+            $alert.hide();
             switch($('#formAuthAction').val()){
                 case 'signUp':
                     self.signUpHandler();
@@ -372,8 +367,12 @@
                 case 'signIn':
                     self.signInHandler();
                     break;
-            }
+            }    
         });
+        $submit.release = function(){
+            $submit.prop('disabled', false);
+            $small_preloader.remove();
+        };
 
         self.UserPoolId = 'eu-west-1_dtgGGP4kG';
         self.ClientId = '1eflaa2k69bgebikbnak5jg0ac';

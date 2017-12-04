@@ -130,14 +130,14 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         setOwner: function(owner){
             if(owner === undefined || owner === ''){
                 if (abAuth.isAuthorized()) {
-                    this.owner = abAuth.cognitoUser.username;
+                    this.owner = abAuth.identityId;
                 } else {
                     this.owner = void(0);
                 }
             } else {
                 this.owner = owner;
             }
-            this.readonly =  !abAuth.isAuthorized() || this.owner !== abAuth.cognitoUser.username;
+            this.readonly =  !abAuth.isAuthorized() || this.owner !== abAuth.identityId;
             return this;
         },
         
@@ -179,7 +179,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                     }
                     break;
     
-                default: //doc is empty or GUID, load tree and document
+                default: //empty or equals GUID
 
                     //in brackets won't go!
                     //impossible: owner not set and readonly=false
@@ -202,8 +202,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                         $container.children().hide();
                         $container.prepend($big_preloader);
 
-                        if(abAuth.isAuthorized() && this.owner === abAuth.cognitoUser.username){
-                            updateUsedSpace(abAuth.cognitoUser.username);
+                        if(abAuth.isAuthorized() && this.owner === abAuth.identityId){
+                            updateUsedSpace(abAuth.identityId);
                         }
 
                         var params = {
@@ -212,7 +212,12 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                         };
                         abTree = $abTree.abTree(params);
                     } else { //doc only reload
-                        $app.find('#document').children().hide();
+                        if($app.is(":visible")){
+                            $abDoc.hide();
+                            $document.append($small_preloader);
+                        } else {
+                            $container.children().hide();
+                        }
                     }      
                     
                     abTree.promise.then( //tree is ready, load doc
@@ -220,7 +225,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                             if(doc === undefined || doc === ''){ //2
                                 doc = abTree.rootGUID;                        
                             }
-                            self.updatePath('/'+self.owner+'/'+doc);
+                            self.updatePath('/' + self.owner + '/' + doc);
 
                             var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
                             if(docNODE === undefined){
@@ -241,6 +246,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                     function(){
                                         $big_preloader.remove();
                                         $app.children().addBack().show();
+                                        $small_preloader.remove();
+                                        $abDoc.show();
                                     }
                                 );
                             }                    
@@ -251,6 +258,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         },
 
         updatePath: function(new_path){
+            new_path = new_path.replace(':','_');
             if(new_path !== window.location.pathname) { 
                 history.pushState(null, null, new_path);
             }
@@ -321,6 +329,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             owner = void(0);
         }
 
+        if(owner !== undefined){
+            owner = owner.replace('_',':');
+        }
+
         //User auth and AWS configuration
         AWS.config = {
             apiVersions: {  //api versions should be locked!
@@ -338,6 +350,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         });
 
         //translations
+        //TODO regress to English if no translation found!
         $('[data-translate]').each( function(i, el) {
             var dt = $(el).attr('data-translate'),
                 at = $(el).attr('attr-translate');
@@ -363,8 +376,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         // USED SPACE TIMER
         // TODO Update it less frequently, may be 15 or 30 minutes?	
         TIMERS.set(function () {
-            if (USER_USED_SPACE_CHANGED && abAuth.isAuthorized() && ROUTER.owner === abAuth.cognitoUser.username) {
-                updateUsedSpace(abAuth.cognitoUser.username);
+            if (USER_USED_SPACE_CHANGED && 
+                abAuth.isAuthorized() && 
+                ROUTER.owner === abAuth.identityId) {
+                updateUsedSpace(abAuth.identityId);
             }
         }, 5000, 'space');
         
@@ -641,7 +656,7 @@ var USER_USED_SPACE = 0, // Getting list of objects in s3 and finding sum of the
 	USER_USED_SPACE_PENDING = 0, // Size of uploads in progress.
 								// It is changed every time upload is started, finished or aborted.
 								// It is NOT erased after calculating USER_USED_SPACE
-    //TODO MAX_USED_SPACE should be taken from cognito attribute custom:space. It will be 1 Gb for free accounts.
+    //TODO MAX_USED_SPACE should be taken from cognito attribute custom:space. It will be 500Mb for free accounts.
     MAX_USED_SPACE = 500 * 1024 * 1024, // 500 Mb
 	USER_USED_SPACE_CHANGED = false;
 

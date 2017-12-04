@@ -3,6 +3,7 @@
 /******************************************************************/
 /******************************Tree********************************/
 /******************************************************************/
+//TODO debug readonly mode, editting icons are still visible and working
 (function (g, $) {
 	//----------- abTree object--------------//
 	var	$abTree /*tree UL*/;
@@ -339,6 +340,7 @@
 					self.virgin = true;
 					return [{id: GetGUID(), name: g._translatorData['rootName'][LANG]}];
 				} else {
+					console.log(error);
 					onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}
@@ -420,7 +422,7 @@
 							};
 
 							Promise.all([ 
-								s3.upload(params).promise(), 
+								s3.putObject(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
 								ACTIVITY.flush('tree modify');					
