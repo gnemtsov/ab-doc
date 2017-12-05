@@ -198,7 +198,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                         return;
                     } 
  
+                    var full_reload = false;
                     if(abTree === undefined || abTree.ownerid !== self.owner){ //full app reload
+                        full_reload = true;
                         $container.children().hide();
                         $container.prepend($big_preloader);
 
@@ -211,21 +213,33 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                             readOnly: self.readOnly
                         };
                         abTree = $abTree.abTree(params);
-                    } else { //doc only reload
-                        if($app.is(":visible")){
-                            $abDoc.hide();
-                            $document.append($small_preloader);
-                        } else {
-                            $container.children().hide();
-                        }
-                    }      
-                    
+                    }
+
                     abTree.promise.then( //tree is ready, load doc
                         function(){
+
                             if(doc === undefined || doc === ''){ //2
                                 doc = abTree.rootGUID;                        
                             }
                             self.updatePath('/' + self.owner + '/' + doc);
+                            
+                            if(!full_reload){
+                                if(abDoc.docGUID === doc){ //just show and exit, if doc has been already loaded
+                                    if(!$app.is(":visible")){
+                                        $container.children().hide();
+                                        $app.children().addBack().show();
+                                        $abDoc.show();
+                                    }                                        
+                                    return;
+                                } else { //prepare UI for doc loading
+                                    if($app.is(":visible")){
+                                        $abDoc.hide();
+                                        $document.append($big_preloader);
+                                    } else {
+                                        $container.children().hide();
+                                    }
+                                }
+                            }
 
                             var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
                             if(docNODE === undefined){
@@ -246,7 +260,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                     function(){
                                         $big_preloader.remove();
                                         $app.children().addBack().show();
-                                        $small_preloader.remove();
                                         $abDoc.show();
                                     }
                                 );

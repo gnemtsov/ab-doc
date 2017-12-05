@@ -4,6 +4,7 @@
 /******************************Tree********************************/
 /******************************************************************/
 //TODO debug readonly mode, editting icons are still visible and working
+//TODO live node name editting
 (function (g, $) {
 	//----------- abTree object--------------//
 	var	$abTree /*tree UL*/;
@@ -235,7 +236,7 @@
 			};
 			f(treeNode);
 		
-			if (treeNode === ZTREE_SELECTED_NODE) {
+			if (treeNode === self.selectedNode) {
 				ROUTER.open(tree.getNodes()[0].id);
 			}
 		

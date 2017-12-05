@@ -601,7 +601,7 @@ padding-left: 6px;
     -moz-box-sizing: border-box; /* в Firefox нужен префикс */
     box-sizing: border-box;
     border-style: none;
-    height: 150px;
+    min-height: 150px;
     width: 100px;
     padding: 2px;
     margin-bottom: 0.5rem;
@@ -851,10 +851,13 @@ padding-left: 6px;
   }
 
   .big-preloader {
-      width: 80px;
-      text-align: center;
-      margin: 10rem auto 0 auto;
+      width: 60px;
   }
+
+  #main-container > div.big-preloader {
+    margin: 10rem auto 0 auto;
+    }
+
 
   .big-preloader > div {
       width: 16px;
