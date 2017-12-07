@@ -97,7 +97,7 @@ AWS.config = {
 };
 
 var abAuth = $.fn.abAuth();
-AWS.config.credentials = abAuth.creds;
+AWS.config.credentials = abAuth.credentials;
 
 var s3 = new AWS.S3();
 

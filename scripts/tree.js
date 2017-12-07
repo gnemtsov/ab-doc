@@ -5,6 +5,7 @@
 /******************************************************************/
 //TODO debug readonly mode, editting icons are still visible and working
 //TODO live node name editting
+//TOTHINK first click only selects node, second click opens|closes folder
 (function (g, $) {
 	//----------- abTree object--------------//
 	var	$abTree /*tree UL*/;

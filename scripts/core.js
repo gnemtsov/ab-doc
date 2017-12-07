@@ -122,7 +122,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     //call ROUTER.open(...) to open doc of current owner
     //call ROUTER.setOwner(...).open(...) to open doc of new owner
     //!!!IMPORTANT!!! Don't forget to set new owner, when it is changed!
-    //TODO Probably needs revision when ACL model will be settled
+    //TODO try to make location with username, not identityId
+    //TODO Probably needs revision when ACL model will be settled, http://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_ListUsers.html
     g.ROUTER = {
         owner: void(0),
         readonly: true,
@@ -130,14 +131,14 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         setOwner: function(owner){
             if(owner === undefined || owner === ''){
                 if (abAuth.isAuthorized()) {
-                    this.owner = abAuth.identityId;
+                    this.owner = abAuth.credentials.identityId;
                 } else {
                     this.owner = void(0);
                 }
             } else {
                 this.owner = owner;
             }
-            this.readonly =  !abAuth.isAuthorized() || this.owner !== abAuth.identityId;
+            this.readonly =  !abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId;
             return this;
         },
         
@@ -204,8 +205,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                         $container.children().hide();
                         $container.prepend($big_preloader);
 
-                        if(abAuth.isAuthorized() && this.owner === abAuth.identityId){
-                            updateUsedSpace(abAuth.identityId);
+                        if(abAuth.isAuthorized() && this.owner === abAuth.credentials.identityId){
+                            updateUsedSpace(abAuth.credentials.identityId);
                         }
 
                         var params = {
@@ -357,7 +358,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
         abAuth = $.fn.abAuth();
         abAuth.promise.then(function(){
-            AWS.config.credentials = abAuth.creds;
+            AWS.config.credentials = abAuth.credentials;
             g.s3 = new AWS.S3();
             ROUTER.setOwner(owner).open(doc);            
         });
@@ -391,8 +392,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         TIMERS.set(function () {
             if (USER_USED_SPACE_CHANGED && 
                 abAuth.isAuthorized() && 
-                ROUTER.owner === abAuth.identityId) {
-                updateUsedSpace(abAuth.identityId);
+                ROUTER.owner === abAuth.credentials.identityId) {
+                updateUsedSpace(abAuth.credentials.identityId);
             }
         }, 5000, 'space');
         
