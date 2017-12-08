@@ -121,12 +121,12 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     //call ROUTER.open() to open root of current owner
     //call ROUTER.open(...) to open doc of current owner
     //call ROUTER.setOwner(...).open(...) to open doc of new owner
-    //!!!IMPORTANT!!! Don't forget to set new owner, when it is changed!
-    //TODO try to make location with username, not identityId
+    //IMPORTANT! Don't forget to set/update owner, when owner or viewer has been changed!
     //TODO Probably needs revision when ACL model will be settled, http://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_ListUsers.html
     g.ROUTER = {
         owner: void(0),
-        readonly: true,
+        doc: void(0),
+        readOnly: true,
 
         setOwner: function(owner){
             if(owner === undefined || owner === ''){
@@ -138,7 +138,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             } else {
                 this.owner = owner;
             }
-            this.readonly =  !abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId;
+            this.readOnly =  !abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId;
             return this;
         },
         
@@ -146,28 +146,31 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             var self = this;
             console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
 
-            //"onbeforeunload"
-            /*if ( ($update.hasClass('pending') || $update.hasClass('saving')) &&
+            //"onbeforeunload" imitator
+            if ( PRODUCTION &&
+                 ($update.hasClass('pending') || $update.hasClass('saving')) &&
                  !confirm(_translatorData['changesPending'][LANG]) ) {
                 $update.removeClass('pending saving');
                 return; 
-            }*/
+            }
             $update.removeClass('pending saving');
             
             switch(doc){    
                 case 'welcome': //welcome
-                    if(!self.readonly){
+                    if(!self.readOnly){
                         self.open();
                         return;
                     }
                     $container.children().hide();
                     self.updatePath('/welcome');
+                    self.doc = 'welcome';
                     $welcome.show();            
                     break;
     
                 case 'about': //about
                     $container.children().hide();
                     self.updatePath('/about');
+                    self.doc = 'about';
                     if (!$about.html().trim().length) {
                         $container.prepend($big_preloader);            
                         $.get('/about/' + LANG + '.html', function(data){
@@ -183,8 +186,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 default: //empty or equals GUID
 
                     //in brackets won't go!
-                    //impossible: owner not set and readonly=false
-                    //owner doc readonly
+                    //impossible: owner not set and readOnly=false
+                    //owner doc readOnly
                     //+ + + 1
                     //+ - - 2
                     //- + - (impossible)
@@ -194,16 +197,17 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                     //- + + (7)
                     //- - - (impossible)
 
-                    if((!self.owner || !doc) && self.readonly){ //(4, 6, 7)
+                    if((!self.owner || !doc) && self.readOnly){ //(4, 6, 7)
                         self.open('welcome');
                         return;
                     } 
  
+                    //full app reload if abTree has not been defined already or owner/readOnly has changed
                     var full_reload = false;
-                    if(abTree === undefined || abTree.ownerid !== self.owner){ //full app reload
+                    if(abTree === undefined || abTree.ownerid !== self.owner || abTree.readOnly !== self.readOnly){
                         full_reload = true;
                         $container.children().hide();
-                        $container.prepend($big_preloader);
+                        $container.prepend($big_preloader); //show main preloader
 
                         if(abAuth.isAuthorized() && this.owner === abAuth.credentials.identityId){
                             updateUsedSpace(abAuth.credentials.identityId);
@@ -223,6 +227,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                 doc = abTree.rootGUID;                        
                             }
                             self.updatePath('/' + self.owner + '/' + doc);
+                            self.doc = doc;
                             
                             if(!full_reload){
                                 if(abDoc.docGUID === doc){ //just show and exit, if doc has been already loaded
@@ -232,7 +237,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                         $abDoc.show();
                                     }                                        
                                     return;
-                                } else { //prepare UI for doc loading
+                                } else { //prepare UI for doc loading and show preloader
                                     if($app.is(":visible")){
                                         $abDoc.hide();
                                         $document.append($big_preloader);
@@ -254,7 +259,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                     ownerid: self.owner,
                                     rootGUID: abTree.rootGUID,
                                     docGUID: doc,
-                                    readOnly: self.readonly
+                                    readOnly: self.readOnly
                                 };
                                 abDoc = $abDoc.abDoc(params);
                                 abDoc.promise.then( //doc is ready, show!
@@ -359,6 +364,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         abAuth = $.fn.abAuth();
         abAuth.promise.then(function(){
             AWS.config.credentials = abAuth.credentials;
+            console.log(JSON.stringify(AWS.config.credentials));
             g.s3 = new AWS.S3();
             ROUTER.setOwner(owner).open(doc);            
         });
@@ -387,8 +393,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             location.reload();
         });
 
-        // USED SPACE TIMER
-        // TODO Update it less frequently, may be 15 or 30 minutes?	
+        //USED SPACE TIMER
+        //TODO Update it less frequently, may be 15 or 30 minutes?
+        //TODO Set in ROUTER and only when user can edit (not read only mode)
         TIMERS.set(function () {
             if (USER_USED_SPACE_CHANGED && 
                 abAuth.isAuthorized() && 

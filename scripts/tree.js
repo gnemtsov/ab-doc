@@ -342,7 +342,6 @@
 					self.virgin = true;
 					return [{id: GetGUID(), name: g._translatorData['rootName'][LANG]}];
 				} else {
-					console.log(error);
 					onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}

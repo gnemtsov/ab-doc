@@ -110,7 +110,19 @@ a.navbar-brand img{
     height: 42px;
 }
 
-#sizeIndicator {
+#readonly-icon{
+    position: relative;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    width: 36px;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    height: 32px;
+    margin-left: 20px;
+}
+
+#sizeIndicator, #update {
+    position: relative;
     min-width: 32px !important;
     max-width: 32px !important;
     width: 32px;
@@ -120,14 +132,6 @@ a.navbar-brand img{
     margin-left: 20px;
 }
 
-#update {
-    position: relative;
-    width: 32px !important;
-    min-width: 32px !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    margin-left: 20px;
-}
 #update img {
     position: absolute;
     top: 0px;
@@ -136,6 +140,7 @@ a.navbar-brand img{
     transition-duration: 1s;    
     transition-property: opacity;
 }
+
 #update.pending img#icon-pending {
     opacity: 1;
 }
@@ -610,6 +615,9 @@ padding-left: 6px;
     z-index: 1; /*dropzone must be higher than editor to reseive dragenter events*/
 }
 
+#dropzone.readonly:not(.used) {
+    display: none;
+}
 #dropzone:not(.used) {
     -webkit-transition: width 500ms;
     transition: width 500ms;

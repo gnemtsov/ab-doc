@@ -36,54 +36,73 @@
         //loads user attributes
         //sets TIMER to refresh tokens and credentials
         loggedIn: function(idToken, callback) {
+            console.log('Auth.js: loggedIn called');
             var self = this;
 
-            self.cognitoUser.Attributes = {};
-            self.cognitoUser.getUserAttributes(function(error, attributes){
-                if(error) {
-                    onError(error);
-                    callback(error);
-                } else {
-                    self.credentials.params.Logins = {};
-                    self.credentials.params.Logins[ self.CognitoProviderName ] = idToken;            
-                    self.credentials.expired = true; // Expire credentials to refresh them on the next request
-                    
-                    attributes.forEach(function(attr){
-                        var c = attr.Name.indexOf(':') + 1;
-                        self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
-                    });
+            self.credentials.params.Logins = {};
+            self.credentials.params.Logins[ self.CognitoProviderName ] = idToken;            
+            self.credentials.expired = true; // Expire credentials to refresh them on the next request
 
-                    self.updateNav();
-                    console.log('Auth.js: logged in through ' + self.CognitoProviderName );
-
-                    //refreshSession obtains new ID and ACCESS tokens
-                    //timer is set for 50 minutes, because these tokens live for 1 hour
-                    //refresh token lives for 3649 days and is set in UserPool > General Settings > App clients
-                    TIMERS.set( function(){
-                        self.cognitoUser.refreshSession(
-                            self.cognitoUser.signInUserSession.getRefreshToken(), 
-                            function(error, session){
-                                if (error) {
-                                    onError(error);
-                                    self.signOut();
-                                } else {
-                                    self.credentials.params.Logins = {};
-                                    self.credentials.params.Logins[ self.CognitoProviderName ] = session.getIdToken().getJwtToken();
-                                    self.credentials.expired = true; // Expire credentials to refresh them on the next request
-                                    console.log('Auth.js: tokens refreshed at ' + Date() );
-                                }                                        
-                            }
-                        );
-                    }, 180000000, 'auth' );
-
-                    callback();
-                }
+            //get refreshed credentials
+            var promise1 = new Promise(function(resolve, reject){
+                self.credentials.get(function(error){
+                    if(error){
+                        reject(error)
+                    } else {
+                        resolve()
+                    }
+                });
             });
-             
+
+            //load user attributes
+            self.cognitoUser.Attributes = {};
+            var promise2 = new Promise(function(resolve, reject){
+                self.cognitoUser.getUserAttributes(function(error, attributes){
+                    if(error) {
+                        reject(error)
+                    } else {                    
+                        attributes.forEach(function(attr){
+                            var c = attr.Name.indexOf(':') + 1;
+                            self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
+                        });
+                        self.updateNav();
+                        console.log('Auth.js: logged in through ' + self.CognitoProviderName );
+                        resolve();
+                    }
+                });
+            });
+
+            Promise.all([promise1, promise2])
+                   .then(callback)
+                   .catch(function(error){
+                        onError(error);
+                    });
+            
+            //refreshSession obtains new ID and ACCESS tokens
+            //timer is set for 50 minutes, because these tokens live for 1 hour
+            //refresh token lives for 3649 days and is set in UserPool > General Settings > App clients
+            TIMERS.set( function(){
+                self.cognitoUser.refreshSession(
+                    self.cognitoUser.signInUserSession.getRefreshToken(), 
+                    function(error, session){
+                        if (error) {
+                            onError(error);
+                            self.signOut();
+                        } else {
+                            self.credentials.params.Logins = {};
+                            self.credentials.params.Logins[ self.CognitoProviderName ] = session.getIdToken().getJwtToken();
+                            self.credentials.expired = true; // Expire credentials to refresh them on the next request
+                            console.log('Auth.js: tokens refreshed at ' + Date() );
+                        }                                        
+                    }
+                );
+            }, 180000000, 'auth' );           
+
         },
             
         //sign in user with username and password from self.tmpAuthDetails
         signIn: function() {
+            console.log("Auth.js: signIn called");
             var self = this;
 
             if(self.tmpAuthDetails === undefined){
@@ -103,28 +122,17 @@
                     self.tmpAuthDetails = void(0);
                     self.loggedIn(
                         session.getIdToken().getJwtToken(),
-                        function(error){
-                            if(error){
-                                onError(error);                                
-                                return;
-                            }
-                            //forcibly refresh, because we need identityId right now to route user
-                            self.credentials.refresh(function(error){
-                                if(error){
-                                    onError(error);                                
-                                    return;
-                                }    
-                                ROUTER.setOwner(self.credentials.identityId).open();
-                                $submit.abRelease();
-                                $modal.modal('hide');                                
-                            });
+                        function(){
+                            $submit.abRelease();
+                            $modal.modal('hide');                                
+                            g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
                         }
                     );
                 },
                 onFailure: function(error) {
                     self.tmpAuthDetails = void(0);
-                    $submit.abRelease();
                     self.showAlert(error.code);                                
+                    $submit.abRelease();
                 }
             });
         },
@@ -132,10 +140,12 @@
         //sign out user and ROUTER.open() root
         signOut: function() {
             var self = this;
+            //sign out
             self.cognitoUser.signOut();
-            TIMERS.auth.destroy();
-            self.updateNav();
-            ROUTER.setOwner().open();
+            localStorage.removeItem('aws.cognito.identity-id.'+self.IdentityPoolId);
+            localStorage.removeItem('aws.cognito.identity-providers.'+self.IdentityPoolId);
+            //complete reload
+            g.location.reload();
         },
 
 
@@ -251,6 +261,28 @@
             $alert.fadeIn('fast');
         },
 
+        getInputHTML: function(type, params){
+            params = $.extend({
+                    type: '',
+                    id: '',
+                    label: '',
+                    placeholder: '',
+                    value: ''
+                },
+                params
+            );
+
+            switch(type){
+                case 'hidden':
+                    return '<input id="'+params.id+'" type="hidden" value="'+params.value+'"></input>';
+                default:
+                    return '<div class="form-group input-group">' + 
+                                '<span class="input-group-addon">'+g._translatorData[params.label][g.LANG]+'</span>' + 
+                                '<input id="'+params.id+'" type="'+type+'" class="form-control" placeholder="'+g._translatorData[params.placeholder][g.LANG]+'" value="'+params.value+'"></input>' + 
+                            '</div>';
+            }
+        },
+
         showModal: function(type){
             var self = this;
 
@@ -259,25 +291,25 @@
                     $modal.find('.modal-title').text( g._translatorData['registration'][g.LANG] );
 
                     $form.html(
-                        getInputHTML('text', {
+                        self.getInputHTML('text', {
                             id: 'formAuthUsername',
                             label: 'username',
                             placeholder: 'yourUsername',
                             value: 'testuser'
                         }) +  
-                        getInputHTML('text', {
+                        self.getInputHTML('text', {
                             id: 'formAuthEmail',
                             label: 'email',
                             placeholder: 'yourEmail',
                             value: 'support@erp-lab.com'
                         }) + 
-                        getInputHTML('password', {
+                        self.getInputHTML('password', {
                             id: 'formAuthPassword',
                             label: 'password',
                             placeholder: 'yourPassword',
                             value: 'test1Pass'
                         }) +
-                        getInputHTML('password', {
+                        self.getInputHTML('password', {
                             id: 'formAuthPassword2',
                             label: 'password',
                             placeholder: 'repeatPassword',
@@ -286,19 +318,21 @@
                     );
                     
                     $submit.text( g._translatorData['signUp'][g.LANG] );
-                    $submit.off().on('click', function(e){
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $submit.abFreeze();
-                        self.signUpHandler();
-                    });
+                    $('#buttonAuthSubmit')
+                        .off('click')
+                        .on('click', function(e){
+                            e.preventDefault();
+                            e.stopPropagation();
+                            $submit.abFreeze();
+                            self.signUpHandler();
+                        });
                     break;
 
                 case 'confirm':  //confirm
                     $modal.find('.modal-title').text( g._translatorData['account confirmation'][g.LANG] );
 
                     $form.html(
-                        getInputHTML('text', {
+                        self.getInputHTML('text', {
                             id: 'formAuthCode',
                             label: 'confirmationCode',
                             placeholder: 'yourConfirmationCode'
@@ -306,86 +340,47 @@
                     );
 
                     $submit.text( g._translatorData['confirm'][g.LANG] );
-                    $submit.off().on('click', function(e){
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $submit.abFreeze();
-                        self.confirmHandler();
-                    });
+                    $('#buttonAuthSubmit')
+                        .off('click')
+                        .on('click', function(e){
+                            e.preventDefault();
+                            e.stopPropagation();
+                            $submit.abFreeze();
+                            self.confirmHandler();
+                        });
                     break;
 
                 case 'signIn': //sign in
                     $modal.find('.modal-title').text( g._translatorData['loginPage'][g.LANG] );
 
                     $form.html(
-                        getInputHTML('text', {
+                        self.getInputHTML('text', {
                             id: 'formAuthUsername',
                             label: 'username',
-                            placeholder: 'yourUsername'
+                            placeholder: 'yourUsername',
+                            value: 'gnemtsov'
                         }) +
-                        getInputHTML('password', {
+                        self.getInputHTML('password', {
                             id: 'formAuthPassword',
                             label: 'password',
                             placeholder: 'yourPassword'
-                        }) +
-                        getInputHTML('hidden', {
-                            id: 'formAuthAction',
-                            value: 'signIn'
                         })
                     );
 
                     $submit.text( g._translatorData['enter'][g.LANG] );
-                    $submit.off().on('click', function(e){
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $submit.abFreeze();
-                        self.signInHandler();
-                    });            
-
+                    $('#buttonAuthSubmit')
+                        .off('click')
+                        .on('click', function(e){
+                            e.preventDefault();
+                            e.stopPropagation();
+                            $submit.abFreeze();
+                            self.signInHandler();
+                        });
+                    
                     break;
             }
+
             $modal.modal('show');
-
-            $modal.keypress(function(e){
-                if(e.which == 13) {
-                    $submit.trigger('click', e);
-                }
-            });
-
-            //submit states functions
-            $submit.abFreeze = function(){
-                $alert.hide();
-                $submit.prop('disabled', true);
-                $submit.before($small_preloader);
-            };            
-            $submit.abRelease = function(){
-                $submit.prop('disabled', false);
-                $small_preloader.remove();
-            };
-    
-            //get HTML of input
-            function getInputHTML(type, params){
-                params = $.extend({
-                        type: '',
-                        id: '',
-                        label: '',
-                        placeholder: '',
-                        value: ''
-                    },
-                    params
-                );
-
-                switch(type){
-                    case 'hidden':
-                        return '<input id="'+params.id+'" type="hidden" value="'+params.value+'"></input>';
-                    default:
-                        return '<div class="form-group input-group">' + 
-                                    '<span class="input-group-addon">'+g._translatorData[params.label][g.LANG]+'</span>' + 
-                                    '<input id="'+params.id+'" type="'+type+'" class="form-control" placeholder="'+g._translatorData[params.placeholder][g.LANG]+'" value="'+params.value+'"></input>' + 
-                                '</div>';
-                }
-            }
-
         }        
 
 	}	
@@ -399,6 +394,27 @@
         $form = $('#formAuth');
         $alert = $('#alertAuthError');        
         $submit = $('#buttonAuthSubmit');
+
+        //modal events handlers
+        $modal.on('shown.bs.modal', function() {
+            $modal.find('input[type!="hidden"]').first().focus();
+        })            
+        $modal.keypress(function(e){
+            if(e.which == 13) {
+                $submit.trigger('click', e);
+            }
+        });
+
+        //submit functions        
+        $submit.abFreeze = function(){
+            $alert.hide();
+            $submit.prop('disabled', true);
+            $submit.before($small_preloader);
+        };            
+        $submit.abRelease = function(){
+            $submit.prop('disabled', false);
+            $small_preloader.remove();
+        };
 
         self.updateNav();
 
@@ -432,9 +448,7 @@
                     } else if(session.isValid()){
                         self.loggedIn(
                             session.getIdToken().getJwtToken(),
-                            function(){ 
-                                resolve(); 
-                            }
+                            function(){ resolve(); }
                         );
                     } else {
                         resolve();
