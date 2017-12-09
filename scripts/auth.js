@@ -137,7 +137,7 @@
             });
         },
 
-        //sign out user and ROUTER.open() root
+        //sign out user reload page
         signOut: function() {
             var self = this;
             //sign out
@@ -240,12 +240,12 @@
         updateNav: function(){
             var self = this;
             if(self.isAuthorized()){
-                $('.authenticated-mode').show();
-                $('.unauthenticated-mode').hide();
+                $('.authenticated-mode').removeClass('hidden');
+                $('.unauthenticated-mode').addClass('hidden');
                 $username.text(self.cognitoUser.username);
             } else {
-                $('.authenticated-mode').hide();
-                $('.unauthenticated-mode').show();
+                $('.authenticated-mode').addClass('hidden');
+                $('.unauthenticated-mode').removeClass('hidden');
                 $username.text(g._translatorData['account'][g.LANG]);
             }
             $username.addClass('loaded');
@@ -416,8 +416,6 @@
             $small_preloader.remove();
         };
 
-        self.updateNav();
-
         self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
         self.IdentityPoolId = 'eu-west-1:e6ca203a-aead-49ba-a7e3-5c3c02cb1cf6';
         self.UserPoolId = 'eu-west-1_dtgGGP4kG';
@@ -435,6 +433,7 @@
         self.cognitoUser = self.userPool.getCurrentUser();
 
         if (self.cognitoUser === null) {
+            self.updateNav();
             self.promise = Promise.resolve();
         } else {
             self.promise = new Promise(function(resolve, reject){
@@ -451,6 +450,7 @@
                             function(){ resolve(); }
                         );
                     } else {
+                        self.updateNav();
                         resolve();
                     }
                 });                

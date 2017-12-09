@@ -117,16 +117,16 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     }
 
     //ROUTER object constructor
-    //stores current owner, opens routes
-    //call ROUTER.open() to open root of current owner
-    //call ROUTER.open(...) to open doc of current owner
-    //call ROUTER.setOwner(...).open(...) to open doc of new owner
-    //IMPORTANT! Don't forget to set/update owner, when owner or viewer has been changed!
+    //stores current owner and opens routes
+    //call ROUTER.open('...') to open doc of currently set owner
+    //call ROUTER.setOwner().open('...') to open doc of current authenticated user as owner
+    //call ROUTER.setOwner('...').open('...') to open doc of specified new owner
+    //IMPORTANT! Don't forget to always set owner, when owner or viewer can possibly change!
     //TODO Probably needs revision when ACL model will be settled, http://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_ListUsers.html
     g.ROUTER = {
         owner: void(0),
         doc: void(0),
-        readOnly: true,
+        readOnly: false,
 
         setOwner: function(owner){
             if(owner === undefined || owner === ''){
@@ -157,20 +157,29 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             
             switch(doc){    
                 case 'welcome': //welcome
-                    if(!self.readOnly){
+                    if(abAuth.isAuthorized()){
                         self.open();
                         return;
                     }
+
                     $container.children().hide();
-                    self.updatePath('/welcome');
+
+                    self.owner = undefined;
                     self.doc = 'welcome';
+                    self.readOnly = false,
+                    self.updatePath();
+
                     $welcome.show();            
                     break;
     
                 case 'about': //about
                     $container.children().hide();
-                    self.updatePath('/about');
+
+                    self.owner = undefined;
                     self.doc = 'about';
+                    self.readOnly = false,
+                    self.updatePath();
+
                     if (!$about.html().trim().length) {
                         $container.prepend($big_preloader);            
                         $.get('/about/' + LANG + '.html', function(data){
@@ -224,13 +233,14 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                         function(){
 
                             if(doc === undefined || doc === ''){ //2
-                                doc = abTree.rootGUID;                        
+                                self.doc = abTree.rootGUID;                        
+                            } else {
+                                self.doc = doc;
                             }
-                            self.updatePath('/' + self.owner + '/' + doc);
-                            self.doc = doc;
+                            self.updatePath();
                             
                             if(!full_reload){
-                                if(abDoc.docGUID === doc){ //just show and exit, if doc has been already loaded
+                                if(abDoc.docGUID === self.doc){ //just show and exit, if doc has been already loaded
                                     if(!$app.is(":visible")){
                                         $container.children().hide();
                                         $app.children().addBack().show();
@@ -247,7 +257,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                 }
                             }
 
-                            var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
+                            var docNODE = abTree.tree.getNodesByParam('id', self.doc)[0];
                             if(docNODE === undefined){
                                 onWarning(_translatorData["no guids found"][LANG]);
                                 $big_preloader.remove();
@@ -258,7 +268,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                 var params = {
                                     ownerid: self.owner,
                                     rootGUID: abTree.rootGUID,
-                                    docGUID: doc,
+                                    docGUID: self.doc,
                                     readOnly: self.readOnly
                                 };
                                 abDoc = $abDoc.abDoc(params);
@@ -276,14 +286,28 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
         },
 
-        updatePath: function(new_path){
-            new_path = new_path.replace(':','_');
+        updatePath: function(){
+            var self = this,
+                parts = [];
+            if(self.owner !== undefined){
+                parts.push(self.owner.replace(':','_'));
+            }
+            if(self.doc !== undefined){
+                parts.push(self.doc);
+            }
+            var new_path = '/' + parts.join('/');
             if(new_path !== window.location.pathname) { 
-                history.pushState(null, null, new_path);
+                history.pushState({owner: self.owner, doc: self.doc}, null, new_path);
             }
         }
 
     };
+
+    window.onpopstate = function(event) { //revert ROUTER state when back|forward click
+        ROUTER.setOwner(event.state.owner)
+              .open(event.state.doc);
+    };
+      
 
     //onbeforeunload
     window.onbeforeunload = function (e) {
@@ -409,7 +433,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         // App logo click
         $('body').on('click', 'a.navbar-brand', function (e) {
             e.preventDefault();
-            ROUTER.open();
+            ROUTER.setOwner().open();
         });
         
         // Call sign up dialog
