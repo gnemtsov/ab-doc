@@ -6,10 +6,14 @@
 //some examples
 //https://github.com/aws/amazon-cognito-identity-js
 //https://gist.github.com/damonmaria/d4daac2dac8014cffd9d5872355a4ad4
+//TODO store account confirmation pending status in local storage + ExpiredCodeException
 
 (function (g, $) {
 
-    var $username, $modal, $form, $submit, $alert;
+    var $username;
+    var $modal, $mtitle, $mbody, $mfooter;
+    var $alert_container, $alert;
+    var $form, $submit, $forget_link;
 
     var CISP = AWSCognito.CognitoIdentityServiceProvider;
         
@@ -22,7 +26,7 @@
 	abAuth.prototype = {
 
         //-----core functions-----
-        //returns auth status: true or false
+        //returns current auth status: true or false
         isAuthorized: function(){
             var self = this;
             return self.cognitoUser !== undefined &&
@@ -32,19 +36,16 @@
                    self.cognitoUser.signInUserSession.isValid();
         },
 
-        //sets user credentials after successful login (constructor or signIn)
-        //loads user attributes
-        //sets TIMER to refresh tokens and credentials
-        loggedIn: function(idToken, callback) {
+        //after successful login (constructor or signIn), returns promise
+        loggedIn: function(idToken) {
             console.log('Auth.js: loggedIn called');
             var self = this;
 
-            self.credentials.params.Logins = {};
-            self.credentials.params.Logins[ self.CognitoProviderName ] = idToken;            
-            self.credentials.expired = true; // Expire credentials to refresh them on the next request
-
-            //get refreshed credentials
+            //refresh credentials promise
             var promise1 = new Promise(function(resolve, reject){
+                self.credentials.params.Logins = {};
+                self.credentials.params.Logins[ self.CognitoProviderName ] = idToken;            
+                self.credentials.expired = true; // Expire credentials to refresh them on the next request
                 self.credentials.get(function(error){
                     if(error){
                         reject(error)
@@ -54,9 +55,9 @@
                 });
             });
 
-            //load user attributes
-            self.cognitoUser.Attributes = {};
+            //load user attributes promise
             var promise2 = new Promise(function(resolve, reject){
+                self.cognitoUser.Attributes = {};
                 self.cognitoUser.getUserAttributes(function(error, attributes){
                     if(error) {
                         reject(error)
@@ -65,20 +66,12 @@
                             var c = attr.Name.indexOf(':') + 1;
                             self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
                         });
-                        self.updateNav();
-                        console.log('Auth.js: logged in through ' + self.CognitoProviderName );
                         resolve();
                     }
                 });
             });
-
-            Promise.all([promise1, promise2])
-                   .then(callback)
-                   .catch(function(error){
-                        onError(error);
-                    });
             
-            //refreshSession obtains new ID and ACCESS tokens
+            //Set refreshSession TIMER, it obtains new ID and ACCESS tokens
             //timer is set for 50 minutes, because these tokens live for 1 hour
             //refresh token lives for 3649 days and is set in UserPool > General Settings > App clients
             TIMERS.set( function(){
@@ -96,46 +89,138 @@
                         }                                        
                     }
                 );
-            }, 180000000, 'auth' );           
+            }, 180000000, 'auth' );
 
+            return Promise.all([promise1, promise2]);
         },
+
+        //signUp new user, returns promise
+        signUp: function(username, email, password) {
+            var self = this;
+            return new Promise (function(resolve, reject){
+                var attributeList = [];
+                attributeList.push(
+                    new CISP.CognitoUserAttribute({
+                        Name : 'email',
+                        Value : email
+                    })
+                );
+                attributeList.push(
+                    new CISP.CognitoUserAttribute({
+                        Name : 'custom:account-type',
+                        Value : 'free'
+                    })
+                );
+                attributeList.push(
+                    new CISP.CognitoUserAttribute({
+                        Name : 'custom:space-limit',
+                        Value : '1'
+                    })
+                );
             
-        //sign in user with username and password from self.tmpAuthDetails
-        signIn: function() {
+                self.userPool.signUp(username, password, attributeList, null, function(error, result){                
+                    if (error) {
+                        reject(error);
+                    } else {
+                        self.cognitoUser = result.user;
+                        resolve();
+                    }
+                });
+            });
+        },
+
+        //signIn user, returns promise
+        //username can be undefined, that means sign in current cognitoUser
+        signIn: function(username, password) {
             console.log("Auth.js: signIn called");
             var self = this;
-
-            if(self.tmpAuthDetails === undefined){
-                onError();
-                return;
-            }
-         
-            var authenticationDetails = new CISP.AuthenticationDetails(self.tmpAuthDetails);
-            
-            self.cognitoUser = new CISP.CognitoUser({
-                Username : self.tmpAuthDetails.Username,
-                Pool : self.userPool
-            });
-
-            self.cognitoUser.authenticateUser(authenticationDetails, {
-                onSuccess: function (session) {
-                    self.tmpAuthDetails = void(0);
-                    self.loggedIn(
-                        session.getIdToken().getJwtToken(),
-                        function(){
-                            $submit.abRelease();
-                            $modal.modal('hide');                                
-                            g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
-                        }
-                    );
-                },
-                onFailure: function(error) {
-                    self.tmpAuthDetails = void(0);
-                    self.showAlert(error.code);                                
-                    $submit.abRelease();
+            return new Promise (function(resolve, reject){
+                
+                if(username === undefined){
+                    username = self.cognitoUser.getUsername();
+                } else {
+                    self.cognitoUser = new CISP.CognitoUser({
+                        Username : username,
+                        Pool : self.userPool
+                    });
                 }
+
+                var authenticationDetails = new CISP.AuthenticationDetails({
+                    Username: username,
+                    Password: password
+                });
+
+                self.cognitoUser.authenticateUser(authenticationDetails, {
+                    onSuccess: function (session) {
+                        self.loggedIn( session.getIdToken().getJwtToken() )
+                            .then(
+                                function(){ 
+                                    self.updateNavUsername();
+                                    resolve(); 
+                                },
+                                function(error){ 
+                                    reject(error); 
+                                }
+                            );
+                    },
+                    onFailure: function(error) {
+                        reject(error);
+                    }
+                });
             });
         },
+
+        //confirm user registration
+        confirmRegistration: function(code) {
+            var self = this;
+            return new Promise (function(resolve, reject){
+                self.cognitoUser.confirmRegistration(code, true, function(error, result) {
+                    if (error) reject(error);                                
+                    else resolve();
+                });
+            });
+        },        
+
+        //start forgot password flow
+        forgotPassword: function(username) {
+            var self = this;
+            return new Promise (function(resolve, reject){
+                self.cognitoUser = new CISP.CognitoUser({
+                    Username : username,
+                    Pool : self.userPool
+                });
+                
+                self.cognitoUser.forgotPassword({
+                        onSuccess: function (result) { resolve(result); },
+                        onFailure: function(error) { reject(error); }
+                });
+            });
+        },        
+
+        //reset forgotten password
+        resetPassword: function(verificationCode, newPassword) {
+            var self = this;
+            return new Promise (function(resolve, reject){
+                self.cognitoUser.confirmPassword(
+                    verificationCode, 
+                    newPassword,
+                    {
+                        onSuccess: function (result) {
+                            self.signIn(void(0), newPassword)
+                                .then(function(){
+                                    resolve(result);
+                                })
+                                .catch(function(error){
+                                    reject(error);
+                                });                           
+                        },
+                        onFailure: function(error) { 
+                            reject(error); 
+                        }
+                    }
+                );
+            });
+        },        
 
         //sign out user reload page
         signOut: function() {
@@ -150,94 +235,165 @@
 
 
         //-----events handlers-----
-
-        signUpHandler: function(){
+        signUpHandler: function(e){
             var self = this;
+
+            e.preventDefault();
+            e.stopPropagation();
+            $submit.abFreeze();
 
             var username = $('#formAuthUsername').val(),
                 email = $('#formAuthEmail').val(),
                 password = $('#formAuthPassword').val(),
                 password2 = $('#formAuthPassword2').val();
 
+            var error;
             if(!username){
-                self.showAlert('alertNoUsername');
-                return;
+                error = 'alertNoUsername';
             } else if(!email){
-                self.showAlert('alertNoEmail')
-                return;
+                error = 'alertNoEmail';
             } else if(!password && !password2){
-                self.showAlert('alertNoPassword')
-                return;
+                error = 'alertNoPassword';
             } else if(password !== password2){
-                self.showAlert('alertWrongRepeat')
+                error = 'alertWrongRepeat';
+            }
+
+            if(error){
+                self.showAlert(error);
+                $submit.abRelease();
                 return;
             }
             
-            var attributeList = [];
-            attributeList.push(
-                new CISP.CognitoUserAttribute({
-                    Name : 'email',
-                    Value : email
+            self.signUp(username, email, password)
+                .then(function(){
+                    self.tmpPassword = password;
+                    self.showModal('confirm');
+                    $submit.abRelease();
                 })
-            );
-            attributeList.push(
-                new CISP.CognitoUserAttribute({
-                    Name : 'custom:account-type',
-                    Value : 'free'
-                })
-            );
-            attributeList.push(
-                new CISP.CognitoUserAttribute({
-                    Name : 'custom:space-limit',
-                    Value : '1'
-                })
-            );
-        
-            self.userPool.signUp(username, password, attributeList, null, function(error, result){                
-                if (error) {
+                .catch(function(error){
                     if(error.message.indexOf("Value at 'password' failed to satisfy constraint") !== -1){
                         self.showAlert('InvalidPasswordException');                                
                     } else {
                         self.showAlert(error.code);                                
                     }
-                } else {
-                    self.cognitoUser = result.user;
-                    self.tmpAuthDetails = {
-                        Username : username,
-                        Password : password
-                    }
-                    self.showModal('confirm');
-                }
-                $submit.abRelease();
-            });
+                    $submit.abRelease();
+                });
         },
                 
-        confirmHandler: function(){
+        confirmHandler: function(e){
             var self = this;
+
+            e.preventDefault();
+            e.stopPropagation();
+            $submit.abFreeze();
+
             var code = $('#formAuthCode').val();
-            
-            self.cognitoUser.confirmRegistration(code, true, function(error, result) {
-                $submit.abRelease();                
-                if (error) {
+            self.confirmRegistration(code)
+                .then(function(){
+                    var password = self.tmpPassword;
+                    self.tmpPassword = void(0);                    
+                    return self.signIn(void(0), password);
+                })
+                .then(function(){
+                    $submit.abRelease();
+                    $modal.modal('hide');                                
+                    g.ROUTER.setOwner().open();
+                })
+                .catch(function(error){
                     self.showAlert(error.code);                                
-                } else {
-                    self.signIn();                
-                }
-            });
+                    $submit.abRelease();
+                });            
         },
 
-        signInHandler: function(){
+        signInHandler: function(e){
             var self = this;
 
-            self.tmpAuthDetails = {
-                Username : $('#formAuthUsername').val(),
-                Password : $('#formAuthPassword').val()
+            e.preventDefault();
+            e.stopPropagation();
+            $submit.abFreeze();
+
+            var username = $('#formAuthUsername').val(),
+                password = $('#formAuthPassword').val();
+
+            self.signIn(username, password)
+                .then(function(){
+                    $submit.abRelease();
+                    $modal.modal('hide');                                
+                    g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
+                })
+                .catch(function(error){
+                    self.showAlert(error.code);                                
+                    $submit.abRelease();
+                });
+        },
+
+        forgotPasswordLinkHandler: function(e){
+            var self = this;
+
+            e.preventDefault();
+            e.stopPropagation();
+            $submit.abFreeze();
+
+            var username = $('#formAuthUsername').val();
+            if(!username){
+                self.showAlert('alertNoUsername');
+                $submit.abRelease();
+                return;
             }
-            self.signIn();                
+            
+            self.forgotPassword(username)
+                .then(function(){
+                    self.showModal('reset password');
+                    self.showAlert('confirmation code sent', 'alert-info');
+                    $submit.abRelease();
+                })
+                .catch(function(error){
+                    self.showAlert(error.code);                                
+                    $submit.abRelease();
+                });
+        },
+
+        resetPasswordHandler: function(e){
+            var self = this;
+
+            e.preventDefault();
+            e.stopPropagation();
+            $submit.abFreeze();
+
+            var code = $('#formAuthCode').val(),
+                password = $('#formAuthPassword').val(),
+                password2 = $('#formAuthPassword2').val();
+
+            var error;
+            if(!password && !password2){
+                error = 'alertNoPassword';
+            } else if(password !== password2){
+                error = 'alertWrongRepeat';
+            }
+
+            if(error){
+                self.showAlert(error);
+                $submit.abRelease();
+                return;
+            }
+            
+            self.resetPassword(code, password)
+                .then(function(){
+                    self.showAlert('password reset successful', 'alert-success');                                
+                    setTimeout(function() {
+                        $submit.abRelease();
+                        $modal.modal('hide');                                
+                        g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
+                    }, 5000);
+                })
+                .catch(function(error){
+                    self.showAlert(error.code);                                
+                    $submit.abRelease();
+                });
         },
 
         //-----UI functions-----
-        updateNav: function(){
+        updateNavUsername: function(){
             var self = this;
             if(self.isAuthorized()){
                 $('.authenticated-mode').removeClass('hidden');
@@ -251,14 +407,19 @@
             $username.addClass('loaded');
         },
 
-        showAlert: function(code){
+        showAlert: function(code, alert_class){
             var self = this;
+            if(alert_class === undefined){
+                alert_class = 'alert-danger';
+            }
             if(g._translatorData[code]){
                 $alert.text(g._translatorData[code][g.LANG]);
             } else {
                 $alert.text(g._translatorData['alertUnknownError'][g.LANG]);
             }
-            $alert.fadeIn('fast');
+            $alert.removeClass('alert-success alert-info alert-warning alert-danger')
+                  .addClass(alert_class);
+            $alert_container.fadeIn('fast');
         },
 
         getInputHTML: function(type, params){
@@ -283,32 +444,162 @@
             }
         },
 
+        initModal: function(){
+            var self = this;
+
+            $modal = $(
+                '<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="authModalLabel" aria-hidden="true">' + 
+                    '<div class="modal-dialog" role="document">' + 
+                        '<div class="modal-content">' + 
+                            '<div class="modal-header">' + 
+                                '<h4 class="modal-title" id="authModalLabel"></h4>' + 
+                                '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' + 
+                                    '<span aria-hidden="true">&times;</span>' + 
+                                '</button>' + 
+                            '</div>' + 
+                            '<div class="modal-body"></div>' + 
+                            '<div class="modal-footer"></div>' + 
+                        '</div>' + 
+    			    '</div>' + 
+		        '</div>'
+            );
+
+            $mtitle = $modal.find('.modal-title');
+            $mbody = $modal.find('.modal-body');
+            $mfooter = $modal.find('.modal-footer');
+
+            $alert_container = $('<div class="form-group collapse"></div>');
+            $alert = $('<div class="alert col-12" role="alert"></div>');
+            $alert_container.append( $alert );
+            $mbody.append( $alert_container );
+            
+            $form = $('<form></form>');
+            $mbody.append($form);
+
+            $submit = $('<button type="button" class="btn btn-success"></button>');
+            $submit.abFreeze = function(){
+                $alert_container.hide();
+                $submit.prop('disabled', true);
+                $submit.before($small_preloader);
+            };            
+            $submit.abRelease = function(){
+                $submit.prop('disabled', false);
+                $small_preloader.remove();
+            };
+
+            $forget_link = $('<a href="#">'+g._translatorData['forgotPassword'][g.LANG]+'</a>');
+
+            //modal common events handlers (used for all modal types)
+            $modal.on('shown.bs.modal', function() {
+                $modal.find('input[type!="hidden"]').first().focus();
+            })            
+            $modal.keypress(function(e){
+                if(e.which == 13) {
+                    $submit.trigger('click', e);
+                }
+            });
+
+            $modal.modal({show: false});
+        },
+
         showModal: function(type){
             var self = this;
 
+            if($modal === undefined){
+                onError('Modal was not initialized');
+                return;
+            }
+
+            $alert_container.hide();
+            $form.empty();
+            $mfooter.empty();
+
             switch(type){
                 case 'signUp': //sign up
-                    $modal.find('.modal-title').text( g._translatorData['registration'][g.LANG] );
-
-                    $form.html(
+                    $mtitle.text( g._translatorData['registration'][g.LANG] );
+                    $form.append(
                         self.getInputHTML('text', {
                             id: 'formAuthUsername',
                             label: 'username',
                             placeholder: 'yourUsername',
                             value: 'testuser'
-                        }) +  
+                        }),  
                         self.getInputHTML('text', {
                             id: 'formAuthEmail',
                             label: 'email',
                             placeholder: 'yourEmail',
                             value: 'support@erp-lab.com'
-                        }) + 
+                        }), 
                         self.getInputHTML('password', {
                             id: 'formAuthPassword',
                             label: 'password',
                             placeholder: 'yourPassword',
                             value: 'test1Pass'
-                        }) +
+                        }),
+                        self.getInputHTML('password', {
+                            id: 'formAuthPassword2',
+                            label: 'password',
+                            placeholder: 'repeatPassword',
+                            value: 'test1Pass'
+                        }) 
+                    );                    
+                    $submit.text( g._translatorData['signUp'][g.LANG] );
+                    $submit.on('click', self.signUpHandler.bind(self));
+                    $mfooter.append($submit);
+                    break;
+
+                case 'confirm':  //confirm
+                    $mtitle.text( g._translatorData['account confirmation'][g.LANG] );
+                    $form.append(
+                        self.getInputHTML('text', {
+                            id: 'formAuthCode',
+                            label: 'confirmationCode',
+                            placeholder: 'yourConfirmationCode'
+                        })
+                    );
+                    $submit.text( g._translatorData['confirm'][g.LANG] );
+                    $submit.on('click', self.confirmHandler.bind(self));
+                    $mfooter.append($submit);
+                    break;
+
+                case 'signIn': //sign in
+                    $mtitle.text( g._translatorData['loginPage'][g.LANG] );
+                    $form.append(
+                        self.getInputHTML('text', {
+                            id: 'formAuthUsername',
+                            label: 'username',
+                            placeholder: 'yourUsername',
+                            value: 'gnemtsov'
+                        }),
+                        self.getInputHTML('password', {
+                            id: 'formAuthPassword',
+                            label: 'password',
+                            placeholder: 'yourPassword'
+                        })
+                    );
+                    $submit.text( g._translatorData['enter'][g.LANG] );
+                    $submit.on('click', self.signInHandler.bind(self));
+                    $forget_link.on('click', self.forgotPasswordLinkHandler.bind(self));
+                    $mfooter.append(
+                        $forget_link,
+                        $submit
+                    );
+                    break;
+
+                case 'reset password': //reset password
+                    $mtitle.text( g._translatorData['resetPassword'][g.LANG] );
+                    $form.append(
+                        self.getInputHTML('text', {
+                            id: 'formAuthCode',
+                            label: 'confirmationCode',
+                            placeholder: 'yourConfirmationCode'
+                        }),
+                        self.getInputHTML('password', {
+                            id: 'formAuthPassword',
+                            label: 'password',
+                            placeholder: 'yourPassword',
+                            value: 'test1Pass'
+                        }),
                         self.getInputHTML('password', {
                             id: 'formAuthPassword2',
                             label: 'password',
@@ -316,71 +607,15 @@
                             value: 'test1Pass'
                         }) 
                     );
-                    
-                    $submit.text( g._translatorData['signUp'][g.LANG] );
-                    $('#buttonAuthSubmit')
-                        .off('click')
-                        .on('click', function(e){
-                            e.preventDefault();
-                            e.stopPropagation();
-                            $submit.abFreeze();
-                            self.signUpHandler();
-                        });
-                    break;
-
-                case 'confirm':  //confirm
-                    $modal.find('.modal-title').text( g._translatorData['account confirmation'][g.LANG] );
-
-                    $form.html(
-                        self.getInputHTML('text', {
-                            id: 'formAuthCode',
-                            label: 'confirmationCode',
-                            placeholder: 'yourConfirmationCode'
-                        }) 
-                    );
-
-                    $submit.text( g._translatorData['confirm'][g.LANG] );
-                    $('#buttonAuthSubmit')
-                        .off('click')
-                        .on('click', function(e){
-                            e.preventDefault();
-                            e.stopPropagation();
-                            $submit.abFreeze();
-                            self.confirmHandler();
-                        });
-                    break;
-
-                case 'signIn': //sign in
-                    $modal.find('.modal-title').text( g._translatorData['loginPage'][g.LANG] );
-
-                    $form.html(
-                        self.getInputHTML('text', {
-                            id: 'formAuthUsername',
-                            label: 'username',
-                            placeholder: 'yourUsername',
-                            value: 'gnemtsov'
-                        }) +
-                        self.getInputHTML('password', {
-                            id: 'formAuthPassword',
-                            label: 'password',
-                            placeholder: 'yourPassword'
-                        })
-                    );
-
-                    $submit.text( g._translatorData['enter'][g.LANG] );
-                    $('#buttonAuthSubmit')
-                        .off('click')
-                        .on('click', function(e){
-                            e.preventDefault();
-                            e.stopPropagation();
-                            $submit.abFreeze();
-                            self.signInHandler();
-                        });
-                    
+                    $submit.text( g._translatorData['resetPassword'][g.LANG] );
+                    $submit.on('click', self.resetPasswordHandler.bind(self));
+                    $mfooter.append($submit);
                     break;
             }
 
-            $modal.modal('show');
+            if (!$modal.hasClass('show')) {
+                $modal.modal('show');
+            }
         }        
 
 	}	
@@ -389,74 +624,57 @@
 	abAuth.init = function() {
         var self = this;
 
-        $username = $('#username');
-        $modal = $('#modalAuth');
-        $form = $('#formAuth');
-        $alert = $('#alertAuthError');        
-        $submit = $('#buttonAuthSubmit');
+        self.promise = new Promise(function(resolve, reject){
 
-        //modal events handlers
-        $modal.on('shown.bs.modal', function() {
-            $modal.find('input[type!="hidden"]').first().focus();
-        })            
-        $modal.keypress(function(e){
-            if(e.which == 13) {
-                $submit.trigger('click', e);
-            }
-        });
+            $username = $('#username');
 
-        //submit functions        
-        $submit.abFreeze = function(){
-            $alert.hide();
-            $submit.prop('disabled', true);
-            $submit.before($small_preloader);
-        };            
-        $submit.abRelease = function(){
-            $submit.prop('disabled', false);
-            $small_preloader.remove();
-        };
+            self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
+            self.IdentityPoolId = 'eu-west-1:e6ca203a-aead-49ba-a7e3-5c3c02cb1cf6';
+            self.UserPoolId = 'eu-west-1_dtgGGP4kG';
+            self.ClientId = '1eflaa2k69bgebikbnak5jg0ac';
+            self.poolData = {
+                UserPoolId : self.UserPoolId,
+                ClientId : self.ClientId
+            };
 
-        self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
-        self.IdentityPoolId = 'eu-west-1:e6ca203a-aead-49ba-a7e3-5c3c02cb1cf6';
-        self.UserPoolId = 'eu-west-1_dtgGGP4kG';
-        self.ClientId = '1eflaa2k69bgebikbnak5jg0ac';
-        self.poolData = {
-            UserPoolId : self.UserPoolId,
-            ClientId : self.ClientId
-        };
+            self.userPool = new CISP.CognitoUserPool( self.poolData );
+            self.credentials = new AWS.CognitoIdentityCredentials({
+                IdentityPoolId: self.IdentityPoolId
+            });
 
-        self.userPool = new CISP.CognitoUserPool( self.poolData );
-        self.credentials = new AWS.CognitoIdentityCredentials({
-            IdentityPoolId: self.IdentityPoolId
-        });
-
-        self.cognitoUser = self.userPool.getCurrentUser();
-
-        if (self.cognitoUser === null) {
-            self.updateNav();
-            self.promise = Promise.resolve();
-        } else {
-            self.promise = new Promise(function(resolve, reject){
+            //tries to get user object from local storage
+            self.cognitoUser = self.userPool.getCurrentUser();
+            if (self.cognitoUser === null) {
+                self.initModal();
+                self.updateNavUsername();
+                resolve();
+            } else {
                 //looks for session in variable
                 //if not found, looks in local storage
                 //if not found, tries to obtain session using refreshToken
                 self.cognitoUser.getSession(function(error, session) {
                     if (error) {
-                        onError(error);
                         reject(error);
                     } else if(session.isValid()){
-                        self.loggedIn(
-                            session.getIdToken().getJwtToken(),
-                            function(){ resolve(); }
-                        );
+                        self.loggedIn( session.getIdToken().getJwtToken() )
+                            .then(
+                                function(){ 
+                                    self.updateNavUsername();
+                                    resolve(); 
+                                },
+                                function(error){ 
+                                    reject(error); 
+                                }
+                            );
                     } else {
-                        self.updateNav();
+                        self.initModal();
+                        self.updateNavUsername();
                         resolve();
                     }
                 });                
-            });
-        }
+            }
 
+        });
 	}
 
 	// trick borrowed from jQuery so we don't have to use the 'new' keyword

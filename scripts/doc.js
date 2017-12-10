@@ -602,7 +602,7 @@
 
 		//-------------prepare document template--------------//
 		if($abDoc instanceof $){
-			$abDoc.off().empty(); //empty and remove also unbind old event handlers
+			$(self.docContainer).off().empty(); //empty and remove also unbind old event handlers
 			$editor.remove();
 			$drop_zone.remove();
 			$clip_icon.remove();

@@ -78,6 +78,10 @@ var _translatorData = {
         "ru": "Код подтверждения",
         "en": "Confirmation code"
     },
+    "confirmation code sent": {
+        "ru": "Код подтверждения выслан на эл. почту",
+        "en": "Check your e-mail for confirmation code"
+    },
     "couldNotLoadTree": {
 		"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com.",
 		"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com."
@@ -127,8 +131,8 @@ var _translatorData = {
         "en": "Forgot password?"
     },
     "InvalidParameterException": {
-        "ru": "Один или несколько параметров введены неверно",
-        "en": "Some parameters are invalid"
+        "ru": "Один или несколько параметров введены неверно.",
+        "en": "Some parameters are invalid."
     },
     "InvalidPasswordException": {
         "ru": "Пароль должен быть не короче 6 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
@@ -138,25 +142,29 @@ var _translatorData = {
         "ru": "Вход",
         "en": "Log in"
     },
+    "LimitExceededException": {
+        "ru": "Количество попыток исчерпано, попробуйте позже.",
+        "en": "Attempt limit exceeded, please try after some time."
+    },
     "multiple guids found": {
-        "ru": "Обнаружено более 1 документа с данным GUID",
-        "en": "More than 1 document with specified GUID found"
+        "ru": "Обнаружено более 1 документа с данным GUID.",
+        "en": "More than 1 document with specified GUID found."
     },
     "no": {
         "ru": "нет",
         "en": "no"
     },
     "no guids found": {
-        "ru": "Документ с этим GUID не найден",
-        "en": "Document with this GUID not found"
+        "ru": "Документ с этим GUID не найден.",
+        "en": "Document with this GUID not found."
     },
     "noSpace": {
-        "ru": "Недостаточно места для загрузки файла",
-        "en": "No space left to upload this file"
+        "ru": "Недостаточно места для загрузки файла.",
+        "en": "No space left to upload this file."
     },
     "NotAuthorizedException": {
-        "ru": "Отказано в доступе",
-        "en": "Access denied"
+        "ru": "Отказано в доступе.",
+        "en": "Access denied."
     },
     "ok": {
         "ru": "Ок",
@@ -165,6 +173,10 @@ var _translatorData = {
     "password": {
         "ru": "Пароль",
         "en": "Password"
+    },
+    "password reset successful": {
+        "ru": "Пароль успешно изменен. Дождитесь перенаправления..",
+        "en": "Password reset successful. Wait for redirect.."
     },
     "registration": {
         "ru": "Регистрация",
@@ -175,7 +187,7 @@ var _translatorData = {
         "en": "Repeat password"
     },
     "resetPassword": {
-        "ru": "Сменить пароль",
+        "ru": "задать новый пароль",
         "en": "Set new password"
     },
     "return": {
@@ -512,7 +524,9 @@ function onError(err) {
 		console.log("Error!", err);
 	}
 	
-	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
+    var message = _translatorData[err][LANG] !== undefined ? _translatorData[err][LANG] : _translatorData['somethingWentWrong'][LANG];
+
+	_errorPopover(message);
 	$('nav').popover('show');
 	setTimeout(function() {
 		$('nav').popover('hide');

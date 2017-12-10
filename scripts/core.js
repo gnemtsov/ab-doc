@@ -129,6 +129,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         readOnly: false,
 
         setOwner: function(owner){
+            //set owner
             if(owner === undefined || owner === ''){
                 if (abAuth.isAuthorized()) {
                     this.owner = abAuth.credentials.identityId;
@@ -138,7 +139,17 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             } else {
                 this.owner = owner;
             }
-            this.readOnly =  !abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId;
+
+            //set readonly
+            if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
+                this.readOnly = true;
+                $('.readonly-mode').removeClass('hidden');
+                $('.edit-mode').addClass('hidden');
+            } else {
+                this.readOnly = false;
+                $('.readonly-mode').addClass('hidden');
+                $('.edit-mode').removeClass('hidden');
+            }
             return this;
         },
         
@@ -386,12 +397,21 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         };
 
         abAuth = $.fn.abAuth();
-        abAuth.promise.then(function(){
-            AWS.config.credentials = abAuth.credentials;
-            console.log(JSON.stringify(AWS.config.credentials));
-            g.s3 = new AWS.S3();
-            ROUTER.setOwner(owner).open(doc);            
-        });
+        abAuth.promise.then(
+            function(){
+                AWS.config.credentials = abAuth.credentials;
+                console.log(JSON.stringify(AWS.config.credentials));
+                g.s3 = new AWS.S3();
+                ROUTER.setOwner(owner).open(doc);            
+            },
+            function(error){
+                onError(error.code);
+                setTimeout(function() {
+                    abAuth.signOut();
+                }, 4500);                                              
+            }
+        );
+
 
         //translations
         //TODO regress to English if no translation found!
