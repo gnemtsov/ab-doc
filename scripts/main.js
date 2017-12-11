@@ -27,6 +27,42 @@ var USER_POOL = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(po
 
 
 
+function _errorPopover(c) {
+	$('nav').popover({
+		content: c,
+		container: 'nav',
+		animation: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		template: '\
+			<div class="popover bg-danger" role="tooltip">\
+				<div class="popover-body text-light"></div>\
+			</div>'
+	});
+}
+
+function onError(err) {
+	if (err) {
+		console.log("Error!", err);
+	}
+	
+	$preloader_main.hide();
+	_errorPopover(_translatorData['somethingWentWrong'][LANG]);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 5000);
+}
+
+function onWarning(msg) {
+	$preloader_main.hide();
+	_errorPopover(msg);
+	$('nav').popover('show');
+	setTimeout(function() {
+		$('nav').popover('hide');
+	}, 2500);
+}
+
 var s3,
 	abDoc,
 	abTree,
@@ -185,7 +221,7 @@ $(document).ready( function() {
 					setUnauthenticatedMode();
 					break;
 				default:
-					abUtils.onError(err);
+					onError(err);
 					if (AWS.config.credentials) {
 						AWS.config.credentials.clearCachedId();
 					}
@@ -213,7 +249,7 @@ $(document).ready( function() {
 		
 		promise
 			.catch( function(err) {
-				abUtils.onError(err);
+				onError(err);
 				return true;
 			})
 			.then( function() {
@@ -264,7 +300,7 @@ $(document).ready( function() {
 		}
 		new Promise( function(resolve, reject) {
 			if(!$('#signInEmail').val()) {
-				reject(abUtils.ABError('NoUsername'));
+				reject(ABError('NoUsername'));
 			} else {
 				resolve();
 			}
@@ -294,36 +330,36 @@ $(document).ready( function() {
 				console.log(err);
 				switch(err.name) {
 					case 'UserNotFoundException':
-						$('#alertSignInError').html(abUtils.translatorData['alertUserDoesntExist'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertUserDoesntExist'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'NotAuthorizedException':
-						$('#alertSignInError').html(abUtils.translatorData['alertWrongPassword'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertWrongPassword'][LANG]);
 						$('#alertSignInError').show();
 						break;		
 					case 'UserNotConfirmedException':
 						$('#divSignInConfirmationCode').show();
 						break;
 					case 'CodeMismatchException':
-						$('#alertSignInError').html(abUtils.translatorData['alertWrongCode'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertWrongCode'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'ExpiredCodeException':
-						$('#alertSignInError').html(abUtils.translatorData['alertExpiredCode'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertExpiredCode'][LANG]);
 						$('#alertSignInError').show();
 						resendConfirmationCode($('#signInEmail').val())
 							.catch( function(err) {
-								abUtils.onError(err);
+								onError(err);
 							});
 						break;	
 					case 'NoUsername':
-						$('#alertSignInError').html(abUtils.translatorData['alertNoUsername'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertNoUsername'][LANG]);
 						$('#alertSignInError').show();
 						break;					
 					default:
-						$('#alertSignInError').html(abUtils.translatorData['alertUnknownLoginError'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertUnknownLoginError'][LANG]);
 						$('#alertSignInError').show();						
-						abUtils.onError(err);
+						onError(err);
 				}
 				$('#btnSignIn').prop('disabled', false);
 				$('#preloaderSignIn').hide();
@@ -335,7 +371,7 @@ $(document).ready( function() {
 		$('#modalSignIn').find('.sign-in').hide();
 		$('#modalSignIn').find('.forgot-password').show();
 		$('#modalSignIn').find('.reset-password').hide();
-		$('#modalSignIn .modal-title').html(abUtils.translatorData['resetPasswordPage'][LANG]);
+		$('#modalSignIn .modal-title').html(_translatorData['resetPasswordPage'][LANG]);
 		$('#forgotPasswordEmail').val($('#signInEmail').val());
 	});
 	
@@ -351,9 +387,9 @@ $(document).ready( function() {
 				$('#modalSignIn').find('.reset-password').show();
 			})
 			.catch( function(err) {
-				$('#alertSignInError').html(abUtils.translatorData['alertUnknownError'][LANG]);
+				$('#alertSignInError').html(_translatorData['alertUnknownError'][LANG]);
 				$('#alertSignInError').show();		
-				abUtils.onError(err);
+				onError(err);
 			})
 			.then( function() {
 				$('#btnSendCode').prop('disabled', false);
@@ -389,35 +425,35 @@ $(document).ready( function() {
 				console.log(err.name, 'Here!');
 				switch(err.name) {
 					case 'CodeMismatchException':
-						$('#alertSignInError').html(abUtils.translatorData['alertWrongCode'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertWrongCode'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'InvalidParameterException':
-						$('#alertSignInError').html(abUtils.translatorData['alertBadPassword'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertBadPassword'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'InvalidPasswordException':
-						$('#alertSignInError').html(abUtils.translatorData['alertBadPassword'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertBadPassword'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'UsernameExistsException':
-						$('#alertSignInError').html(abUtils.translatorData['alertUserExists'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertUserExists'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'WrongRepeat':
-						$('#alertSignInError').html(abUtils.translatorData['alertWrongRepeat'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertWrongRepeat'][LANG]);
 						$('#alertSignInError').show();
 						break;
 					case 'ExpiredCodeException':
-						$('#alertSignInError').html(abUtils.translatorData['alertExpiredCode'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertExpiredCode'][LANG]);
 						$('#alertSignInError').show();
 						requestResetPassword(email)
 							.catch( function(err) {
-								abUtils.onError(err);
+								onError(err);
 							});
 						break;
 					default:
-						$('#alertSignInError').html(abUtils.translatorData['alertUnknownError'][LANG]);
+						$('#alertSignInError').html(_translatorData['alertUnknownError'][LANG]);
 						$('#alertSignInError').show();
 				}
 			})
@@ -481,7 +517,7 @@ function googleSignInSuccess(user) {
 			$('#modalSignIn').modal('hide');
 		})
 		.catch( function(err) {
-			abUtils.onError(err);
+			onError(err);
 		})
 }
 
@@ -525,38 +561,38 @@ function btnSignUpClick() {
 			console.log(err.name, 'Here!');
 			switch(err.name) {
 				case 'CodeMismatchException':
-					$('#alertSignUpError').html(abUtils.translatorData['alertWrongCode'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertWrongCode'][LANG]);
 					$('#alertSignUpError').show();
 					break;
 				case 'InvalidParameterException':
-					$('#alertSignUpError').html(abUtils.translatorData['alertBadPassword'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
 					$('#alertSignUpError').show();
 					break;
 				case 'InvalidPasswordException':
-					$('#alertSignUpError').html(abUtils.translatorData['alertBadPassword'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertBadPassword'][LANG]);
 					$('#alertSignUpError').show();
 					break;
 				case 'UsernameExistsException':
-					$('#alertSignUpError').html(abUtils.translatorData['alertUserExists'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertUserExists'][LANG]);
 					$('#alertSignUpError').show();
 					break;
 				case 'ConfirmationRequired':
 					$('#signUpConfirmationCode').parent().show();
 					break;
 				case 'WrongRepeat':
-					$('#alertSignUpError').html(abUtils.translatorData['alertWrongRepeat'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertWrongRepeat'][LANG]);
 					$('#alertSignUpError').show();
 					break;
 				case 'ExpiredCodeException':
-					$('#alertSignUpError').html(abUtils.translatorData['alertExpiredCode'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertExpiredCode'][LANG]);
 					$('#alertSignUpError').show();
 					resendConfirmationCode($('#signUpEmail').val())
 						.catch( function(err) {
-							abUtils.onError(err);
+							onError(err);
 						});
 					break;
 				default:
-					$('#alertSignUpError').html(abUtils.translatorData['alertUnknownError'][LANG]);
+					$('#alertSignUpError').html(_translatorData['alertUnknownError'][LANG]);
 					$('#alertSignUpError').show();
 			}
 			$('#btnSignUp').prop('disabled', false);
@@ -580,7 +616,7 @@ function signUp(email, password, password2, confirmationCode) {
 		//AWSCognito.config.region = 'us-west-2';	 
 
 		if(password != password2) {
-			reject(abUtils.ABError('WrongRepeat'));
+			reject(ABError('WrongRepeat'));
 			return;
 		}
 		  
@@ -620,7 +656,7 @@ function signUp(email, password, password2, confirmationCode) {
 				return;
 			}
 	 
-			reject(abUtils.ABError('ConfirmationRequired'));
+			reject(ABError('ConfirmationRequired'));
 		});
     });
     
@@ -630,7 +666,7 @@ function signUp(email, password, password2, confirmationCode) {
 function confirmResetPassword(email, password, password2, code) {
 	var promise = new Promise( function(resolve, reject) {
 		if(password != password2) {
-			reject(abUtils.ABError('WrongRepeat'));
+			reject(ABError('WrongRepeat'));
 			return;
 		}
 		
@@ -793,7 +829,7 @@ function initS3() {
 		if (cognitoUser) {
 			cognitoUser.getSession( function(err, session) {
 				if(err) {
-					//abUtils.onError(err);
+					//onError(err);
 					console.log('error here!');
 					reject(err);
 					return;			
@@ -811,7 +847,7 @@ function initS3() {
 			if (AWS.config.credentials) {
 				resolve(true);
 			} else {
-				reject(abUtils.ABError('NotSignedIn'));
+				reject(ABError('NotSignedIn'));
 			}
 		}
 	});
@@ -941,7 +977,7 @@ function initTree() {
 
 					//TODO refactor, this should be part of Sign Up process!!
 
-					ROOT_DOC_GUID = abUtils.GetGUID();
+					ROOT_DOC_GUID = GetGUID();
 					//return Promise.resolve([]);					
 					return initRootDoc(DEFAULT_ROOT_DOC_LOCATION, USERID + '/' + ROOT_DOC_GUID + '/index.html')
 						.then( function() {
@@ -965,7 +1001,7 @@ function initTree() {
 			zNodes[0].head = true;
 			//zNodes[0].iconOpen = '/img/icons/home-opened.svg';
 			//zNodes[0].iconClose= '/img/icons/home-closed.svg';
-			zNodes[0].name = zNodes[0].name.length ? zNodes[0].name : abUtils.translatorData['rootName'][LANG];
+			zNodes[0].name = zNodes[0].name.length ? zNodes[0].name : _translatorData['rootName'][LANG];
 			zNodes[0].open = true;
 			
 			ROOT_DOC_GUID = zNodes[0].id;
@@ -991,7 +1027,7 @@ $(function() {
 		$('#signInConfirmationCode').val('');
 		$('#btnSignIn').show();
 		$('preloaderSignIn').hide();
-		$('#modalSignIn .modal-title').html(abUtils.translatorData['loginPage'][LANG]);
+		$('#modalSignIn .modal-title').html(_translatorData['loginPage'][LANG]);
 		
 		$('#modalSignIn').find('.sign-in').show();
 		$('#modalSignIn').find('.forgot-password').hide();
@@ -1038,7 +1074,7 @@ function setUnauthenticatedMode() {
 	$('.unauthenticated-mode').show();
 	$('.authenticated-mode').hide();
 
-	$('#username').text(abUtils.translatorData['account'][LANG]);
+	$('#username').text(_translatorData['account'][LANG]);
 	$('#username').addClass('loaded');
 }
 
@@ -1053,7 +1089,7 @@ function setUnknownMode() {
 //----------- Custom error -------------
 //--------------------------------------
 
-function abUtils.ABError(name) {
+function ABError(name) {
 	var err = new Error(name);
 	err.name = name;
 	return err;
@@ -1095,7 +1131,7 @@ function findOwner(guid) {
 	console.log('findDocument', guid);
 	
 	// serching with no prefix
-	return abUtils.listS3Files(undefined)
+	return listS3Files(undefined)
 		.then( function(files) {
 			var result = null;
 			if (guid) {
@@ -1171,7 +1207,7 @@ function routerOpen(wantGUID) {
 						$('#selectedDoc')[0].innerHTML = node.name;
 						$abDoc.abDoc(TREE_USERID, node.id, TREE_USERID !== USERID);
 					} catch(err) {
-						abUtils.onError(err);
+						onError(err);
 					}
 				} else {
 					console.log("You will never get this error!");
@@ -1190,16 +1226,14 @@ function routerOpen(wantGUID) {
 					}, 0);
 				})
 				.catch( function(err) {
-					abUtils.onError(err);
+					onError(err);
 				});		
 			});
 	}
 }
 */
 
-/*function routerOpen(doc){	
-	console.log('routerOpen() ', doc);
-	
+function routerOpen(doc){	
 	var location = window.location.pathname.slice(1); // drop first '/'
 	if(doc === undefined) {
 		doc = location;
@@ -1224,7 +1258,7 @@ function routerOpen(wantGUID) {
 					var docNODE = abTree.tree.getNodesByParam('id', doc)[0];
 					if(docNODE === undefined){
 						$preloader_editor.hide();
-						abUtils.onWarning(abUtils.translatorData["document not found"][LANG]);
+						onWarning(_translatorData["document not found"][LANG]);
 					} else {
 						$selectedDoc[0].innerHTML = docNODE.name;
 						abTree.tree.selectNode(docNODE);
@@ -1234,7 +1268,7 @@ function routerOpen(wantGUID) {
 		}
 	}	
 
-}*/
+}
 
 //---------------------------------------
 //----------- Translation ---------------
@@ -1245,15 +1279,15 @@ $(function() {
 		var dt = $(el).attr('data-translate'),
 			at = $(el).attr('attr-translate');
 
-		if (!abUtils.translatorData[dt]) {
-			console.log('"' + dt + '" not found in abUtils.translatorData');
+		if (!_translatorData[dt]) {
+			console.log('"' + dt + '" not found in _translatorData');
 			return
 		}
 		
 		if (at) {
-			$(el).attr(at, abUtils.translatorData[dt][LANG]);
+			$(el).attr(at, _translatorData[dt][LANG]);
 		} else {
-			$(el).html(abUtils.translatorData[dt][LANG]);
+			$(el).html(_translatorData[dt][LANG]);
 		}
 	});
 	
@@ -1320,7 +1354,7 @@ $(function() {
 						ACTIVITY.flush('tree modify');
 					},
 					function (err) {
-						abUtils.onError(err);
+						onError(err);
 					}
 				);
 			}
@@ -1367,8 +1401,8 @@ window.onbeforeunload = function (e) {
             e = window.event;
         }
         if (e) {
-            e.returnValue = abUtils.translatorData['changesPending'][LANG];
+            e.returnValue = _translatorData['changesPending'][LANG];
         }
-        return abUtils.translatorData['changesPending'][LANG];
+        return _translatorData['changesPending'][LANG];
     }
 }

@@ -79,7 +79,7 @@
                     self.cognitoUser.signInUserSession.getRefreshToken(), 
                     function(error, session){
                         if (error) {
-                            g.abUtils.onError(error);
+                            abUtils.onError(error);
                             self.signOut();
                         } else {
                             self.credentials.params.Logins = {};
@@ -400,7 +400,7 @@
                 $('.unauthenticated-mode').addClass('hidden');
                 $username.text(self.cognitoUser.username);
             } else {
-				$('.authenticated-mode').addClass('hidden');
+                $('.authenticated-mode').addClass('hidden');
                 $('.unauthenticated-mode').removeClass('hidden');
                 $username.text(g.abUtils.translatorData['account'][g.LANG]);
             }
@@ -506,7 +506,7 @@
             var self = this;
 
             if($modal === undefined){
-                g.abUtils.onError('Modal was not initialized');
+                abUtils.onError('Modal was not initialized');
                 return;
             }
 

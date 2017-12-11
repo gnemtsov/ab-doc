@@ -160,7 +160,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             //"onbeforeunload" imitator
             if ( PRODUCTION &&
                  ($update.hasClass('pending') || $update.hasClass('saving')) &&
-                 !confirm(g.abUtils.translatorData['changesPending'][LANG]) ) {
+                 !confirm(abUtils.translatorData['changesPending'][LANG]) ) {
                 $update.removeClass('pending saving');
                 return; 
             }
@@ -235,7 +235,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
                         var params = {
                             ownerid: self.owner,
-                            readonly: self.readonly
+                            readOnly: self.readOnly
                         };
                         abTree = $abTree.abTree(params);
                     }
@@ -270,7 +270,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
                             var docNODE = abTree.tree.getNodesByParam('id', self.doc)[0];
                             if(docNODE === undefined){
-                                g.abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
+                                abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
                                 $big_preloader.remove();
                             } else {
                                 abTree.tree.selectNode(docNODE);
@@ -405,7 +405,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 ROUTER.setOwner(owner).open(doc);            
             },
             function(error){
-                g.abUtils.onError(error.code);
+                abUtils.onError(error.code);
                 setTimeout(function() {
                     abAuth.signOut();
                 }, 4500);                                              
@@ -438,7 +438,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         });
 
         //USED SPACE TIMER
-        //TODO Update it less frequently, may be 15 or 30 minutes? (Ok ?)
+        //TODO Update it less frequently, may be 15 or 30 minutes?
         //TODO Set in ROUTER and only when user can edit (not read only mode)
         TIMERS.set(function () {
             if (USER_USED_SPACE_CHANGED && 
@@ -446,7 +446,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 ROUTER.owner === abAuth.credentials.identityId) {
                 updateUsedSpace(abAuth.credentials.identityId);
             }
-        }, 900000, 'space');
+        }, 5000, 'space');
         
         
         //----------Core handlers--------
@@ -592,48 +592,51 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         $(window).resize();
 
         // Splitter moving
-		var splitterDragging = false,
-			oldX;
-		
-		$splitter.mousedown(function(event) {
-			event.preventDefault();
-			
-			if (COLUMNS_MODE === 'split') {
-				splitterDragging = true;
-			}
-			
-			oldX = event.clientX;
-		});
-		
-		$(document).mouseup(function(event) {
-			//event.preventDefault();
-			
-			splitterDragging = false;
-		});
-		
-		$(document).mousemove(function(event) {
-			// splitterDragging is true only in 'split' mode
-			if (splitterDragging) {
-				var newX = event.clientX;
-				
-				var totalWidth = window.innerWidth,
-					zTreeWidth = $ztree.outerWidth(),
-					newZTreeWidth = zTreeWidth + newX - oldX,
-					ok = false;
-					
-				if (newZTreeWidth < thresholdLeft) {
-					// go to 'document' mode if approaching left edge
-					COLUMNS_MODE = 'document';
-					splitterDragging = false;
-					ok = true;			
-				}
-				
-				TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
-				console.log(TREE_WIDTH, thresholdRight);
-				updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
-				oldX = newX;
-			}
-		});
+        //TODO why brackets here??
+        {
+            var splitterDragging = false,
+                oldX;
+            
+            $splitter.mousedown(function(event) {
+                event.preventDefault();
+                
+                if (COLUMNS_MODE === 'split') {
+                    splitterDragging = true;
+                }
+                
+                oldX = event.clientX;
+            });
+            
+            $(document).mouseup(function(event) {
+                //event.preventDefault();
+                
+                splitterDragging = false;
+            });
+            
+            $(document).mousemove(function(event) {
+                // splitterDragging is true only in 'split' mode
+                if (splitterDragging) {
+                    var newX = event.clientX;
+                    
+                    var totalWidth = window.innerWidth,
+                        zTreeWidth = $ztree.outerWidth(),
+                        newZTreeWidth = zTreeWidth + newX - oldX,
+                        ok = false;
+                        
+                    if (newZTreeWidth < thresholdLeft) {
+                        // go to 'document' mode if approaching left edge
+                        COLUMNS_MODE = 'document';
+                        splitterDragging = false;
+                        ok = true;			
+                    }
+                    
+                    TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
+                    console.log(TREE_WIDTH, thresholdRight);
+                    updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
+                    oldX = newX;
+                }
+            });
+        }
 
         // Update columns' sizes, use given mode
         // Returns true on success, false on wrong mode value

@@ -62,7 +62,7 @@
 				$file_container.append($icon, $file_wrap);			
 
 				if(!file.modified){ //file is uploading
-					$meta.append('<span class="file-size file-progress" style="width: '+file.percent+'">' + g.abUtils.GetSize(file.size) + '</span>');
+					$meta.append('<span class="file-size file-progress" style="width: '+file.percent+'">' + abUtils.GetSize(file.size) + '</span>');
 					if(file.abortable){
 						$meta.append('<img class="file-action" data-action="abort" src="/img/icons/close.svg">');
 					}
@@ -70,7 +70,7 @@
 					var $a = $('<a href="' + AWS_CDN_ENDPOINT + file.key + '"></a>');
 					$icon.wrap($a);
 					$name.wrap($a);
-					$meta.append('<span class="file-size">' + g.abUtils.GetSize(file.size) + '</span>'); 
+					$meta.append('<span class="file-size">' + abUtils.GetSize(file.size) + '</span>'); 
 					$meta.append('<span class="file-modified">'+file.modified.toLocaleString()+'</span>'); 
 					$meta.append('<img class="file-action" data-action="delete" src="/img/icons/trash.svg">'); 
 				}
@@ -221,7 +221,7 @@
 						var non_image_files = new Array();
 						$.each(files, function (i, file) {
 							if (!canUpload(file.size)) { // exit if we don't have enough space
-								g.abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
+								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}	
 
@@ -232,17 +232,17 @@
 								self.editor.insertEmbed(index_obj.value, 'image', 'img/ab-doc-preloader-nano.gif', 'silent');
 																
 								//upload pic to S3
-								var picGUID = g.abUtils.GetGUID();
+								var picGUID = abUtils.GetGUID();
 								s3.upload({
 									Bucket: STORAGE_BUCKET,
 									Key: self.ownerid + '/' + self.docGUID + '/' + picGUID,
 									Body: file,
 									ContentType: file.type,
-									ContentDisposition: g.abUtils.GetContentDisposition(file.name),
+									ContentDisposition: abUtils.GetContentDisposition(file.name),
 									ACL: 'public-read'
 								}).send(function(err, data) {
 									if(err) {
-										g.abUtils.onError(err);
+										abUtils.onError(err);
 										self.editor.enable();
 									} else {
 										var delta = new Delta();
@@ -386,20 +386,20 @@
 						$.each(files, function (i, file) {
 
 							if (!canUpload(file.size)) {
-								g.abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
+								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}
 
 							ACTIVITY.push('file upload', 'saving');							
 
-							var fileGUID = g.abUtils.GetGUID(),
+							var fileGUID = abUtils.GetGUID(),
 								key = self.ownerid + '/' + self.docGUID + '/attachments/' + fileGUID,
 								partSize = 6 * 1024 * 1024;
 
 							var file_obj = {
 								guid: fileGUID,
 								name: file.name,
-								iconURL: g.abUtils.mimeTypeToIconURL(file.type),
+								iconURL: abUtils.mimeTypeToIconURL(file.type),
 								key: key,
 								size: file.size,
 								percent: '0%',
@@ -411,7 +411,7 @@
 									Key: key,
 									Body: file,
 									ContentType: file.type,
-									ContentDisposition: g.abUtils.GetContentDisposition(file.name),
+									ContentDisposition: abUtils.GetContentDisposition(file.name),
 									ACL: 'public-read'
 								};
 
@@ -428,14 +428,14 @@
 								}
 							});
 							upload.send(function(err, data) {
-								if(err) { g.abUtils.onError(err); } 
+								if(err) { abUtils.onError(err); } 
 								else {
 									var params = {
 										Bucket: data.Bucket, 
 										Prefix: data.Key
 									};
 									s3.listObjectsV2(params, function(err, data) {
-										if (err) { g.abUtils.onError(err); } 
+										if (err) { abUtils.onError(err); } 
 										else {
 											file_obj.modified = data.Contents[0].LastModified;
 											self.updateFilesList();
@@ -525,7 +525,7 @@
 					Key: self.files[file_index].key
 				};
 				s3.deleteObject(params, function (err, data) {
-					if (err) { g.abUtils.onError(err); } 
+					if (err) { abUtils.onError(err); } 
 					else {
 						updateUsedSpaceDelta(-self.files[file_index].size);
 						$file.fadeOut(800, function() {
@@ -642,7 +642,7 @@
 			})
 			.catch( function(error) {
 				if (error.code !== 'NoSuchKey') {
-					g.abUtils.onFatalError(error, 'couldNotLoadDoc');
+					abUtils.onFatalError(error, 'couldNotLoadDoc');
 					throw 'fatal';
 				} else if(self.docGUID === self.rootGUID) {
 					return $.get('/root/' + g.LANG + '.html');				
@@ -663,7 +663,7 @@
 					placeholder: g.abUtils.translatorData['typeYourText'][g.LANG],
 					theme: 'bubble',
 					scrollingContainer: '#document',
-					readonly: self.readonly,
+					readOnly: self.readOnly,
 					bounds: '#abDoc',
 					modules: {
 						toolbar: ['bold', 'italic', 'underline', 'strike', { 'size': [] }, { 'color': [] }, { 'background': [] }, 'blockquote', 'code-block', 'link', { 'list': 'ordered' }, { 'list': 'bullet' }, 'clean'],
@@ -712,7 +712,7 @@
 				}
 				self.attachLoupeHandlers();
 				
-				if(!self.readonly){ //init timer if not readonly
+				if(!self.readOnly){ //init timer if not readOnly
 
 					self.attachWrapHandlers();
 					self.attachEditorHandlers();
@@ -734,7 +734,7 @@
 								Key: self.ownerid + '/' + self.docGUID + '/index.html',
 								Body: self.editor.root.innerHTML,
 								ContentType: 'text/html',
-								ContentDisposition: g.abUtils.GetContentDisposition('index.html'),
+								ContentDisposition: abUtils.GetContentDisposition('index.html'),
 								ACL: 'public-read'
 							};
 							Promise.all([ 
@@ -771,8 +771,8 @@
 							s3.headObject(params).promise().then(
 								function(data) {
 									var name = decodeURIComponent(data.ContentDisposition.substring(29)),
-										mime = g.abUtils.mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(name)[1]),
-										iconURL = g.abUtils.mimeTypeToIconURL(mime);
+										mime = abUtils.mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(name)[1]),
+										iconURL = abUtils.mimeTypeToIconURL(mime);
 
 									self.files.push({
 										guid: file.Key.split('/').pop(),
@@ -784,7 +784,7 @@
 									});
 								},
 								function(error) { 
-									g.abUtils.onError(error); 
+									abUtils.onError(error); 
 									throw error;
 								}
 							)
@@ -794,7 +794,7 @@
 					return Promise.all(headers).then(
 						function (data) { 
 							self.updateFilesList(); 
-							if(!self.readonly){
+							if(!self.readOnly){
 								self.attachDropzoneHandlers();
 							}
 						}

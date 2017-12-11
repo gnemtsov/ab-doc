@@ -160,7 +160,7 @@
 				}
 				i++;
 			}
-			var guid = g.abUtils.GetGUID();
+			var guid = abUtils.GetGUID();
 			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
 			var newNode = self.tree.getNodeByParam('id', guid);
 			
@@ -228,12 +228,12 @@
 					n.children.map(f)
 				}
 				
-				g.abUtils.deleteRecursiveS3(self.ownerid + '/' + n.id)
+				abUtils.deleteRecursiveS3(self.ownerid + '/' + n.id)
 					.then( function(ok) {
 						USER_USED_SPACE_CHANGED = true;
 					})
 					.catch( function(err) {
-						g.abUtils.onError(err);
+						abUtils.onError(err);
 					});
 			};
 			f(treeNode);
@@ -324,8 +324,6 @@
 	abTree.init = function(params) {
 		var self = this;
 		$.extend(self, params);
-		
-		console.log('abTree.init', self);
 
 		if(!$abTree instanceof $){
 			$abTree.off().empty(); //empty and remove also unbind old event handlers
@@ -341,11 +339,11 @@
 				return JSON.parse(data.Body.toString('utf-8'));
 			})
 			.catch( function(error) {
-				if (!self.readonly && error.code === 'NoSuchKey') {
+				if (!self.readOnly && error.code === 'NoSuchKey') {
 					self.virgin = true;
-					return [{id: g.abUtils.GetGUID(), name: g.abUtils.translatorData['rootName'][LANG]}];
+					return [{id: abUtils.GetGUID(), name: g.abUtils.translatorData['rootName'][LANG]}];
 				} else {
-					g.abUtils.onFatalError(error, 'couldNotLoadTree');
+					abUtils.onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}
 			})
@@ -361,14 +359,14 @@
 				self.zSettings = {
 					view: {
 						selectedMulti: true,
-						addHoverDom: self.readonly ? false : self.addHoverDom.bind(self),
+						addHoverDom: self.readOnly ? false : self.addHoverDom.bind(self),
 						removeHoverDom: self.removeHoverDom.bind(self),
 						showLine: false
 					},
 					edit: {
-						enable: !self.readonly,
-						showRemoveBtn: self.readonly ? false : self.showRemoveBtn.bind(self),
-						showRenameBtn: !self.readonly
+						enable: !self.readOnly,
+						showRemoveBtn: self.readOnly ? false : self.showRemoveBtn.bind(self),
+						showRenameBtn: !self.readOnly
 					},
 					data: {
 						simpleData: {
@@ -376,11 +374,11 @@
 						}
 					},
 					callback: {
-						beforeDrag: self.readonly ? false : self.beforeDrag.bind(self),
-						beforeDrop: self.readonly ? false : self.beforeDrop.bind(self),
-						beforeEditName: self.readonly ? false : self.beforeEditName.bind(self),
-						beforeRename: self.readonly ? false : self.beforeRename.bind(self),
-						beforeRemove: self.readonly ? false : self.beforeRemove.bind(self),
+						beforeDrag: self.readOnly ? false : self.beforeDrag.bind(self),
+						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
+						beforeEditName: self.readOnly ? false : self.beforeEditName.bind(self),
+						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),
+						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
 						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
 						onNodeCreated: self.onNodeCreated.bind(self),
@@ -390,7 +388,7 @@
 							
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
 
-				if(!self.readonly){ //init timer if not readonly
+				if(!self.readOnly){ //init timer if not readOnly
 
 					TIMERS.set(function () {
 						if(ACTIVITY.get('tree modify') === 'pending'){
@@ -421,7 +419,7 @@
 								Key: self.treeKey,
 								Body: JSON.stringify(data),
 								ContentType: 'application/json',
-								ContentDisposition: g.abUtils.GetContentDisposition('tree.json'),
+								ContentDisposition: abUtils.GetContentDisposition('tree.json'),
 								ACL: 'public-read'
 							};
 
