@@ -160,7 +160,7 @@
 				}
 				i++;
 			}
-			var guid = GetGUID();
+			var guid = g.abUtils.GetGUID();
 			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
 			var newNode = self.tree.getNodeByParam('id', guid);
 			
@@ -228,12 +228,12 @@
 					n.children.map(f)
 				}
 				
-				deleteRecursiveS3(self.ownerid + '/' + n.id)
+				g.abUtils.deleteRecursiveS3(self.ownerid + '/' + n.id)
 					.then( function(ok) {
 						USER_USED_SPACE_CHANGED = true;
 					})
 					.catch( function(err) {
-						onError(err);
+						g.abUtils.onError(err);
 					});
 			};
 			f(treeNode);
@@ -250,9 +250,9 @@
 			
 			ACTIVITY.push('tree modify', 'pending');
 		});
-		var message = _translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + _translatorData["deleteQuestion2"][LANG];
+		var message = abUtils.translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + abUtils.translatorData["deleteQuestion2"][LANG];
 		if (treeNode.isParent) {
-			message += _translatorData["deleteQuestion3"][LANG];
+			message += abUtils.translatorData["deleteQuestion3"][LANG];
 		}
 		$("#pDeleteMessage").html(message);
 		$("#modalDelete").modal("show");
@@ -324,6 +324,8 @@
 	abTree.init = function(params) {
 		var self = this;
 		$.extend(self, params);
+		
+		console.log('abTree.init', self);
 
 		if(!$abTree instanceof $){
 			$abTree.off().empty(); //empty and remove also unbind old event handlers
@@ -339,11 +341,11 @@
 				return JSON.parse(data.Body.toString('utf-8'));
 			})
 			.catch( function(error) {
-				if (!self.readOnly && error.code === 'NoSuchKey') {
+				if (!self.readonly && error.code === 'NoSuchKey') {
 					self.virgin = true;
-					return [{id: GetGUID(), name: g._translatorData['rootName'][LANG]}];
+					return [{id: g.abUtils.GetGUID(), name: g.abUtils.translatorData['rootName'][LANG]}];
 				} else {
-					onFatalError(error, 'couldNotLoadTree');
+					g.abUtils.onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}
 			})
@@ -353,20 +355,20 @@
 				self.zNodes[0].head = true;
 				self.zNodes[0].open = true;
 				if(!self.zNodes[0].name.length){
-					self.zNodes[0].name = g._translatorData['rootName'][LANG];
+					self.zNodes[0].name = g.abUtils.translatorData['rootName'][LANG];
 				}
 
 				self.zSettings = {
 					view: {
 						selectedMulti: true,
-						addHoverDom: self.readOnly ? false : self.addHoverDom.bind(self),
+						addHoverDom: self.readonly ? false : self.addHoverDom.bind(self),
 						removeHoverDom: self.removeHoverDom.bind(self),
 						showLine: false
 					},
 					edit: {
-						enable: !self.readOnly,
-						showRemoveBtn: self.readOnly ? false : self.showRemoveBtn.bind(self),
-						showRenameBtn: !self.readOnly
+						enable: !self.readonly,
+						showRemoveBtn: self.readonly ? false : self.showRemoveBtn.bind(self),
+						showRenameBtn: !self.readonly
 					},
 					data: {
 						simpleData: {
@@ -374,11 +376,11 @@
 						}
 					},
 					callback: {
-						beforeDrag: self.readOnly ? false : self.beforeDrag.bind(self),
-						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
-						beforeEditName: self.readOnly ? false : self.beforeEditName.bind(self),
-						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),
-						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
+						beforeDrag: self.readonly ? false : self.beforeDrag.bind(self),
+						beforeDrop: self.readonly ? false : self.beforeDrop.bind(self),
+						beforeEditName: self.readonly ? false : self.beforeEditName.bind(self),
+						beforeRename: self.readonly ? false : self.beforeRename.bind(self),
+						beforeRemove: self.readonly ? false : self.beforeRemove.bind(self),
 						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
 						onNodeCreated: self.onNodeCreated.bind(self),
@@ -388,7 +390,7 @@
 							
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
 
-				if(!self.readOnly){ //init timer if not readOnly
+				if(!self.readonly){ //init timer if not readonly
 
 					TIMERS.set(function () {
 						if(ACTIVITY.get('tree modify') === 'pending'){
@@ -419,7 +421,7 @@
 								Key: self.treeKey,
 								Body: JSON.stringify(data),
 								ContentType: 'application/json',
-								ContentDisposition: GetContentDisposition('tree.json'),
+								ContentDisposition: g.abUtils.GetContentDisposition('tree.json'),
 								ACL: 'public-read'
 							};
 

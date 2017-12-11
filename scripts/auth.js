@@ -79,7 +79,7 @@
                     self.cognitoUser.signInUserSession.getRefreshToken(), 
                     function(error, session){
                         if (error) {
-                            onError(error);
+                            g.abUtils.onError(error);
                             self.signOut();
                         } else {
                             self.credentials.params.Logins = {};
@@ -400,9 +400,9 @@
                 $('.unauthenticated-mode').addClass('hidden');
                 $username.text(self.cognitoUser.username);
             } else {
-                $('.authenticated-mode').addClass('hidden');
+				$('.authenticated-mode').addClass('hidden');
                 $('.unauthenticated-mode').removeClass('hidden');
-                $username.text(g._translatorData['account'][g.LANG]);
+                $username.text(g.abUtils.translatorData['account'][g.LANG]);
             }
             $username.addClass('loaded');
         },
@@ -412,10 +412,10 @@
             if(alert_class === undefined){
                 alert_class = 'alert-danger';
             }
-            if(g._translatorData[code]){
-                $alert.text(g._translatorData[code][g.LANG]);
+            if(g.abUtils.translatorData[code]){
+                $alert.text(g.abUtils.translatorData[code][g.LANG]);
             } else {
-                $alert.text(g._translatorData['alertUnknownError'][g.LANG]);
+                $alert.text(g.abUtils.translatorData['alertUnknownError'][g.LANG]);
             }
             $alert.removeClass('alert-success alert-info alert-warning alert-danger')
                   .addClass(alert_class);
@@ -438,8 +438,8 @@
                     return '<input id="'+params.id+'" type="hidden" value="'+params.value+'"></input>';
                 default:
                     return '<div class="form-group input-group">' + 
-                                '<span class="input-group-addon">'+g._translatorData[params.label][g.LANG]+'</span>' + 
-                                '<input id="'+params.id+'" type="'+type+'" class="form-control" placeholder="'+g._translatorData[params.placeholder][g.LANG]+'" value="'+params.value+'"></input>' + 
+                                '<span class="input-group-addon">'+g.abUtils.translatorData[params.label][g.LANG]+'</span>' + 
+                                '<input id="'+params.id+'" type="'+type+'" class="form-control" placeholder="'+g.abUtils.translatorData[params.placeholder][g.LANG]+'" value="'+params.value+'"></input>' + 
                             '</div>';
             }
         },
@@ -487,7 +487,7 @@
                 $small_preloader.remove();
             };
 
-            $forget_link = $('<a href="#">'+g._translatorData['forgotPassword'][g.LANG]+'</a>');
+            $forget_link = $('<a href="#">'+g.abUtils.translatorData['forgotPassword'][g.LANG]+'</a>');
 
             //modal common events handlers (used for all modal types)
             $modal.on('shown.bs.modal', function() {
@@ -506,7 +506,7 @@
             var self = this;
 
             if($modal === undefined){
-                onError('Modal was not initialized');
+                g.abUtils.onError('Modal was not initialized');
                 return;
             }
 
@@ -516,7 +516,7 @@
 
             switch(type){
                 case 'signUp': //sign up
-                    $mtitle.text( g._translatorData['registration'][g.LANG] );
+                    $mtitle.text( g.abUtils.translatorData['registration'][g.LANG] );
                     $form.append(
                         self.getInputHTML('text', {
                             id: 'formAuthUsername',
@@ -543,13 +543,13 @@
                             value: 'test1Pass'
                         }) 
                     );                    
-                    $submit.text( g._translatorData['signUp'][g.LANG] );
+                    $submit.text( g.abUtils.translatorData['signUp'][g.LANG] );
                     $submit.on('click', self.signUpHandler.bind(self));
                     $mfooter.append($submit);
                     break;
 
                 case 'confirm':  //confirm
-                    $mtitle.text( g._translatorData['account confirmation'][g.LANG] );
+                    $mtitle.text( g.abUtils.translatorData['account confirmation'][g.LANG] );
                     $form.append(
                         self.getInputHTML('text', {
                             id: 'formAuthCode',
@@ -557,13 +557,13 @@
                             placeholder: 'yourConfirmationCode'
                         })
                     );
-                    $submit.text( g._translatorData['confirm'][g.LANG] );
+                    $submit.text( g.abUtils.translatorData['confirm'][g.LANG] );
                     $submit.on('click', self.confirmHandler.bind(self));
                     $mfooter.append($submit);
                     break;
 
                 case 'signIn': //sign in
-                    $mtitle.text( g._translatorData['loginPage'][g.LANG] );
+                    $mtitle.text( g.abUtils.translatorData['loginPage'][g.LANG] );
                     $form.append(
                         self.getInputHTML('text', {
                             id: 'formAuthUsername',
@@ -577,7 +577,7 @@
                             placeholder: 'yourPassword'
                         })
                     );
-                    $submit.text( g._translatorData['enter'][g.LANG] );
+                    $submit.text( g.abUtils.translatorData['enter'][g.LANG] );
                     $submit.on('click', self.signInHandler.bind(self));
                     $forget_link.on('click', self.forgotPasswordLinkHandler.bind(self));
                     $mfooter.append(
@@ -587,7 +587,7 @@
                     break;
 
                 case 'reset password': //reset password
-                    $mtitle.text( g._translatorData['resetPassword'][g.LANG] );
+                    $mtitle.text( g.abUtils.translatorData['resetPassword'][g.LANG] );
                     $form.append(
                         self.getInputHTML('text', {
                             id: 'formAuthCode',
@@ -607,7 +607,7 @@
                             value: 'test1Pass'
                         }) 
                     );
-                    $submit.text( g._translatorData['resetPassword'][g.LANG] );
+                    $submit.text( g.abUtils.translatorData['resetPassword'][g.LANG] );
                     $submit.on('click', self.resetPasswordHandler.bind(self));
                     $mfooter.append($submit);
                     break;
