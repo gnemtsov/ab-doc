@@ -140,14 +140,14 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 this.owner = owner;
             }
 
-            //set readonly
+            //set readOnly
             if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
                 this.readOnly = true;
-                $('.readonly-mode').removeClass('hidden');
+                $('.readOnly-mode').removeClass('hidden');
                 $('.edit-mode').addClass('hidden');
             } else {
                 this.readOnly = false;
-                $('.readonly-mode').addClass('hidden');
+                $('.readOnly-mode').addClass('hidden');
                 $('.edit-mode').removeClass('hidden');
             }
             return this;
