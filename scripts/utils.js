@@ -142,6 +142,10 @@ var _translatorData = {
         "ru": "Вход",
         "en": "Log in"
     },
+    "loginWithGoogle": {
+        "ru": "Войти через Google",
+        "en": "Login with Google"
+    },
     "LimitExceededException": {
         "ru": "Количество попыток исчерпано, попробуйте позже.",
         "en": "Attempt limit exceeded, please try after some time."
@@ -253,7 +257,7 @@ var _translatorData = {
     "yourUsername": {
         "ru": "Ваше имя пользователя",
         "en": "Your username"
-    },    
+    } 
 };
 // ====================
 
@@ -524,7 +528,11 @@ function onError(err) {
 		console.log("Error!", err);
 	}
 	
-    var message = _translatorData[err][LANG] !== undefined ? _translatorData[err][LANG] : _translatorData['somethingWentWrong'][LANG];
+    if(_translatorData[err] !== undefined && _translatorData[err][LANG] !== undefined){
+        var message = _translatorData[err][LANG];
+    } else {
+        var message = _translatorData['somethingWentWrong'][LANG];
+    }
 
 	_errorPopover(message);
 	$('nav').popover('show');

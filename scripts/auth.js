@@ -6,6 +6,7 @@
 //some examples
 //https://github.com/aws/amazon-cognito-identity-js
 //https://gist.github.com/damonmaria/d4daac2dac8014cffd9d5872355a4ad4
+//turn off google access: https://myaccount.google.com/permissions?pli=1
 //TODO store account confirmation pending status in local storage + ExpiredCodeException
 
 (function (g, $) {
@@ -16,7 +17,97 @@
     var $form, $submit, $forget_link;
 
     var CISP = AWSCognito.CognitoIdentityServiceProvider;
+
+    //userData object
+    //responsible for holding user data and syncing with identity pool dataset
+    var userData = function() {
+        var self = this;
+
+        self.getMeta = function(){
+            self.cognitoSyncDataset.getDataStorage(function(error, meta){
+                if(error){
+                    throw error;
+                } else {
+                    self.meta = meta;
+                }
+            });
+            return self.meta;
+        },
+        self.get = function(key){
+            self.cognitoSyncDataset.get(key, function(error, value) {
+                if(error){
+                    onError(error);
+                }
+            });
+        },
+        self.set = function(key, value){
+            self.cognitoSyncDataset.put(key, value, function(error, record) {
+                if(error){
+                    onError(error);
+                }
+            });
+        },
+        self.sync = function(winner){ //winner defines who wins in case of conflict: local or remote
+            return new Promise(function(resolve, reject){
+
+                var syncConfig = { //config for cognito sync manager, see https://github.com/aws/amazon-cognito-js (step 6)
+                    onSuccess: function(dataset, newRecords) {
+                        console.log(dataset, newRecords);
+                        resolve();
+                    },
+                    onFailure: function(error) {
+                        reject(error);
+                    },
+                    onConflict: function(dataset, conflicts, callback) {
+                        var resolved = [];
+                        for (var i=0; i<conflicts.length; i++) {
+                            switch(winner){
+                                case 'local':
+                                    resolved.push(conflicts[i].resolveWithLocalRecord()); //Take local version.
+                                    break;
+                                case 'remote':
+                                    resolved.push(conflicts[i].resolveWithRemoteRecord()); //Take remote version.
+                                    break;
+                                default:
+                                    reject('Auth.js: error in userData.sync(). Winner can be "local" or "remote", but "'+winner+'" given.');
+                            }
+                        }
+                        dataset.resolve(resolved, function() {
+                            return callback(true);
+                        });
+                    },
+                    onDatasetDeleted: function(dataset, datasetName, callback) {
+                        return callback(true);
+                    },
+                    onDatasetsMerged: function(dataset, datasetNames, callback) {
+                        return callback(true);
+                    }
+                };
+
+                self.cognitoSyncDataset.synchronize( syncConfig );
+
+            });
+        }  
         
+        self.promise = new Promise(function(resolve, reject){
+            self.cognitoSyncClient = new AWS.CognitoSyncManager();
+            self.cognitoSyncClient.openOrCreateDataset('abDoc', function(error, dataset) {
+                if(error){
+                    reject(error);
+                } else {
+                    dataset.synchronize();
+                    self.cognitoSyncDataset = dataset;
+                    resolve();
+                }
+            });                
+        }).then(function(){
+            return self.sync('remote');
+        }).then(function(){
+            return self.getMeta();
+        });
+
+    }
+
 	// function creates object (calls abAuth.init - constructor)
 	var abAuth = function () {
 		return new abAuth.init();
@@ -29,72 +120,81 @@
         //returns current auth status: true or false
         isAuthorized: function(){
             var self = this;
-            return self.cognitoUser !== undefined &&
-                   self.cognitoUser !== null &&
-                   self.cognitoUser.signInUserSession !== undefined &&
-                   self.cognitoUser.signInUserSession !== null &&
-                   self.cognitoUser.signInUserSession.isValid();
+            switch(self.userType){
+                case 'cognito':
+                    return self.cognitoUser !== undefined &&
+                           self.cognitoUser !== null &&
+                           self.cognitoUser.signInUserSession !== undefined &&
+                           self.cognitoUser.signInUserSession !== null &&
+                           self.cognitoUser.signInUserSession.isValid();
+
+                case 'google':
+                    return self.googleUser !== undefined &&
+                           self.googleUser !== null &&
+                           self.googleUser.isSignedIn();
+
+                default:
+                    return false;
+            }
         },
 
-        //after successful login (constructor or signIn), returns promise
-        loggedIn: function(idToken) {
+        //after successful login, returns promise
+        //updates AWS.credentials
+        //sets identity in federated identity pool
+        loggedIn: function(providerName, idToken) {
             console.log('Auth.js: loggedIn called');
             var self = this;
 
-            //refresh credentials promise
-            var promise1 = new Promise(function(resolve, reject){
+            //refresh credentials promise and create userData object
+            var promise = new Promise(function(resolve, reject){
                 self.credentials.params.Logins = {};
-                self.credentials.params.Logins[ self.CognitoProviderName ] = idToken;            
+                self.credentials.params.Logins[ providerName ] = idToken;            
                 self.credentials.expired = true; // Expire credentials to refresh them on the next request
                 self.credentials.get(function(error){
                     if(error){
                         reject(error)
                     } else {
-                        resolve()
+                        self.userData = new userData();
+                        self.userData.promise.then(
+                            function(meta){ 
+                                console.log(meta);
+                                console.log(self.userData.get('account-type'));
+                                resolve(); 
+                            },
+                            function(error){ 
+                                reject(error) 
+                            }
+                        );
                     }
                 });
             });
 
-            //load user attributes promise
-            var promise2 = new Promise(function(resolve, reject){
-                self.cognitoUser.Attributes = {};
-                self.cognitoUser.getUserAttributes(function(error, attributes){
-                    if(error) {
-                        reject(error)
-                    } else {                    
-                        attributes.forEach(function(attr){
-                            var c = attr.Name.indexOf(':') + 1;
-                            self.cognitoUser.Attributes[ attr.Name.slice(c)] = attr.Value;
-                        });
-                        resolve();
-                    }
-                });
-            });
-            
-            //Set refreshSession TIMER, it obtains new ID and ACCESS tokens
-            //timer is set for 50 minutes, because these tokens live for 1 hour
-            //refresh token lives for 3649 days and is set in UserPool > General Settings > App clients
-            TIMERS.set( function(){
-                self.cognitoUser.refreshSession(
-                    self.cognitoUser.signInUserSession.getRefreshToken(), 
-                    function(error, session){
-                        if (error) {
-                            onError(error);
-                            self.signOut();
-                        } else {
-                            self.credentials.params.Logins = {};
-                            self.credentials.params.Logins[ self.CognitoProviderName ] = session.getIdToken().getJwtToken();
-                            self.credentials.expired = true; // Expire credentials to refresh them on the next request
-                            console.log('Auth.js: tokens refreshed at ' + Date() );
-                        }                                        
-                    }
-                );
-            }, 180000000, 'auth' );
+            if(providerName === self.CognitoProviderName){
+                //Set refreshSession TIMER, it obtains new ID and ACCESS tokens
+                //timer is set for 50 minutes, because these tokens live for 1 hour
+                //refresh token lives for 3649 days and is set in UserPool > General Settings > App clients
+                TIMERS.set( function(){
+                    self.cognitoUser.refreshSession(
+                        self.cognitoUser.signInUserSession.getRefreshToken(), 
+                        function(error, session){
+                            if (error) {
+                                onError(error);
+                                self.signOut();
+                            } else {
+                                self.credentials.params.Logins = {};
+                                self.credentials.params.Logins[ self.CognitoProviderName ] = session.getIdToken().getJwtToken();
+                                self.credentials.expired = true; // Expire credentials to refresh them on the next request
+                                console.log('Auth.js: tokens refreshed at ' + Date() );
+                            }                                        
+                        }
+                    );
+                }, 180000000, 'auth' );
+            }
 
-            return Promise.all([promise1, promise2]);
+            return promise;
         },
 
-        //signUp new user, returns promise
+        //signUp new user in cognito user pool, returns promise
         signUp: function(username, email, password) {
             var self = this;
             return new Promise (function(resolve, reject){
@@ -105,31 +205,21 @@
                         Value : email
                     })
                 );
-                attributeList.push(
-                    new CISP.CognitoUserAttribute({
-                        Name : 'custom:account-type',
-                        Value : 'free'
-                    })
-                );
-                attributeList.push(
-                    new CISP.CognitoUserAttribute({
-                        Name : 'custom:space-limit',
-                        Value : '1'
-                    })
-                );
             
                 self.userPool.signUp(username, password, attributeList, null, function(error, result){                
                     if (error) {
                         reject(error);
                     } else {
                         self.cognitoUser = result.user;
+                        self.tmpUsername = username;
+                        self.tmpEmail = email;
                         resolve();
                     }
                 });
             });
         },
 
-        //signIn user, returns promise
+        //signIn user in cognito user pool, returns promise
         //username can be undefined, that means sign in current cognitoUser
         signIn: function(username, password) {
             console.log("Auth.js: signIn called");
@@ -152,9 +242,10 @@
 
                 self.cognitoUser.authenticateUser(authenticationDetails, {
                     onSuccess: function (session) {
-                        self.loggedIn( session.getIdToken().getJwtToken() )
+                        self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
                             .then(
                                 function(){ 
+                                    self.userType = 'cognito';
                                     self.updateNavUsername();
                                     resolve(); 
                                 },
@@ -170,7 +261,7 @@
             });
         },
 
-        //confirm user registration
+        //confirm user registration in cognito user pool
         confirmRegistration: function(code) {
             var self = this;
             return new Promise (function(resolve, reject){
@@ -181,7 +272,7 @@
             });
         },        
 
-        //start forgot password flow
+        //start forgot password flow (cognito user pool)
         forgotPassword: function(username) {
             var self = this;
             return new Promise (function(resolve, reject){
@@ -197,7 +288,7 @@
             });
         },        
 
-        //reset forgotten password
+        //reset forgotten password (cognito user pool)
         resetPassword: function(verificationCode, newPassword) {
             var self = this;
             return new Promise (function(resolve, reject){
@@ -226,13 +317,20 @@
         signOut: function() {
             var self = this;
             //sign out
-            self.cognitoUser.signOut();
+            if(self.cognitoUser !== undefined){
+                self.cognitoUser.signOut();
+            }
+            if(self.googleYolo !== undefined){
+                self.googleYolo.disableAutoSignIn();
+            }
+            if(self.googleAuth !== undefined){
+                self.googleAuth.signOut();
+            }
             localStorage.removeItem('aws.cognito.identity-id.'+self.IdentityPoolId);
             localStorage.removeItem('aws.cognito.identity-providers.'+self.IdentityPoolId);
             //complete reload
             g.location.reload();
         },
-
 
         //-----events handlers-----
         signUpHandler: function(e){
@@ -322,7 +420,8 @@
                     g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
                 })
                 .catch(function(error){
-                    self.showAlert(error.code);                                
+                    self.showAlert(error.code);
+                    console.log(error);                               
                     $submit.abRelease();
                 });
         },
@@ -398,10 +497,13 @@
             if(self.isAuthorized()){
                 $('.authenticated-mode').removeClass('hidden');
                 $('.unauthenticated-mode').addClass('hidden');
-                $username.text(self.cognitoUser.username);
+                $username.text(self.userData.get('username'));
             } else {
                 $('.authenticated-mode').addClass('hidden');
-                $('.unauthenticated-mode').removeClass('hidden');
+                $('.unauthenticated-mode').not( ".link-google" ).removeClass('hidden');
+                if(self.googleYolo !== undefined){
+                    $('.unauthenticated-mode.link-google').removeClass('hidden');
+                }
                 $username.text(g._translatorData['account'][g.LANG]);
             }
             $username.addClass('loaded');
@@ -420,6 +522,32 @@
             $alert.removeClass('alert-success alert-info alert-warning alert-danger')
                   .addClass(alert_class);
             $alert_container.fadeIn('fast');
+        },
+
+        showGoogleHint: function(){
+            var self = this;
+            self.googleYolo
+                .hint(self.googleAuthParams)
+                .then(function(credential) {
+                    console.log('Auth.js: Google hint used! Signing in...');
+                    return self.googleAuth.signIn();
+                })
+                .then(function(user){
+                    self.userType = 'google';
+                    self.googleUser = user;
+                    self.tmpUsername = user.getBasicProfile().getName(); //set this data - it can be first user visit
+                    self.tmpEmail = user.getBasicProfile().getEmail();
+                    return self.loggedIn( self.GoogleProviderName, user.getAuthResponse().id_token );
+                })
+                .then(function(){
+                    self.updateNavUsername();
+                    g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
+                })
+                .catch(function(error) {
+                    if(['userCanceled', 'operationCanceled', 'illegalConcurrentRequest', 'noCredentialsAvailable'].indexOf(error.type) === -1) {
+                        onError(error);
+                    }
+                });
         },
 
         getInputHTML: function(type, params){
@@ -510,6 +638,10 @@
                 return;
             }
 
+            if(self.googleYolo !== undefined){
+                self.googleYolo.cancelLastOperation();
+            }
+
             $alert_container.hide();
             $form.empty();
             $mfooter.empty();
@@ -542,7 +674,7 @@
                             placeholder: 'repeatPassword',
                             value: 'test1Pass'
                         }) 
-                    );                    
+                    );
                     $submit.text( g._translatorData['signUp'][g.LANG] );
                     $submit.on('click', self.signUpHandler.bind(self));
                     $mfooter.append($submit);
@@ -624,11 +756,12 @@
 	abAuth.init = function() {
         var self = this;
 
+        //main auth promise
         self.promise = new Promise(function(resolve, reject){
-
             $username = $('#username');
 
             self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
+            self.GoogleProviderName = 'accounts.google.com';
             self.IdentityPoolId = 'eu-west-1:e6ca203a-aead-49ba-a7e3-5c3c02cb1cf6';
             self.UserPoolId = 'eu-west-1_dtgGGP4kG';
             self.ClientId = '1eflaa2k69bgebikbnak5jg0ac';
@@ -642,13 +775,16 @@
                 IdentityPoolId: self.IdentityPoolId
             });
 
+            AWS.config.credentials = self.credentials;
+
             //tries to get user object from local storage
-            self.cognitoUser = self.userPool.getCurrentUser();
-            if (self.cognitoUser === null) {
-                self.initModal();
-                self.updateNavUsername();
-                resolve();
+            var cognitoUser = self.userPool.getCurrentUser();
+            if (cognitoUser === null) {
+                console.log('Auth.js: Current cognitoUser is null!');
+                resolve(0);
             } else {
+                self.userType = 'cognito';
+                self.cognitoUser = cognitoUser;
                 //looks for session in variable
                 //if not found, looks in local storage
                 //if not found, tries to obtain session using refreshToken
@@ -656,25 +792,116 @@
                     if (error) {
                         reject(error);
                     } else if(session.isValid()){
-                        self.loggedIn( session.getIdToken().getJwtToken() )
-                            .then(
-                                function(){ 
-                                    self.updateNavUsername();
-                                    resolve(); 
-                                },
-                                function(error){ 
-                                    reject(error); 
-                                }
-                            );
+                        console.log('Auth.js: Already authorized by cognito! Signing in...');
+                        self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
+                            .then(function(){ 
+                                resolve(1); 
+                            })
+                            .catch(function(error){ 
+                                reject(error); 
+                            });
                     } else {
-                        self.initModal();
-                        self.updateNavUsername();
-                        resolve();
+                        resolve(0);
                     }
                 });                
             }
 
+        }).then(function(authorized){
+
+            return new Promise(function(resolve, reject){
+
+                if(authorized){ //already authorized by cognito
+
+                    self.updateNavUsername();
+                    resolve();
+
+                } else { //try to authorize using Google sign in service
+                    
+                    self.googleClientId = "1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com";
+
+                    var authPromise = new Promise(function(resolve, reject){
+                        gapi.load('auth2', function() {
+                            gapi.auth2.init({
+                                client_id: self.googleClientId,
+                                scope: 'profile email'
+                            }).then(
+                                function(){
+                                    self.googleAuth = gapi.auth2.getAuthInstance();
+                                    resolve();
+                                }
+                            );                        
+                        });
+                    });
+
+                    var yoloPromise = new Promise(function(resolve, reject){
+                        g.onGoogleYoloLoad = function(googleyolo) {
+                            self.googleYolo = googleyolo;
+                            resolve();
+                        };                        
+                    });
+
+                    Promise.all([authPromise, yoloPromise]).then(function(){ //auth and yolo ready, let's rock!
+
+                        if(self.googleAuth.isSignedIn.get()){
+
+                            console.log('Auth.js: Already authorized by Google! Signing in...');
+                            self.userType = 'google';
+                            self.googleUser = self.googleAuth.currentUser.get();                            
+                            var credential = self.googleUser.getAuthResponse(true);
+                            self.loggedIn( self.GoogleProviderName, credential.id_token )
+                                .then( function(){
+                                    self.updateNavUsername();
+                                    resolve();
+                                });
+
+                        } else {
+
+                            console.log('Auth.js: Using Google one tap service!');
+                            self.googleAuthParams = {
+                                supportedAuthMethods: [ "https://accounts.google.com" ],
+                                supportedIdTokenProviders: [{
+                                    uri: "https://accounts.google.com",
+                                    clientId: self.googleClientId
+                                }]
+                            };
+
+                            self.googleYolo
+                                .retrieve(self.googleAuthParams)
+                                .then(function(credential) {
+                                    console.log('Auth.js: Google credentails retrieved! Signing in...');
+                                    return self.googleAuth.signIn();
+                                })
+                                .then(function(user){
+                                    self.userType = 'google';
+                                    self.googleUser = user;
+                                    return self.loggedIn( self.GoogleProviderName, user.getAuthResponse().id_token );
+                                })
+                                .then( function(){
+                                    self.updateNavUsername();
+                                    resolve();
+                                })
+                                .catch(function(error){ //google auth using retreive failed, init auth modal & show google hints
+                                    if (error.type === 'noCredentialsAvailable') {
+                                        console.log('Auth.js: Google credentails not retrieved, show hints!');
+                                        self.updateNavUsername();
+                                        self.initModal();
+                                        self.showGoogleHint();
+                                        resolve();
+                                    } else {
+                                        onError(error);
+                                        reject(error);
+                                    }
+                                });                            
+                        }
+
+                    });
+
+                }
+                
+            });
+
         });
+          
 	}
 
 	// trick borrowed from jQuery so we don't have to use the 'new' keyword
@@ -683,3 +910,65 @@
 	$.fn.abAuth = abAuth;
 
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later
+
+
+
+/*
+I like how one tap is made and I am trying to use it for my web-application. My application is completely client-side, written in javascript and is loaded from Amazon S3. I am using Amazon Cognito user pool to store my own database of users, and I am using federated identities to authenticate users and give them some rights. Now I want to provide users with an option to authenticate with Google account. 
+
+I have already managed to authenticate users in Cognito federated identity using ID token from Google one tap. This is working just fine. I receive ID token from one tap and update Amazon credentials.
+
+But now I got stuck.
+
+1. I know that ID token live for 1 hour and I have to refresh it to keep user authenticated. My app is single page and never reloads, so I think I should somehow switch to gapi.auth2 to handle token refresh.
+I tried to achive this with such piece of code. I do receive credential with idToken, but googleUser is 
+
+
+
+
+console.log('onGoogleYoloLoad fired');
+
+var googleAuthParams = {
+    supportedAuthMethods: [
+        "https://accounts.google.com"
+    ],
+    supportedIdTokenProviders: [{
+        uri: "https://accounts.google.com",
+        clientId: "1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com"
+    }]
+};
+
+var retrievePromise = googleyolo.retrieve(googleAuthParams);
+
+retrievePromise.then(
+    function (credential) {
+        console.log(credential);
+        if (credential.password) {
+            // An ID (usually email address) and password credential was retrieved.
+            // Sign in to your backend using the password.
+            signInWithEmailAndPassword(credential.id, credential.password);
+        } else {
+            // A Google Account is retrieved. Since Google supports ID token responses,
+            // you can use the token to sign in instead of initiating the Google sign-in
+            // flow.
+            GetId
+            self.loggedIn( self.GoogleProviderName, credential.idToken );
+        }
+    }, 
+    function (error) {
+        // Credentials could not be retrieved. In general, if the user does not
+        // need to be signed in to use the page, you can just fail silently; or,
+        // you can also examine the error object to handle specific error cases.
+
+        // If retrieval failed because there were no credentials available, and
+        // signing in might be useful or is required to proceed from this page,
+        // you can call `hint()` to prompt the user to select an account to sign
+        // in or sign up with.
+        console.log(error);
+        if (error.type === 'noCredentialsAvailable') {
+            var hintPromise = 
+        }
+    }
+);                            
+
+*/
