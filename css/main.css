@@ -29,7 +29,9 @@ button, select {
 }
 
 #main-container{
- /*   position: relative;*/
+	position: fixed;
+	top: 70px; /* TODO: find a better way to aligin it under the nav */
+	bottom: 0px;
 }
 
 #welcome, #about, #app{
@@ -43,10 +45,10 @@ button, select {
 
 /* about */
 #about {
-    position: absolute;
+    /*position: absolute;
     left: 0px;
     right: 0px;
-    bottom: 0px;
+    bottom: 0px;*/
     overflow-x: hidden;
     owerflow-y: auto;
 }
@@ -63,9 +65,9 @@ span.about-block-border{
 }
 
 /* app */
-#app {
-    position: absolute;
-    height: 400px;
+#app, #about {
+    position: relative;
+    height: 100%;
     width: 100%;
 }
 
