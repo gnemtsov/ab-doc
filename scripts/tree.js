@@ -3,9 +3,9 @@
 /******************************************************************/
 /******************************Tree********************************/
 /******************************************************************/
-//TODO debug readOnly mode, editting icons are still visible and working
-//TODO live node name editting
-//TODO page title = doc title (+live, +back&forward)
+//TODO debug readOnly mode, editting icons are still visible and working (fixed)
+//TODO live node name editting (fixed)
+//TODO page title = doc title (+live, +back&forward) (fixed)
 //TOTHINK first click only selects node, second click opens|closes folder
 (function (g, $) {
 	//----------- abTree object--------------//
@@ -69,6 +69,7 @@
 			if (treeNode.tId === self.selectedNode.tId) {
 				$('#' + inputId).on('input', function() {
 					$('#selectedDoc').text($(this).val());
+					document.title = $(this).val();
 				});
 			}
 		}, 20);
@@ -120,8 +121,8 @@
 		// expand the node
 		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		
-		self.tree.lastClicked = treeNode; //TODO remove? it is not used anywhere
-		
+		self.selectedNode = treeNode;
+	
 		ROUTER.open(treeNode.id);
 	}
 
@@ -209,7 +210,7 @@
 		ACTIVITY.push('tree modify', 'pending');
 		
 		// Dropped node is selected in tree now. Select the node, opened in editor. 
-		self.tree.selectNode(self.selectedNode, false, true);
+		self.selectNode(self.selectedNode, false, true);
 		console.log('Ok');
 	};
 
@@ -230,7 +231,7 @@
 				
 				abUtils.deleteRecursiveS3(self.ownerid + '/' + n.id)
 					.then( function(ok) {
-						USER_USED_SPACE_CHANGED = true;
+						g.INDICATOR.userUsedSpaceChanged = true;
 					})
 					.catch( function(err) {
 						abUtils.onError(err);
@@ -301,11 +302,14 @@
 	abTree.prototype.onRename = function(event, treeId, treeNode, isCancel) {
 		var self = this;
 		
+		console.log('on rename');
+		
 		if (!isCancel) {
 			ACTIVITY.push('tree modify', 'pending');
 			
-			if (treeNode.id === self.selectedNode) {
+			if (treeNode.tId === self.selectedNode.tId) {
 				$('#selectedDoc').html(treeNode.name);
+				document.title = treeNode.name;
 			}
 		}
 		

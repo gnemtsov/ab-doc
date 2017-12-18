@@ -511,15 +511,6 @@ var abUtils = {
 		return string.charAt(0).toUpperCase() + string.slice(1);
 	},
 
-	//errors handlers
-	//TODO revise needed
-	ABError: function(name) {
-		var err = new Error(name);
-		err.name = name;
-		return err;
-	},
-
-
 	onError: function(err) {
 		if (err) {
 			console.log("Error!", err);

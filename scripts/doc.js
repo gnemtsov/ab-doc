@@ -220,7 +220,7 @@
 
 						var non_image_files = new Array();
 						$.each(files, function (i, file) {
-							if (!canUpload(file.size)) { // exit if we don't have enough space
+							if (!g.INDICATOR.canUpload(file.size)) { // exit if we don't have enough space
 								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}	
@@ -385,7 +385,7 @@
 	
 						$.each(files, function (i, file) {
 
-							if (!canUpload(file.size)) {
+							if (!g.INDICATOR.canUpload(file.size)) {
 								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}
@@ -527,7 +527,7 @@
 				s3.deleteObject(params, function (err, data) {
 					if (err) { abUtils.onError(err); } 
 					else {
-						updateUsedSpaceDelta(-self.files[file_index].size);
+						g.INDICATOR.updateUsedSpaceDelta(-self.files[file_index].size);
 						$file.fadeOut(800, function() {
 							self.files.splice(file_index, 1);
 							self.updateFilesList();
