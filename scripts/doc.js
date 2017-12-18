@@ -213,7 +213,9 @@
 							}
 						
 							var drop_blot = Parchment.find(drop_range.startContainer);
-							drop_index = drop_blot.offset(self.editor.scroll) + drop_range.startOffset;
+							if (drop_blot) {
+								drop_index = drop_blot.offset(self.editor.scroll) + drop_range.startOffset;
+							}
 						} else { //handler was triggered from paste event
 							var files = [file];
 						}
