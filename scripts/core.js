@@ -328,8 +328,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     };
 
     window.onpopstate = function(event) { //revert ROUTER state when back|forward click
-        ROUTER.setOwner(event.state.owner)
-              .open(event.state.doc);
+		if (event.state) { // sometimes event.state is null
+			ROUTER.setOwner(event.state.owner)
+				  .open(event.state.doc);
+		}
     };
       
 

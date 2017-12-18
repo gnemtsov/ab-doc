@@ -240,7 +240,7 @@
 			f(treeNode);
 		
 			if (treeNode === self.selectedNode) {
-				ROUTER.open(tree.getNodes()[0].id);
+				ROUTER.open(self.tree.getNodes()[0].id);
 			}
 		
 			var $node = $('#' + treeNode.tId + '_a');
