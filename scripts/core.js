@@ -782,14 +782,14 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 					console.log('Synchronized userUsedSpace ', this.userUsedSpace/1000000, 'Mb');
 				}
 			);
-		}
+		},
 
 		canUpload: function(size) {
 			return this.userUsedSpace
 				+ this.userUsedSpaceDelta
 				+ this.userUsedSpacePending
 				+ size <= this.maxUsedSpace;
-		}
+		},
 
 		updateUsedSpaceDelta: function(d) {
 			if ((typeof(d) !== 'number') || isNaN(d)) {
@@ -799,7 +799,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 			this.userUsedSpaceDelta += d;
 			this.userUsedSpaceChanged = true;
 			this.updateIndicator();
-		}
+		},
 
 		updateUsedSpacePending: function(p) {
 			if ((typeof(p) !== 'number') || isNaN(p)) {
