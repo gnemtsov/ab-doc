@@ -573,8 +573,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             }
             
             // app-container's height
-            //$app.outerHeight(window.innerHeight - 1 - navHeight);
-            //$about.outerHeight(window.innerHeight - 1 - navHeight);
+            $app.outerHeight(window.innerHeight - 1 - navHeight);
+            $about.outerHeight(window.innerHeight - 1 - navHeight);
         });
         
         // Init columns
@@ -584,9 +584,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                             parseFloat($document.css('padding-right')) +
                             300;	
         
-        //$app.outerHeight(window.innerHeight - 1 - navHeight);
-        //$app.css('top', $nav.outerHeight() + 'px');
-        //$about.outerHeight(window.innerHeight - 1 - navHeight);
+        $app.outerHeight(window.innerHeight - 1 - navHeight);
+        $app.css('top', $nav.outerHeight() + 'px');
+        $about.outerHeight(window.innerHeight - 1 - navHeight);
             
         TREE_WIDTH = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
         if (isNaN(TREE_WIDTH)) {
