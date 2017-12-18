@@ -770,16 +770,17 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
 		updateUsedSpace: function(ownerid) {
 			// update variables, do nothing on error
+			var self = this;
 			g.abUtils.listS3Files(ownerid + '/').then( 
 				function(files) {
-					this.userUsedSpace = files.reduce( 
+					self.userUsedSpace = files.reduce( 
 						function(acc, f) { return acc + f.Size; }, 
 						0
 					)
-					this.userUsedSpaceDelta = 0;
-					this.userUsedSpaceChanged = false;
-					this.updateIndicator();
-					console.log('Synchronized userUsedSpace ', this.userUsedSpace/1000000, 'Mb');
+					self.userUsedSpaceDelta = 0;
+					self.userUsedSpaceChanged = false;
+					self.updateIndicator();
+					console.log('Synchronized userUsedSpace ', self.userUsedSpace/1000000, 'Mb');
 				}
 			);
 		},
