@@ -502,8 +502,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         *   split <-----> document
         */
 
-        //TODO App should be positioned relative to main-container, not body. Top and left should be 0.
-        //TODO Remove height calculations, app should spread just 100%. Main-container should spread till page bottom.
 
         var smallWidth = 600; // if (window's width < smallWidth) window is considered small, otherwise it's big
         var navHeight = $nav.outerHeight(); // save navbar's initial height
@@ -768,6 +766,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 					.animate(2000)
 					.plot([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4]);
 			}
+			
+			//update tooltip
+			$('#sizeIndicator').attr('title', g.abUtils.GetSize(space_occupied) + ' / ' + g.abUtils.GetSize(bucket_capacity));
 		},
 
 		updateUsedSpace: function(ownerid) {
