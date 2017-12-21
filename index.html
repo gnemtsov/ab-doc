@@ -20,9 +20,9 @@
 		<!-- reCAPTCHA -->
 		<!--<script src="https://www.google.com/recaptcha/api.js" async defer></script>-->
 
-		<!-- Google -->
+		<!-- Google 
 		<meta name="google-signin-scope" content="profile email">
-		<meta name="google-signin-client_id" content="1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com">
+		<meta name="google-signin-client_id" content="1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com">-->
 		<script src="https://apis.google.com/js/platform.js" async defer></script>
 
   
@@ -52,6 +52,8 @@
 						<div class="dropdown-menu">
 							<a class="dropdown-item link-sign-in unauthenticated-mode hidden" data-translate="enter" href="#"></a>
 							<a class="dropdown-item link-sign-up unauthenticated-mode hidden" data-translate="signUp" href="#"></a>
+							<div class="dropdown-divider unauthenticated-mode link-google"></div>
+							<a class="dropdown-item link-google unauthenticated-mode hidden" data-translate="loginWithGoogle" href="#"></a>
 							<a class="dropdown-item link-sign-out authenticated-mode hidden" data-translate="exit" href="#"></a>
 							<!--<div class="dropdown-divider"></div>-->
 						</div>
@@ -127,9 +129,13 @@
 		<script src="/scripts/jsbn/jsbn2.js?ver=v1501259548"></script>
 		<script src="/scripts/sjcl/sjcl.js?ver=v1501259548"></script>
 		<script src="/scripts/momentjs/moment.min.js?ver=v1501259548"></script>
+
+		<script src="/scripts/amazon/aws-sdk-2.171.0.min.js?ver=v1501259548"></script>
 		<script src="/scripts/amazon/cognito/aws-cognito-sdk.min.js?ver=v1501259548"></script>
 		<script src="/scripts/amazon/cognito/amazon-cognito-identity.min.js?ver=v1501259548"></script>
-		<script src="/scripts/amazon/aws-sdk-2.156.0.min.js?ver=v1501259548"></script>
+		<script src="/scripts/amazon/cognito/amazon-cognito.min.js?ver=v1501259548"></script>
+
+		<script src="https://smartlock.google.com/client"></script>
 
 		<script src="https://fast.wistia.net/assets/external/E-v1.js" async></script>
 

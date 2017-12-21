@@ -22,13 +22,21 @@ if (location.hostname === 'ab-doc.com') { //PROD
 }
 
 //------App globals------
+//AWS configuration
+AWS.config = {
+    apiVersions: {  //api versions should be locked!
+        cognitoidentity: '2014-06-30',
+        s3: '2006-03-01' 
+    },
+    region: 'eu-west-1'
+};
+
 //TODO use user pool attribute locale instead of LANG http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
 var LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en';
 var s3;
 
 var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
     $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
-
 
 (function (g, $) {
 
@@ -348,9 +356,15 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         }
     }
 
-    //core globals
-    var abAuth, abTree, abDoc;
+    //---------core globals--------
+
+    //auth
+    var abAuth = $.fn.abAuth();
     
+    //tree&doc
+    var abTree, abDoc;
+    
+    //UI
     var $nav, $update, $lang_select, 
         $container, 
         $app, $welcome, $about, 
@@ -402,28 +416,19 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             owner = owner.replace('_',':');
         }
 
-        //User auth and AWS configuration
-        AWS.config = {
-            apiVersions: {  //api versions should be locked!
-                cognitoidentity: '2014-06-30',
-                s3: '2006-03-01' 
-            },
-            region: 'eu-west-1'
-        };
-
-        abAuth = $.fn.abAuth();
         abAuth.promise.then(
             function(){
-                AWS.config.credentials = abAuth.credentials;
-                console.log(JSON.stringify(AWS.config.credentials));
-                g.s3 = new AWS.S3();
+                console.log('Core.js: abAuth promise finished.');
+                s3 = new AWS.S3();
                 ROUTER.setOwner(owner).open(doc);            
             },
             function(error){
                 abUtils.onError(error.code);
-                setTimeout(function() {
-                    abAuth.signOut();
-                }, 4500);                                              
+                if (PRODUCTION) {
+					setTimeout(function() {
+						abAuth.signOut();
+					}, 4500);                                              
+				}
             }
         );
 
@@ -474,6 +479,12 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         $('body').on('click', 'a.link-sign-in', function (e) {
             e.preventDefault();
             abAuth.showModal('signIn');
+        });
+
+        // Call sign in dialog
+        $('body').on('click', 'a.link-google', function (e) {
+            e.preventDefault();
+            abAuth.showGoogleHint();
         });
 
         // Sign out

@@ -6,254 +6,258 @@ var abUtils = {
 	// Alphabetical order by key!
 	// One sentence - no dot, two sentences - two dots
 	translatorData: {
-	    "about": {
-	        "ru": "О программе",
-	        "en": "About"
-	    },
-	    "account": {
-	        "ru": "Учетная запись",
-	        "en": "Account"
-	    },
-	    "account confirmation": {
-	        "ru": "Подтверждение аккаунта",
-	        "en": "Confirm account"
-	    },
-	    "alertNoEmail": {
-	        "ru": "Укажите ваш email",
-	        "en": "Enter your email"
-	    },
-	    "alertNoPassword": {
-	        "ru": "Укажите пароль",
-	        "en": "Enter password"
-	    },
-	    "alertNoUsername": {
-	        "ru": "Укажите ваше имя пользователя",
-	        "en": "Enter your username"
-	    },
-	    "alertUnknownError": {
-	        "ru": "Произошла ошибка. Попробуйте ещё раз.",
-	        "en": "Unknown error. Try again."
-	    },
-	    "alertUnknownLoginError": {
-	        "ru": "Произошла ошибка. Попробуйте войти ещё раз.",
-	        "en": "Unknown error. Try again."
-	    },
-	    "alertUserDoesntExist": {
-	        "ru": "Пользователь с таким именем не зарегистрирован",
-	        "en": "Username is not registered"
-	    },
-	    "alertWrongPassword": {
-	        "ru": "Неправильное имя пользователя или пароль",
-	        "en": "Wrong username or password"
-	    },
-	    "alertWrongRepeat": {
-	        "ru": "Пароли не совпали",
-	        "en": "Passwords didn't match"
-	    },
-	    "areYouSure": {
-	        "ru": "Вы уверены?",
-	        "en": "Are you sure?"
-	    },
-	    "back": {
-	        "ru": "Главная",
-	        "en": "Home"
-	    },
-	    "cancel": {
-	        "ru": "Отмена",
-	        "en": "Cancel"
-	    },
-	    "changesPending": {
-	        "ru": "Есть несохраненные изменения!",
-	        "en": "There are unsaved changes!"
-	    },
-	    "CodeMismatchException": {
-	        "ru": "Неверный код подтверждения",
-	        "en": "Wrong confirmation code"
-	    },
-	    "confirm": {
-	        "ru": "Подтвердить",
-	        "en": "Confirm"
-	    },
-	    "confirmationCode": {
-	        "ru": "Код подтверждения",
-	        "en": "Confirmation code"
-	    },
-	    "confirmation code sent": {
-	        "ru": "Код подтверждения выслан на эл. почту",
-	        "en": "Check your e-mail for confirmation code"
-	    },
-	    "couldNotLoadTree": {
+		"about": {
+			"ru": "О программе",
+			"en": "About"
+		},
+		"account": {
+			"ru": "Учетная запись",
+			"en": "Account"
+		},
+		"account confirmation": {
+			"ru": "Подтверждение аккаунта",
+			"en": "Confirm account"
+		},
+		"alertNoEmail": {
+			"ru": "Укажите ваш email",
+			"en": "Enter your email"
+		},
+		"alertNoPassword": {
+			"ru": "Укажите пароль",
+			"en": "Enter password"
+		},
+		"alertNoUsername": {
+			"ru": "Укажите ваше имя пользователя",
+			"en": "Enter your username"
+		},
+		"alertUnknownError": {
+			"ru": "Произошла ошибка. Попробуйте ещё раз.",
+			"en": "Unknown error. Try again."
+		},
+		"alertUnknownLoginError": {
+			"ru": "Произошла ошибка. Попробуйте войти ещё раз.",
+			"en": "Unknown error. Try again."
+		},
+		"alertUserDoesntExist": {
+			"ru": "Пользователь с таким именем не зарегистрирован",
+			"en": "Username is not registered"
+		},
+		"alertWrongPassword": {
+			"ru": "Неправильное имя пользователя или пароль",
+			"en": "Wrong username or password"
+		},
+		"alertWrongRepeat": {
+			"ru": "Пароли не совпали",
+			"en": "Passwords didn't match"
+		},
+		"areYouSure": {
+			"ru": "Вы уверены?",
+			"en": "Are you sure?"
+		},
+		"back": {
+			"ru": "Главная",
+			"en": "Home"
+		},
+		"cancel": {
+			"ru": "Отмена",
+			"en": "Cancel"
+		},
+		"changesPending": {
+			"ru": "Есть несохраненные изменения!",
+			"en": "There are unsaved changes!"
+		},
+		"CodeMismatchException": {
+			"ru": "Неверный код подтверждения",
+			"en": "Wrong confirmation code"
+		},
+		"confirm": {
+			"ru": "Подтвердить",
+			"en": "Confirm"
+		},
+		"confirmationCode": {
+			"ru": "Код подтверждения",
+			"en": "Confirmation code"
+		},
+		"confirmation code sent": {
+			"ru": "Код подтверждения выслан на эл. почту",
+			"en": "Check your e-mail for confirmation code"
+		},
+		"couldNotLoadTree": {
 			"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com.",
 			"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com."
 		},
-	    "deleteQuestion1": {
-	        "ru": "Документ",
-	        "en": "You are going to delete document"
-	    },
-	    "deleteQuestion2": {
-	        "ru": " будет удалён, продолжить?",
-	        "en": ", continue?"
-	    },
-	    "deleteQuestion3": {
-	        "ru": " Также будут удалены все вложенные документы и папки",
-	        "en": " All sub-documents are going to be deleted too"
-	    },
-	    "deleteTitle": {
-	        "ru": "Удаление",
-	        "en": "Delete"
-	    },
-	    "document": {
-	        "ru": "Документ",
-	        "en": "Document"
-	    },
-	    "email": {
-	        "ru": "Почта",
-	        "en": "Email"
-	    },
-	    "emptyDropzoneMessage": {
-	        "ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
-	        "en": "Drop your files here, you can place pictures right in the text"
-	    },
-	    "enter": {
-	        "ru": "Войти",
-	        "en": "Log in"
-	    },
-	    "exit": {
-	        "ru": "Выйти",
-	        "en": "Exit"
-	    },
-	    "ExpiredCodeException": {
-	        "ru": "Код подтверждения устарел. Вам был выслан новый.",
-	        "en": "Your confirmation code is expired. New confirmation code was sent to you."
-	    },
-	    "forgotPassword": {
-	        "ru": "Забыли пароль?",
-	        "en": "Forgot password?"
-	    },
-	    "InvalidParameterException": {
-	        "ru": "Один или несколько параметров введены неверно.",
-	        "en": "Some parameters are invalid."
-	    },
-	    "InvalidPasswordException": {
-	        "ru": "Пароль должен быть не короче 6 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
-	        "en": "Minimum password length is 6 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
-	    },
-	    "loginPage": {
-	        "ru": "Вход",
-	        "en": "Log in"
-	    },
-	    "LimitExceededException": {
-	        "ru": "Количество попыток исчерпано, попробуйте позже.",
-	        "en": "Attempt limit exceeded, please try after some time."
-	    },
-	    "multiple guids found": {
-	        "ru": "Обнаружено более 1 документа с данным GUID.",
-	        "en": "More than 1 document with specified GUID found."
-	    },
-	    "no": {
-	        "ru": "нет",
-	        "en": "no"
-	    },
-	    "no guids found": {
-	        "ru": "Документ с этим GUID не найден.",
-	        "en": "Document with this GUID not found."
-	    },
-	    "noSpace": {
-	        "ru": "Недостаточно места для загрузки файла.",
-	        "en": "No space left to upload this file."
-	    },
-	    "NotAuthorizedException": {
-	        "ru": "Отказано в доступе.",
-	        "en": "Access denied."
-	    },
-	    "ok": {
-	        "ru": "Ок",
-	        "en": "Ok"
-	    },
-	    "password": {
-	        "ru": "Пароль",
-	        "en": "Password"
-	    },
-	    "password reset successful": {
-	        "ru": "Пароль успешно изменен. Дождитесь перенаправления..",
-	        "en": "Password reset successful. Wait for redirect.."
-	    },
-	    "registration": {
-	        "ru": "Регистрация",
-	        "en": "Create account"
-	    },
-	    "repeatPassword": {
-	        "ru": "Повторите пароль",
-	        "en": "Repeat password"
-	    },
-	    "resetPassword": {
-	        "ru": "задать новый пароль",
-	        "en": "Set new password"
-	    },
-	    "return": {
-	        "ru": "Вернуться",
-	        "en": "Return"
-	    },
-	    "rootName": {
-	        "ru": "Добро пожаловать в AB-DOC!",
-	        "en": "Welcome to AB-DOC!"
-	    },
-	    "sendCode": {
-	        "ru": "Выслать код",
-	        "en": "Send confirmation code"
-	    },
-	    "signUp": {
-	        "ru": "Создать учетную запись",
-	        "en": "Create account"
-	    },
-	    "signUp2": {
-	        "ru": "Создать учётную запись",
-	        "en": "Create account"
-	    },
-	    "somethingWentWrong": {
-	        "ru": "Что-то пошло не так..",
-	        "en": "Somenthing went wrong.."
-	    },
-	    "typeYourText": {
-	        "ru": "Напишите что-нибудь удивительное...",
-	        "en": "Compose something awesome..."
-	    },
-	    "username": {
-	        "ru": "Имя пользователя",
-	        "en": "Username"
-	    },    
-	    "UsernameExistsException": {
-	        "ru": "Пользователь с таким именем уже существует",
-	        "en": "This username is already taken"
-	    },    
-	    "UserNotFoundException": {
-	        "ru": "Пользователь не найден",
-	        "en": "Unknown username"
-	    },    
-	    "welcomeMessage": {
-	        "ru": "Чтобы работать с документами нужно <a class=\"link-sign-in\" href=\"#\">войти</a> или <a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
-	        "en": "Please <a class=\"link-sign-in\" href=\"#\">log in</a> or <a class=\"link-sign-up\" href=\"#\">create account</a> to start working."
-	    },
-	    "yes": {
-	        "ru": "да",
-	        "en": "yes"
-	    },
-	    "yourConfirmationCode": {
-	        "ru": "Ваш код подтверждения",
-	        "en": "Your confirmation code"
-	    },
-	    "yourEmail": {
-	        "ru": "Ваш email",
-	        "en": "Your email"
-	    },
-	    "yourPassword": {
-	        "ru": "Ваш пароль",
-	        "en": "Your password"
-	    },
-	    "yourUsername": {
-	        "ru": "Ваше имя пользователя",
-	        "en": "Your username"
-	    } 
+		"deleteQuestion1": {
+			"ru": "Документ",
+			"en": "You are going to delete document"
+		},
+		"deleteQuestion2": {
+			"ru": " будет удалён, продолжить?",
+			"en": ", continue?"
+		},
+		"deleteQuestion3": {
+			"ru": " Также будут удалены все вложенные документы и папки",
+			"en": " All sub-documents are going to be deleted too"
+		},
+		"deleteTitle": {
+			"ru": "Удаление",
+			"en": "Delete"
+		},
+		"document": {
+			"ru": "Документ",
+			"en": "Document"
+		},
+		"email": {
+			"ru": "Почта",
+			"en": "Email"
+		},
+		"emptyDropzoneMessage": {
+			"ru": "Приложите вложения сюда, рисунки можно помещать сразу в текст",
+			"en": "Drop your files here, you can place pictures right in the text"
+		},
+		"enter": {
+			"ru": "Войти",
+			"en": "Log in"
+		},
+		"exit": {
+			"ru": "Выйти",
+			"en": "Exit"
+		},
+		"ExpiredCodeException": {
+			"ru": "Код подтверждения устарел. Вам был выслан новый.",
+			"en": "Your confirmation code is expired. New confirmation code was sent to you."
+		},
+		"forgotPassword": {
+			"ru": "Забыли пароль?",
+			"en": "Forgot password?"
+		},
+		"InvalidParameterException": {
+			"ru": "Один или несколько параметров введены неверно.",
+			"en": "Some parameters are invalid."
+		},
+		"InvalidPasswordException": {
+			"ru": "Пароль должен быть не короче 6 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
+			"en": "Minimum password length is 6 symbols. Password must contain digits and both uppercase and lowercase letters. Example: PassW0rD."
+		},
+		"loginPage": {
+			"ru": "Вход",
+			"en": "Log in"
+		},
+		"loginWithGoogle": {
+			"ru": "Войти через Google",
+			"en": "Login with Google"
+		},
+		"LimitExceededException": {
+			"ru": "Количество попыток исчерпано, попробуйте позже.",
+			"en": "Attempt limit exceeded, please try after some time."
+		},
+		"multiple guids found": {
+			"ru": "Обнаружено более 1 документа с данным GUID.",
+			"en": "More than 1 document with specified GUID found."
+		},
+		"no": {
+			"ru": "нет",
+			"en": "no"
+		},
+		"no guids found": {
+			"ru": "Документ с этим GUID не найден.",
+			"en": "Document with this GUID not found."
+		},
+		"noSpace": {
+			"ru": "Недостаточно места для загрузки файла.",
+			"en": "No space left to upload this file."
+		},
+		"NotAuthorizedException": {
+			"ru": "Отказано в доступе.",
+			"en": "Access denied."
+		},
+		"ok": {
+			"ru": "Ок",
+			"en": "Ok"
+		},
+		"password": {
+			"ru": "Пароль",
+			"en": "Password"
+		},
+		"password reset successful": {
+			"ru": "Пароль успешно изменен. Дождитесь перенаправления..",
+			"en": "Password reset successful. Wait for redirect.."
+		},
+		"registration": {
+			"ru": "Регистрация",
+			"en": "Create account"
+		},
+		"repeatPassword": {
+			"ru": "Повторите пароль",
+			"en": "Repeat password"
+		},
+		"resetPassword": {
+			"ru": "задать новый пароль",
+			"en": "Set new password"
+		},
+		"return": {
+			"ru": "Вернуться",
+			"en": "Return"
+		},
+		"rootName": {
+			"ru": "Добро пожаловать в AB-DOC!",
+			"en": "Welcome to AB-DOC!"
+		},
+		"sendCode": {
+			"ru": "Выслать код",
+			"en": "Send confirmation code"
+		},
+		"signUp": {
+			"ru": "Создать учетную запись",
+			"en": "Create account"
+		},
+		"signUp2": {
+			"ru": "Создать учётную запись",
+			"en": "Create account"
+		},
+		"somethingWentWrong": {
+			"ru": "Что-то пошло не так..",
+			"en": "Somenthing went wrong.."
+		},
+		"typeYourText": {
+			"ru": "Напишите что-нибудь удивительное...",
+			"en": "Compose something awesome..."
+		},
+		"username": {
+			"ru": "Имя пользователя",
+			"en": "Username"
+		},    
+		"UsernameExistsException": {
+			"ru": "Пользователь с таким именем уже существует",
+			"en": "This username is already taken"
+		},    
+		"UserNotFoundException": {
+			"ru": "Пользователь не найден",
+			"en": "Unknown username"
+		},    
+		"welcomeMessage": {
+			"ru": "Чтобы работать с документами нужно <a class=\"link-sign-in\" href=\"#\">войти</a> или <a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
+			"en": "Please <a class=\"link-sign-in\" href=\"#\">log in</a> or <a class=\"link-sign-up\" href=\"#\">create account</a> to start working."
+		},
+		"yes": {
+			"ru": "да",
+			"en": "yes"
+		},
+		"yourConfirmationCode": {
+			"ru": "Ваш код подтверждения",
+			"en": "Your confirmation code"
+		},
+		"yourEmail": {
+			"ru": "Ваш email",
+			"en": "Your email"
+		},
+		"yourPassword": {
+			"ru": "Ваш пароль",
+			"en": "Your password"
+		},
+		"yourUsername": {
+			"ru": "Ваше имя пользователя",
+			"en": "Your username"
+		} 
 	},
 	// ====================
 
