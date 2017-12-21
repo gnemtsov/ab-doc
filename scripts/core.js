@@ -712,7 +712,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
 	//---------- Size indicator and limit ------------
 	// TODO! wrap all this stuff in g.INDICATOR object like TIMERS and put it inside main core function (DONE)
-	// TODO add title to indicator with info like 0.1Gb/1Gb.. so that user could see how much space he exactly uses
+	// TODO add title to indicator with info like 0.1Gb/1Gb.. so that user could see how much space he exactly uses (DONE)
 	g.INDICATOR = {
 		sizeIndicator: undefined,
 		userUsedSpace: 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
