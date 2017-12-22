@@ -391,6 +391,7 @@
 				};
 							
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
+				self.selectedNode = self.tree.getNodes()[0];
 
 				if(!self.readOnly){ //init timer if not readOnly
 
