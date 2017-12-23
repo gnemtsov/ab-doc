@@ -3,10 +3,8 @@
 /******************************************************************/
 /******************************Tree********************************/
 /******************************************************************/
-//TODO debug readOnly mode, editting icons are still visible and working (fixed)
-//TODO live node name editting (fixed)
-//TODO page title = doc title (+live, +back&forward) (fixed)
 //TOTHINK first click only selects node, second click opens|closes folder
+
 (function (g, $) {
 	//----------- abTree object--------------//
 	var	$abTree /*tree UL*/;
@@ -56,27 +54,6 @@
 		return true;
 	}
 
-	abTree.prototype.beforeEditName = function (treeId, treeNode) {
-		var self = this;
-		
-		console.log('beforeEditName');
-		
-		// Select text in node, which name we are going to edit.
-		var inputId = treeNode.tId + "_input";
-		// Input is not created yet, so we set timeout.
-		setTimeout( function() {
-			$('#' + inputId).select();
-			if (treeNode.tId === self.selectedNode.tId) {
-				$('#' + inputId).on('input', function() {
-					$('#selectedDoc').text($(this).val());
-					document.title = $(this).val();
-				});
-			}
-		}, 20);
-		
-		return true;
-	}
-
 	/* Returns node which lies under the current node.
 	* 
 	*  1       || next
@@ -120,9 +97,6 @@
 		
 		// expand the node
 		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
-		
-		self.selectedNode = treeNode;
-	
 		ROUTER.open(treeNode.id);
 	}
 
@@ -211,11 +185,7 @@
 		
 		// Dropped node is selected in tree now. Select the node, opened in editor. 
 		self.selectNode(self.selectedNode, false, true);
-		console.log('Ok');
-	};
-
-	abTree.prototype.onNodeCreated = function(event, treeId, treeNode) {
-
+		console.log('Tree.js: onDrop Ok');
 	};
 
 	abTree.prototype.beforeRemove = function(treeId, treeNode) {
@@ -302,21 +272,19 @@
 	abTree.prototype.onRename = function(event, treeId, treeNode, isCancel) {
 		var self = this;
 		
-		console.log('on rename');
-		
-		if (!isCancel) {
-			ACTIVITY.push('tree modify', 'pending');
-			
-			if (treeNode.tId === self.selectedNode.tId) {
+		console.log('Tree.js: on rename');		
+		if (isCancel) {
+			if (self.selectedNode.tId === treeNode.tId) {
 				$('#selectedDoc').html(treeNode.name);
 				document.title = treeNode.name;
 			}
+		} else {
+			ACTIVITY.push('tree modify', 'pending');			
 		}
 		
 		// Renamed node is selected in tree now. Select the node, opened in editor.
 		self.selectNode(self.selectedNode, false, true);
 	}
-
 
 	// Mark this node as selected, call tree.selectNode
 	abTree.prototype.selectNode = function(node) {
@@ -333,6 +301,13 @@
 			$abTree.off().empty(); //empty and remove also unbind old event handlers
 		}	
 		$abTree = $(self.treeContainer);
+
+		$abTree.on('input', 'input', function() {
+			if($(this).attr('id') === self.selectedNode.tId + '_input'){
+				$('#selectedDoc').text($(this).val());
+				document.title = $(this).val();
+			}
+		});	
 
 		var params = {
 			Bucket: STORAGE_BUCKET,
@@ -380,12 +355,10 @@
 					callback: {
 						beforeDrag: self.readOnly ? false : self.beforeDrag.bind(self),
 						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
-						beforeEditName: self.readOnly ? false : self.beforeEditName.bind(self),
 						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),
 						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
 						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
-						onNodeCreated: self.onNodeCreated.bind(self),
 						onRename: self.onRename.bind(self)
 					}
 				};

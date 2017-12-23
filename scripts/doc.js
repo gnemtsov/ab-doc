@@ -615,7 +615,7 @@
 
 		$abDoc = $(self.docContainer);
 		$editor = $('<div id="editor"></div>');
-		$drop_zone = $('<div id="dropzone" class="'+( self.readOnly ? ' readOnly' : '' )+'"></div>');
+		$drop_zone = $('<div id="dropzone" class="'+( self.readOnly ? ' readonly' : '' )+'"></div>');
 		$clip_icon = $('<img id="clip-icon" src="/img/icons/paperclip.svg">');
 		$clip_input = $('<input id="clip-input" name="clip" multiple="multiple" type="file">');
 		$files_wrap = $('<div id="files_wrap"></div>');
@@ -662,7 +662,7 @@
 
 				//quill config
 				var editor_options = {
-					placeholder: g.abUtils.translatorData['typeYourText'][g.LANG],
+					placeholder: self.readOnly ? '' : g.abUtils.translatorData['typeYourText'][g.LANG],
 					theme: 'bubble',
 					scrollingContainer: '#document',
 					readOnly: self.readOnly,

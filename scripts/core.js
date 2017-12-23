@@ -124,6 +124,112 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         }
     }
 
+    //INDICATOR object
+    //stores and updates used space
+	g.INDICATOR = {
+		sizeIndicator: undefined,
+		userUsedSpace: 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
+		userUsedSpaceDelta: 0, // Temporary value. It is changed every time we finish file upload or delete file.
+										// It's erased after calculating userUsedSpace
+		userUsedSpacePending: 0, // Size of uploads in progress.
+										// It is changed every time upload is started, finished or aborted.
+										// It is NOT erased after calculating userUsedSpace
+		//TODO maxUsedSpace should be taken from cognito attribute custom:space. It will be 500Mb for free accounts.
+		maxUsedSpace: 500 * 1024 * 1024, // 500 Mb
+		userUsedSpaceChanged: false,
+
+		// GUI-only
+		updateIndicator: function() {
+			var size = 32,
+				bucket_capacity = this.maxUsedSpace,
+				space_occupied = this.userUsedSpace + this.userUsedSpaceDelta + this.userUsedSpacePending;
+
+			//bucket coords
+			var bx1 = 2, bx2 = 5, bx3 = size - bx2, bx4 = size - bx1,
+				by1 = 2, by2 = size - by1, by3 = by2, by4 = by1,
+				tg_alpha = (bx2 - bx1) / (by2 - by1);
+
+			//calculate areas
+			var barea = Math.abs(bx1*by2 + bx2*by3 + bx3*by4 + bx4*by1 - bx2*by1 - bx3*by2 - bx4*by3 - bx1*by4) / 2,
+				sarea = Math.min(1.0, space_occupied / bucket_capacity) * barea;
+
+			//calculate y of the occupied space (see .service/sizeIndicator.jpg for details)
+			var a = -2*tg_alpha,
+				b = 3*tg_alpha*by2 + bx3 + size - 3*bx2 + tg_alpha*by3,
+				c = bx2*by2 - tg_alpha*Math.pow(by2, 2) + 2*bx2*by3 - bx3*by2 - size*by3 - tg_alpha*by2*by3 + 2*sarea,
+				D = Math.pow(b, 2) - 4*a*c,
+				y = (-b + Math.sqrt(D)) / (2*a);
+
+			//occupied space coords
+			var sx1 = Math.ceil(bx2 - by2*tg_alpha + y*tg_alpha), sx2 = bx2, sx3 = bx3, sx4 = size - sx1,
+				sy1 = Math.ceil(y)-2, sy2 = by2, sy3 = by3, sy4 = sy1;
+
+			//draw
+			if(!this.sizeIndicator){
+				this.sizeIndicator = SVG('sizeIndicator');
+				this.sizeIndicator.space = this.sizeIndicator
+					.polygon([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4])   //occupied space
+					.fill('#DD6600');
+
+				this.sizeIndicator.bucket = this.sizeIndicator
+					.polyline([bx1,by1, bx2,by2, bx3,by3, bx4,by4]).fill('none')   //bucket shape
+					.stroke({ color: '#fff', width: 3, linecap: 'round', linejoin: 'round' });
+			} else {
+				this.sizeIndicator.space
+					.animate(2000)
+					.plot([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4]);
+			}
+			
+			//update tooltip
+			$('#sizeIndicator').attr('title', g.abUtils.GetSize(space_occupied) + ' / ' + g.abUtils.GetSize(bucket_capacity));
+		},
+
+		updateUsedSpace: function(ownerid) {
+			// update variables, do nothing on error
+			var self = this;
+			g.abUtils.listS3Files(ownerid + '/').then( 
+				function(files) {
+					self.userUsedSpace = files.reduce( 
+						function(acc, f) { return acc + f.Size; }, 
+						0
+					)
+					self.userUsedSpaceDelta = 0;
+					self.userUsedSpaceChanged = false;
+					self.updateIndicator();
+					console.log('Synchronized userUsedSpace ', self.userUsedSpace/1000000, 'Mb');
+				}
+			);
+		},
+
+		canUpload: function(size) {
+			return this.userUsedSpace
+				+ this.userUsedSpaceDelta
+				+ this.userUsedSpacePending
+				+ size <= this.maxUsedSpace;
+		},
+
+		updateUsedSpaceDelta: function(d) {
+			if ((typeof(d) !== 'number') || isNaN(d)) {
+				console.log('updateUsedSpaceDelta wrong d:', d);
+				return;
+			}
+			this.userUsedSpaceDelta += d;
+			this.userUsedSpaceChanged = true;
+			this.updateIndicator();
+		},
+
+		updateUsedSpacePending: function(p) {
+			if ((typeof(p) !== 'number') || isNaN(p)) {
+				console.log('updateUsedSpacePending wrong p:', p);
+				return;
+			}
+			console.log('updateUsedSpacePending ', p);
+			this.userUsedSpacePending += p
+			this.updateIndicator();
+		}
+	};
+
+
     //ROUTER object constructor
     //stores current owner and opens routes
     //call ROUTER.open('...') to open doc of currently set owner
@@ -160,9 +266,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             }
             
 			//USED SPACE TIMER
-			//TODO Update it less frequently, may be 15 or 30 minutes? (FIXED)
-			//TODO Set in ROUTER and only when user can edit (not read only mode) (FIXED)
-			TIMERS.set(this.readOnly ? function(){} : function () {
+			TIMERS.set(this.readOnly ? function(){ void(0); } : function () {
 				if (g.INDICATOR.userUsedSpaceChanged && 
 					abAuth.isAuthorized() && 
 					ROUTER.owner === abAuth.credentials.identityId) {
@@ -441,7 +545,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
 
         //translations
-        //TODO regress to English if no translation found! (FIXED)
+        //if no translation found, regresses to English
         $('[data-translate]').each( function(i, el) {
             var dt = $(el).attr('data-translate'),
                 at = $(el).attr('attr-translate'),
@@ -616,7 +720,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         $(window).resize();
 
         // Splitter moving
-        //TODO why brackets here?? (fixed)
 		var splitterDragging = false,
 			oldX;
 		
@@ -727,114 +830,4 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
     });
 
-
-	//---------- Size indicator and limit ------------
-	// TODO! wrap all this stuff in g.INDICATOR object like TIMERS and put it inside main core function (DONE)
-	// TODO add title to indicator with info like 0.1Gb/1Gb.. so that user could see how much space he exactly uses (DONE)
-	g.INDICATOR = {
-		sizeIndicator: undefined,
-		userUsedSpace: 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
-		userUsedSpaceDelta: 0, // Temporary value. It is changed every time we finish file upload or delete file.
-										// It's erased after calculating userUsedSpace
-		userUsedSpacePending: 0, // Size of uploads in progress.
-										// It is changed every time upload is started, finished or aborted.
-										// It is NOT erased after calculating userUsedSpace
-		//TODO maxUsedSpace should be taken from cognito attribute custom:space. It will be 500Mb for free accounts.
-		maxUsedSpace: 500 * 1024 * 1024, // 500 Mb
-		userUsedSpaceChanged: false,
-
-		// GUI-only
-		updateIndicator: function() {
-			var size = 32,
-				bucket_capacity = this.maxUsedSpace,
-				space_occupied = this.userUsedSpace + this.userUsedSpaceDelta + this.userUsedSpacePending;
-
-			//bucket coords
-			var bx1 = 2, bx2 = 5, bx3 = size - bx2, bx4 = size - bx1,
-				by1 = 2, by2 = size - by1, by3 = by2, by4 = by1,
-				tg_alpha = (bx2 - bx1) / (by2 - by1);
-
-			//calculate areas
-			var barea = Math.abs(bx1*by2 + bx2*by3 + bx3*by4 + bx4*by1 - bx2*by1 - bx3*by2 - bx4*by3 - bx1*by4) / 2,
-				sarea = Math.min(1.0, space_occupied / bucket_capacity) * barea;
-
-			//calculate y of the occupied space (see .service/sizeIndicator.jpg for details)
-			var a = -2*tg_alpha,
-				b = 3*tg_alpha*by2 + bx3 + size - 3*bx2 + tg_alpha*by3,
-				c = bx2*by2 - tg_alpha*Math.pow(by2, 2) + 2*bx2*by3 - bx3*by2 - size*by3 - tg_alpha*by2*by3 + 2*sarea,
-				D = Math.pow(b, 2) - 4*a*c,
-				y = (-b + Math.sqrt(D)) / (2*a);
-
-			//occupied space coords
-			var sx1 = Math.ceil(bx2 - by2*tg_alpha + y*tg_alpha), sx2 = bx2, sx3 = bx3, sx4 = size - sx1,
-				sy1 = Math.ceil(y)-2, sy2 = by2, sy3 = by3, sy4 = sy1;
-
-			//draw
-			if(!this.sizeIndicator){
-				this.sizeIndicator = SVG('sizeIndicator');
-				this.sizeIndicator.space = this.sizeIndicator
-					.polygon([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4])   //occupied space
-					.fill('#DD6600');
-
-				this.sizeIndicator.bucket = this.sizeIndicator
-					.polyline([bx1,by1, bx2,by2, bx3,by3, bx4,by4]).fill('none')   //bucket shape
-					.stroke({ color: '#fff', width: 3, linecap: 'round', linejoin: 'round' });
-			} else {
-				this.sizeIndicator.space
-					.animate(2000)
-					.plot([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4]);
-			}
-			
-			//update tooltip
-			$('#sizeIndicator').attr('title', g.abUtils.GetSize(space_occupied) + ' / ' + g.abUtils.GetSize(bucket_capacity));
-		},
-
-		updateUsedSpace: function(ownerid) {
-			// update variables, do nothing on error
-			var self = this;
-			g.abUtils.listS3Files(ownerid + '/').then( 
-				function(files) {
-					self.userUsedSpace = files.reduce( 
-						function(acc, f) { return acc + f.Size; }, 
-						0
-					)
-					self.userUsedSpaceDelta = 0;
-					self.userUsedSpaceChanged = false;
-					self.updateIndicator();
-					console.log('Synchronized userUsedSpace ', self.userUsedSpace/1000000, 'Mb');
-				}
-			);
-		},
-
-		canUpload: function(size) {
-			return this.userUsedSpace
-				+ this.userUsedSpaceDelta
-				+ this.userUsedSpacePending
-				+ size <= this.maxUsedSpace;
-		},
-
-		updateUsedSpaceDelta: function(d) {
-			if ((typeof(d) !== 'number') || isNaN(d)) {
-				console.log('updateUsedSpaceDelta wrong d:', d);
-				return;
-			}
-			this.userUsedSpaceDelta += d;
-			this.userUsedSpaceChanged = true;
-			this.updateIndicator();
-		},
-
-		updateUsedSpacePending: function(p) {
-			if ((typeof(p) !== 'number') || isNaN(p)) {
-				console.log('updateUsedSpacePending wrong p:', p);
-				return;
-			}
-			console.log('updateUsedSpacePending ', p);
-			this.userUsedSpacePending += p
-			this.updateIndicator();
-		}
-	};
-
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later
-
-
-

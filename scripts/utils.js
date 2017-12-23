@@ -1,10 +1,9 @@
 "use strict";
 
-//TODO utils should be abUtils object and all these functions should be methods of this object (Ok)
 var abUtils = {
 	// Data for translation
 	// Alphabetical order by key!
-	// One sentence - no dot, two sentences - two dots
+	// One sentence - no dots, two sentences - two dots!
 	translatorData: {
 		"about": {
 			"ru": "О программе",
@@ -131,8 +130,8 @@ var abUtils = {
 			"en": "Forgot password?"
 		},
 		"InvalidParameterException": {
-			"ru": "Один или несколько параметров введены неверно.",
-			"en": "Some parameters are invalid."
+			"ru": "Один или несколько параметров введены неверно",
+			"en": "Some parameters are invalid"
 		},
 		"InvalidPasswordException": {
 			"ru": "Пароль должен быть не короче 6 символов, содержать цифры и латинские буквы в разных регистрах. Например: PassW0rD.",
@@ -147,28 +146,28 @@ var abUtils = {
 			"en": "Login with Google"
 		},
 		"LimitExceededException": {
-			"ru": "Количество попыток исчерпано, попробуйте позже.",
-			"en": "Attempt limit exceeded, please try after some time."
+			"ru": "Количество попыток исчерпано, попробуйте позже",
+			"en": "Attempt limit exceeded, please try after some time"
 		},
 		"multiple guids found": {
-			"ru": "Обнаружено более 1 документа с данным GUID.",
-			"en": "More than 1 document with specified GUID found."
+			"ru": "Обнаружено более 1 документа с данным GUID",
+			"en": "More than 1 document with specified GUID found"
 		},
 		"no": {
 			"ru": "нет",
 			"en": "no"
 		},
 		"no guids found": {
-			"ru": "Документ с этим GUID не найден.",
-			"en": "Document with this GUID not found."
+			"ru": "Документ с этим GUID не найден",
+			"en": "Document with this GUID not found"
 		},
 		"noSpace": {
-			"ru": "Недостаточно места для загрузки файла.",
-			"en": "No space left to upload this file."
+			"ru": "Недостаточно места для загрузки файла",
+			"en": "No space left to upload this file"
 		},
 		"NotAuthorizedException": {
-			"ru": "Отказано в доступе.",
-			"en": "Access denied."
+			"ru": "Отказано в доступе",
+			"en": "Access denied"
 		},
 		"ok": {
 			"ru": "Ок",
@@ -534,7 +533,6 @@ var abUtils = {
 			console.log("Fatal error!", err);
 		}
 
-		$('#root').hide(); //TODO ??
 		this.errorPopover(this.translatorData[msg][LANG]);
 		$('nav').popover('show');
 	},    
@@ -562,5 +560,6 @@ var abUtils = {
 	}
 };
 
-/* https://github.com/madmurphy/cookies.js (GPL3) */
+
+/* Handy cookie wrapper from here https://github.com/madmurphy/cookies.js (GPL3) */
 var docCookies={getItem:function(e){return e?decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=\\s*([^;]*).*$)|^.*$"),"$1"))||null:null},setItem:function(e,o,n,t,r,c){if(!e||/^(?:expires|max\-age|path|domain|secure)$/i.test(e))return!1;var s="";if(n)switch(n.constructor){case Number:s=n===1/0?"; expires=Fri, 31 Dec 9999 23:59:59 GMT":"; max-age="+n;break;case String:s="; expires="+n;break;case Date:s="; expires="+n.toUTCString()}return document.cookie=encodeURIComponent(e)+"="+encodeURIComponent(o)+s+(r?"; domain="+r:"")+(t?"; path="+t:"")+(c?"; secure":""),!0},removeItem:function(e,o,n){return this.hasItem(e)?(document.cookie=encodeURIComponent(e)+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT"+(n?"; domain="+n:"")+(o?"; path="+o:""),!0):!1},hasItem:function(e){return!e||/^(?:expires|max\-age|path|domain|secure)$/i.test(e)?!1:new RegExp("(?:^|;\\s*)"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=").test(document.cookie)},keys:function(){for(var e=document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g,"").split(/\s*(?:\=[^;]*)?;\s*/),o=e.length,n=0;o>n;n++)e[n]=decodeURIComponent(e[n]);return e}};"undefined"!=typeof module&&"undefined"!=typeof module.exports&&(module.exports=docCookies);
