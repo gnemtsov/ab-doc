@@ -864,8 +864,7 @@
                         gapi.load('auth2', function() {
                             gapi.auth2.init({
                                 client_id: self.googleClientId,
-                                scope: 'profile email',
-                                ux_mode: PRODUCTION ? 'redirect' : 'popup'
+                                scope: 'profile email'
                             }).then(
                                 function(){
                                     console.log('Auth.js: self.googleAuth ready.');
