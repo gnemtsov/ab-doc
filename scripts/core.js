@@ -148,16 +148,28 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 this.owner = owner;
             }
 
-            //set readonly
+            //set readOnly
             if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
                 this.readOnly = true;
-                $('.readonly-mode').removeClass('hidden');
+                $('.readOnly-mode').removeClass('hidden');
                 $('.edit-mode').addClass('hidden');
             } else {
                 this.readOnly = false;
-                $('.readonly-mode').addClass('hidden');
+                $('.readOnly-mode').addClass('hidden');
                 $('.edit-mode').removeClass('hidden');
             }
+            
+			//USED SPACE TIMER
+			//TODO Update it less frequently, may be 15 or 30 minutes? (FIXED)
+			//TODO Set in ROUTER and only when user can edit (not read only mode) (FIXED)
+			TIMERS.set(this.readOnly ? function(){} : function () {
+				if (g.INDICATOR.userUsedSpaceChanged && 
+					abAuth.isAuthorized() && 
+					ROUTER.owner === abAuth.credentials.identityId) {
+					g.INDICATOR.updateUsedSpace(abAuth.credentials.identityId);
+				}
+			}, 900000, 'space');
+            
             return this;
         },
         
@@ -168,7 +180,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             //"onbeforeunload" imitator
             if ( PRODUCTION &&
                  ($update.hasClass('pending') || $update.hasClass('saving')) &&
-                 !confirm(_translatorData['changesPending'][LANG]) ) {
+                 !confirm(abUtils.translatorData['changesPending'][LANG]) ) {
                 $update.removeClass('pending saving');
                 return; 
             }
@@ -238,7 +250,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                         $container.prepend($big_preloader); //show main preloader
 
                         if(abAuth.isAuthorized() && this.owner === abAuth.credentials.identityId){
-                            updateUsedSpace(abAuth.credentials.identityId);
+                            g.INDICATOR.updateUsedSpace(abAuth.credentials.identityId);
                         }
 
                         var params = {
@@ -278,11 +290,12 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
                             var docNODE = abTree.tree.getNodesByParam('id', self.doc)[0];
                             if(docNODE === undefined){
-                                onWarning(_translatorData["no guids found"][LANG]);
+                                abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
                                 $big_preloader.remove();
                             } else {
-                                abTree.tree.selectNode(docNODE);
+                                abTree.selectNode(docNODE);
                                 $selectedDoc[0].innerHTML = docNODE.name;
+                                document.title = docNODE.name;
 
                                 var params = {
                                     ownerid: self.owner,
@@ -323,8 +336,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     };
 
     window.onpopstate = function(event) { //revert ROUTER state when back|forward click
-        ROUTER.setOwner(event.state.owner)
-              .open(event.state.doc);
+		if (event.state) { // sometimes event.state is null
+			ROUTER.setOwner(event.state.owner)
+				  .open(event.state.doc);
+		}
     };
       
     //onbeforeunload
@@ -334,9 +349,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 e = window.event;
             }
             if (e) {
-                e.returnValue = _translatorData['changesPending'][LANG];
+                e.returnValue = abUtils.translatorData['changesPending'][LANG];
             }
-            return _translatorData['changesPending'][LANG];
+            return abUtils.translatorData['changesPending'][LANG];
         }
     }
 
@@ -415,32 +430,35 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 ROUTER.setOwner(owner).open(doc);            
             },
             function(error){
-                onError(error.code);
-                console.log(error);
-                if(PRODUCTION){
-                    setTimeout(function() {
-                        abAuth.signOut();
-                    }, 4500);
-                }
+                abUtils.onError(error.code);
+                if (PRODUCTION) {
+					setTimeout(function() {
+						abAuth.signOut();
+					}, 4500);                                              
+				}
             }
         );
 
 
         //translations
-        //TODO regress to English if no translation found!
+        //TODO regress to English if no translation found! (FIXED)
         $('[data-translate]').each( function(i, el) {
             var dt = $(el).attr('data-translate'),
-                at = $(el).attr('attr-translate');
-
-            if (!_translatorData[dt]) {
-                console.log('"' + dt + '" not found in _translatorData');
-                return;
+                at = $(el).attr('attr-translate'),
+                t = dt; // t is a translated dt
+                
+            if (g.abUtils.translatorData[dt]) {
+				if (g.abUtils.translatorData[dt][g.LANG]) {
+					t = g.abUtils.translatorData[dt][g.LANG]
+				} else if (g.abUtils.translatorData[dt]['en']) {
+					t = g.abUtils.translatorData[dt]['en']
+				}
             }
             
             if (at) {
-                $(el).attr(at, g._translatorData[dt][g.LANG]);
+                $(el).attr(at, g.abUtils.translatorData[dt][g.LANG]);
             } else {
-                $(el).html(g._translatorData[dt][g.LANG]);
+                $(el).html(g.abUtils.translatorData[dt][g.LANG]);
             }
         });
         
@@ -449,17 +467,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             localStorage.setItem('ab-doc.translator.lang', $('#selectLang option:selected').val());
             location.reload();
         });
-
-        //USED SPACE TIMER
-        //TODO Update it less frequently, may be 15 or 30 minutes?
-        //TODO Set in ROUTER and only when user can edit (not read only mode)
-        TIMERS.set(function () {
-            if (USER_USED_SPACE_CHANGED && 
-                abAuth.isAuthorized() && 
-                ROUTER.owner === abAuth.credentials.identityId) {
-                updateUsedSpace(abAuth.credentials.identityId);
-            }
-        }, 5000, 'space');
         
         
         //----------Core handlers--------
@@ -513,8 +520,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         *   split <-----> document
         */
 
-        //TODO App should be positioned relative to main-container, not body. Top and left should be 0.
-        //TODO Remove height calculations, app should spread just 100%. Main-container should spread till page bottom.
 
         var smallWidth = 600; // if (window's width < smallWidth) window is considered small, otherwise it's big
         var navHeight = $nav.outerHeight(); // save navbar's initial height
@@ -611,51 +616,49 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         $(window).resize();
 
         // Splitter moving
-        //TODO why brackets here??
-        {
-            var splitterDragging = false,
-                oldX;
-            
-            $splitter.mousedown(function(event) {
-                event.preventDefault();
-                
-                if (COLUMNS_MODE === 'split') {
-                    splitterDragging = true;
-                }
-                
-                oldX = event.clientX;
-            });
-            
-            $(document).mouseup(function(event) {
-                //event.preventDefault();
-                
-                splitterDragging = false;
-            });
-            
-            $(document).mousemove(function(event) {
-                // splitterDragging is true only in 'split' mode
-                if (splitterDragging) {
-                    var newX = event.clientX;
-                    
-                    var totalWidth = window.innerWidth,
-                        zTreeWidth = $ztree.outerWidth(),
-                        newZTreeWidth = zTreeWidth + newX - oldX,
-                        ok = false;
-                        
-                    if (newZTreeWidth < thresholdLeft) {
-                        // go to 'document' mode if approaching left edge
-                        COLUMNS_MODE = 'document';
-                        splitterDragging = false;
-                        ok = true;			
-                    }
-                    
-                    TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
-                    console.log(TREE_WIDTH, thresholdRight);
-                    updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
-                    oldX = newX;
-                }
-            });
-        }
+        //TODO why brackets here?? (fixed)
+		var splitterDragging = false,
+			oldX;
+		
+		$splitter.mousedown(function(event) {
+			event.preventDefault();
+			
+			if (COLUMNS_MODE === 'split') {
+				splitterDragging = true;
+			}
+			
+			oldX = event.clientX;
+		});
+		
+		$(document).mouseup(function(event) {
+			//event.preventDefault();
+			
+			splitterDragging = false;
+		});
+		
+		$(document).mousemove(function(event) {
+			// splitterDragging is true only in 'split' mode
+			if (splitterDragging) {
+				var newX = event.clientX;
+				
+				var totalWidth = window.innerWidth,
+					zTreeWidth = $ztree.outerWidth(),
+					newZTreeWidth = zTreeWidth + newX - oldX,
+					ok = false;
+					
+				if (newZTreeWidth < thresholdLeft) {
+					// go to 'document' mode if approaching left edge
+					COLUMNS_MODE = 'document';
+					splitterDragging = false;
+					ok = true;			
+				}
+				
+				TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
+				console.log(TREE_WIDTH, thresholdRight);
+				updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
+				oldX = newX;
+			}
+		});
 
         // Update columns' sizes, use given mode
         // Returns true on success, false on wrong mode value
@@ -724,105 +727,114 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
     });
 
+
+	//---------- Size indicator and limit ------------
+	// TODO! wrap all this stuff in g.INDICATOR object like TIMERS and put it inside main core function (DONE)
+	// TODO add title to indicator with info like 0.1Gb/1Gb.. so that user could see how much space he exactly uses (DONE)
+	g.INDICATOR = {
+		sizeIndicator: undefined,
+		userUsedSpace: 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
+		userUsedSpaceDelta: 0, // Temporary value. It is changed every time we finish file upload or delete file.
+										// It's erased after calculating userUsedSpace
+		userUsedSpacePending: 0, // Size of uploads in progress.
+										// It is changed every time upload is started, finished or aborted.
+										// It is NOT erased after calculating userUsedSpace
+		//TODO maxUsedSpace should be taken from cognito attribute custom:space. It will be 500Mb for free accounts.
+		maxUsedSpace: 500 * 1024 * 1024, // 500 Mb
+		userUsedSpaceChanged: false,
+
+		// GUI-only
+		updateIndicator: function() {
+			var size = 32,
+				bucket_capacity = this.maxUsedSpace,
+				space_occupied = this.userUsedSpace + this.userUsedSpaceDelta + this.userUsedSpacePending;
+
+			//bucket coords
+			var bx1 = 2, bx2 = 5, bx3 = size - bx2, bx4 = size - bx1,
+				by1 = 2, by2 = size - by1, by3 = by2, by4 = by1,
+				tg_alpha = (bx2 - bx1) / (by2 - by1);
+
+			//calculate areas
+			var barea = Math.abs(bx1*by2 + bx2*by3 + bx3*by4 + bx4*by1 - bx2*by1 - bx3*by2 - bx4*by3 - bx1*by4) / 2,
+				sarea = Math.min(1.0, space_occupied / bucket_capacity) * barea;
+
+			//calculate y of the occupied space (see .service/sizeIndicator.jpg for details)
+			var a = -2*tg_alpha,
+				b = 3*tg_alpha*by2 + bx3 + size - 3*bx2 + tg_alpha*by3,
+				c = bx2*by2 - tg_alpha*Math.pow(by2, 2) + 2*bx2*by3 - bx3*by2 - size*by3 - tg_alpha*by2*by3 + 2*sarea,
+				D = Math.pow(b, 2) - 4*a*c,
+				y = (-b + Math.sqrt(D)) / (2*a);
+
+			//occupied space coords
+			var sx1 = Math.ceil(bx2 - by2*tg_alpha + y*tg_alpha), sx2 = bx2, sx3 = bx3, sx4 = size - sx1,
+				sy1 = Math.ceil(y)-2, sy2 = by2, sy3 = by3, sy4 = sy1;
+
+			//draw
+			if(!this.sizeIndicator){
+				this.sizeIndicator = SVG('sizeIndicator');
+				this.sizeIndicator.space = this.sizeIndicator
+					.polygon([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4])   //occupied space
+					.fill('#DD6600');
+
+				this.sizeIndicator.bucket = this.sizeIndicator
+					.polyline([bx1,by1, bx2,by2, bx3,by3, bx4,by4]).fill('none')   //bucket shape
+					.stroke({ color: '#fff', width: 3, linecap: 'round', linejoin: 'round' });
+			} else {
+				this.sizeIndicator.space
+					.animate(2000)
+					.plot([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4]);
+			}
+			
+			//update tooltip
+			$('#sizeIndicator').attr('title', g.abUtils.GetSize(space_occupied) + ' / ' + g.abUtils.GetSize(bucket_capacity));
+		},
+
+		updateUsedSpace: function(ownerid) {
+			// update variables, do nothing on error
+			var self = this;
+			g.abUtils.listS3Files(ownerid + '/').then( 
+				function(files) {
+					self.userUsedSpace = files.reduce( 
+						function(acc, f) { return acc + f.Size; }, 
+						0
+					)
+					self.userUsedSpaceDelta = 0;
+					self.userUsedSpaceChanged = false;
+					self.updateIndicator();
+					console.log('Synchronized userUsedSpace ', self.userUsedSpace/1000000, 'Mb');
+				}
+			);
+		},
+
+		canUpload: function(size) {
+			return this.userUsedSpace
+				+ this.userUsedSpaceDelta
+				+ this.userUsedSpacePending
+				+ size <= this.maxUsedSpace;
+		},
+
+		updateUsedSpaceDelta: function(d) {
+			if ((typeof(d) !== 'number') || isNaN(d)) {
+				console.log('updateUsedSpaceDelta wrong d:', d);
+				return;
+			}
+			this.userUsedSpaceDelta += d;
+			this.userUsedSpaceChanged = true;
+			this.updateIndicator();
+		},
+
+		updateUsedSpacePending: function(p) {
+			if ((typeof(p) !== 'number') || isNaN(p)) {
+				console.log('updateUsedSpacePending wrong p:', p);
+				return;
+			}
+			console.log('updateUsedSpacePending ', p);
+			this.userUsedSpacePending += p
+			this.updateIndicator();
+		}
+	};
+
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later
 
 
 
-
-
-//---------- Size indicator and limit ------------
-// TODO! wrap all this stuff in g.INDICATOR object like TIMERS and put it inside main core function
-// TODO add title to indicator with info like 0.1Gb/1Gb.. so that user could see how much space he exactly uses
-var sizeIndicator;
-var USER_USED_SPACE = 0, // Getting list of objects in s3 and finding sum of their sizes (It happens rarely)
-	USER_USED_SPACE_DELTA = 0, // Temporary value. It is changed every time we finish file upload or delete file.
-								// It's erased after calculating USER_USED_SPACE
-	USER_USED_SPACE_PENDING = 0, // Size of uploads in progress.
-								// It is changed every time upload is started, finished or aborted.
-								// It is NOT erased after calculating USER_USED_SPACE
-    //TODO MAX_USED_SPACE should be taken from cognito attribute custom:space. It will be 500Mb for free accounts.
-    MAX_USED_SPACE = 500 * 1024 * 1024, // 500 Mb
-	USER_USED_SPACE_CHANGED = false;
-
-// GUI-only
-function updateIndicator() {
-	var size = 32,
-		bucket_capacity = MAX_USED_SPACE,
-		space_occupied = USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING;
-
-	//bucket coords
-	var bx1 = 2, bx2 = 5, bx3 = size - bx2, bx4 = size - bx1,
-		by1 = 2, by2 = size - by1, by3 = by2, by4 = by1,
-		tg_alpha = (bx2 - bx1) / (by2 - by1);
-
-	//calculate areas
-	var barea = Math.abs(bx1*by2 + bx2*by3 + bx3*by4 + bx4*by1 - bx2*by1 - bx3*by2 - bx4*by3 - bx1*by4) / 2,
-		sarea = Math.min(1.0, space_occupied / bucket_capacity) * barea;
-
-	//calculate y of the occupied space (see .service/sizeIndicator.jpg for details)
-	var a = -2*tg_alpha,
-		b = 3*tg_alpha*by2 + bx3 + size - 3*bx2 + tg_alpha*by3,
-		c = bx2*by2 - tg_alpha*Math.pow(by2, 2) + 2*bx2*by3 - bx3*by2 - size*by3 - tg_alpha*by2*by3 + 2*sarea,
-		D = Math.pow(b, 2) - 4*a*c,
-		y = (-b + Math.sqrt(D)) / (2*a);
-
-	//occupied space coords
-	var sx1 = Math.ceil(bx2 - by2*tg_alpha + y*tg_alpha), sx2 = bx2, sx3 = bx3, sx4 = size - sx1,
-		sy1 = Math.ceil(y)-2, sy2 = by2, sy3 = by3, sy4 = sy1;
-
-	//draw
-	if(!sizeIndicator){
-		sizeIndicator = SVG('sizeIndicator');
-		sizeIndicator.space = sizeIndicator
-			.polygon([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4])   //occupied space
-			.fill('#DD6600');
-
-		sizeIndicator.bucket = sizeIndicator
-			.polyline([bx1,by1, bx2,by2, bx3,by3, bx4,by4]).fill('none')   //bucket shape
-			.stroke({ color: '#fff', width: 3, linecap: 'round', linejoin: 'round' });
-	} else {
-		sizeIndicator.space
-			.animate(2000)
-			.plot([sx1,sy1, sx2,sy2, sx3,sy3, sx4,sy4]);
-	}
-}
-
-function updateUsedSpace(ownerid) {
-	// update variables, do nothing on error
-	listS3Files(ownerid + '/').then( 
-        function(files) {
-            USER_USED_SPACE = files.reduce( 
-                function(acc, f) { return acc + f.Size; }, 
-                0
-            )
-			USER_USED_SPACE_DELTA = 0;
-			USER_USED_SPACE_CHANGED = false;
-			updateIndicator();
-			console.log('Synchronized USER_USED_SPACE ', USER_USED_SPACE/1000000, 'Mb');
-        }
-    );
-}
-
-function canUpload(size) {
-	return USER_USED_SPACE + USER_USED_SPACE_DELTA + USER_USED_SPACE_PENDING + size <= MAX_USED_SPACE;
-}
-
-function updateUsedSpaceDelta(d) {
-	if ((typeof(d) !== 'number') || isNaN(d)) {
-		console.log('updateUsedSpaceDelta wrong d:', d);
-		return;
-	}
-	USER_USED_SPACE_DELTA += d;
-	USER_USED_SPACE_CHANGED = true;
-	updateIndicator();
-}
-
-function updateUsedSpacePending(p) {
-	if ((typeof(p) !== 'number') || isNaN(p)) {
-		console.log('updateUsedSpacePending wrong p:', p);
-		return;
-	}
-	console.log('updateUsedSpacePending ', p);
-	USER_USED_SPACE_PENDING += p
-	updateIndicator();
-}

@@ -3,9 +3,9 @@
 /******************************************************************/
 /******************************Tree********************************/
 /******************************************************************/
-//TODO debug readonly mode, editting icons are still visible and working
-//TODO live node name editting
-//TODO page title = doc title (+live, +back&forward)
+//TODO debug readOnly mode, editting icons are still visible and working (fixed)
+//TODO live node name editting (fixed)
+//TODO page title = doc title (+live, +back&forward) (fixed)
 //TOTHINK first click only selects node, second click opens|closes folder
 (function (g, $) {
 	//----------- abTree object--------------//
@@ -69,6 +69,7 @@
 			if (treeNode.tId === self.selectedNode.tId) {
 				$('#' + inputId).on('input', function() {
 					$('#selectedDoc').text($(this).val());
+					document.title = $(this).val();
 				});
 			}
 		}, 20);
@@ -120,8 +121,8 @@
 		// expand the node
 		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		
-		self.tree.lastClicked = treeNode; //TODO remove? it is not used anywhere
-		
+		self.selectedNode = treeNode;
+	
 		ROUTER.open(treeNode.id);
 	}
 
@@ -160,7 +161,7 @@
 				}
 				i++;
 			}
-			var guid = GetGUID();
+			var guid = abUtils.GetGUID();
 			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
 			var newNode = self.tree.getNodeByParam('id', guid);
 			
@@ -209,7 +210,7 @@
 		ACTIVITY.push('tree modify', 'pending');
 		
 		// Dropped node is selected in tree now. Select the node, opened in editor. 
-		self.tree.selectNode(self.selectedNode, false, true);
+		self.selectNode(self.selectedNode, false, true);
 		console.log('Ok');
 	};
 
@@ -228,18 +229,18 @@
 					n.children.map(f)
 				}
 				
-				deleteRecursiveS3(self.ownerid + '/' + n.id)
+				abUtils.deleteRecursiveS3(self.ownerid + '/' + n.id)
 					.then( function(ok) {
-						USER_USED_SPACE_CHANGED = true;
+						g.INDICATOR.userUsedSpaceChanged = true;
 					})
 					.catch( function(err) {
-						onError(err);
+						abUtils.onError(err);
 					});
 			};
 			f(treeNode);
 		
 			if (treeNode === self.selectedNode) {
-				ROUTER.open(tree.getNodes()[0].id);
+				ROUTER.open(self.tree.getNodes()[0].id);
 			}
 		
 			var $node = $('#' + treeNode.tId + '_a');
@@ -250,9 +251,9 @@
 			
 			ACTIVITY.push('tree modify', 'pending');
 		});
-		var message = _translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + _translatorData["deleteQuestion2"][LANG];
+		var message = abUtils.translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + abUtils.translatorData["deleteQuestion2"][LANG];
 		if (treeNode.isParent) {
-			message += _translatorData["deleteQuestion3"][LANG];
+			message += abUtils.translatorData["deleteQuestion3"][LANG];
 		}
 		$("#pDeleteMessage").html(message);
 		$("#modalDelete").modal("show");
@@ -301,11 +302,14 @@
 	abTree.prototype.onRename = function(event, treeId, treeNode, isCancel) {
 		var self = this;
 		
+		console.log('on rename');
+		
 		if (!isCancel) {
 			ACTIVITY.push('tree modify', 'pending');
 			
-			if (treeNode.id === self.selectedNode) {
+			if (treeNode.tId === self.selectedNode.tId) {
 				$('#selectedDoc').html(treeNode.name);
+				document.title = treeNode.name;
 			}
 		}
 		
@@ -341,9 +345,9 @@
 			.catch( function(error) {
 				if (!self.readOnly && error.code === 'NoSuchKey') {
 					self.virgin = true;
-					return [{id: GetGUID(), name: g._translatorData['rootName'][LANG]}];
+					return [{id: abUtils.GetGUID(), name: g.abUtils.translatorData['rootName'][LANG]}];
 				} else {
-					onFatalError(error, 'couldNotLoadTree');
+					abUtils.onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}
 			})
@@ -353,7 +357,7 @@
 				self.zNodes[0].head = true;
 				self.zNodes[0].open = true;
 				if(!self.zNodes[0].name.length){
-					self.zNodes[0].name = g._translatorData['rootName'][LANG];
+					self.zNodes[0].name = g.abUtils.translatorData['rootName'][LANG];
 				}
 
 				self.zSettings = {
@@ -387,6 +391,7 @@
 				};
 							
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
+				self.selectedNode = self.tree.getNodes()[0];
 
 				if(!self.readOnly){ //init timer if not readOnly
 
@@ -419,7 +424,7 @@
 								Key: self.treeKey,
 								Body: JSON.stringify(data),
 								ContentType: 'application/json',
-								ContentDisposition: GetContentDisposition('tree.json'),
+								ContentDisposition: abUtils.GetContentDisposition('tree.json'),
 								ACL: 'public-read'
 							};
 

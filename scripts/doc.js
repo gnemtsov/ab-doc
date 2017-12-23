@@ -52,9 +52,9 @@
 							'</div>'),
 					$meta = $('<div class="file-meta">' + 
 								'<span class="file-question">' + 
-									g._translatorData['areYouSure'][g.LANG] + 
-									'&nbsp;<a href="#" class="file-yes">' + g._translatorData['yes'][g.LANG] + '</a>' + 
-									'&nbsp;<a href="#" class="file-no">' + g._translatorData['no'][g.LANG] + '</a>' + 
+									g.abUtils.translatorData['areYouSure'][g.LANG] + 
+									'&nbsp;<a href="#" class="file-yes">' + g.abUtils.translatorData['yes'][g.LANG] + '</a>' + 
+									'&nbsp;<a href="#" class="file-no">' + g.abUtils.translatorData['no'][g.LANG] + '</a>' + 
 								'</span>' +
 							'</div>');
 						
@@ -62,7 +62,7 @@
 				$file_container.append($icon, $file_wrap);			
 
 				if(!file.modified){ //file is uploading
-					$meta.append('<span class="file-size file-progress" style="width: '+file.percent+'">' + GetSize(file.size) + '</span>');
+					$meta.append('<span class="file-size file-progress" style="width: '+file.percent+'">' + abUtils.GetSize(file.size) + '</span>');
 					if(file.abortable){
 						$meta.append('<img class="file-action" data-action="abort" src="/img/icons/close.svg">');
 					}
@@ -70,7 +70,7 @@
 					var $a = $('<a href="' + AWS_CDN_ENDPOINT + file.key + '"></a>');
 					$icon.wrap($a);
 					$name.wrap($a);
-					$meta.append('<span class="file-size">' + GetSize(file.size) + '</span>'); 
+					$meta.append('<span class="file-size">' + abUtils.GetSize(file.size) + '</span>'); 
 					$meta.append('<span class="file-modified">'+file.modified.toLocaleString()+'</span>'); 
 					$meta.append('<img class="file-action" data-action="delete" src="/img/icons/trash.svg">'); 
 				}
@@ -213,15 +213,17 @@
 							}
 						
 							var drop_blot = Parchment.find(drop_range.startContainer);
-							drop_index = drop_blot.offset(self.editor.scroll) + drop_range.startOffset;
+							if (drop_blot) {
+								drop_index = drop_blot.offset(self.editor.scroll) + drop_range.startOffset;
+							}
 						} else { //handler was triggered from paste event
 							var files = [file];
 						}
 
 						var non_image_files = new Array();
 						$.each(files, function (i, file) {
-							if (!canUpload(file.size)) { // exit if we don't have enough space
-								onWarning(g._translatorData['noSpace'][g.LANG]);
+							if (!g.INDICATOR.canUpload(file.size)) { // exit if we don't have enough space
+								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}	
 
@@ -232,17 +234,17 @@
 								self.editor.insertEmbed(index_obj.value, 'image', 'img/ab-doc-preloader-nano.gif', 'silent');
 																
 								//upload pic to S3
-								var picGUID = GetGUID();
+								var picGUID = abUtils.GetGUID();
 								s3.upload({
 									Bucket: STORAGE_BUCKET,
 									Key: self.ownerid + '/' + self.docGUID + '/' + picGUID,
 									Body: file,
 									ContentType: file.type,
-									ContentDisposition: GetContentDisposition(file.name),
+									ContentDisposition: abUtils.GetContentDisposition(file.name),
 									ACL: 'public-read'
 								}).send(function(err, data) {
 									if(err) {
-										onError(err);
+										abUtils.onError(err);
 										self.editor.enable();
 									} else {
 										var delta = new Delta();
@@ -385,21 +387,21 @@
 	
 						$.each(files, function (i, file) {
 
-							if (!canUpload(file.size)) {
-								onWarning(g._translatorData['noSpace'][g.LANG]);
+							if (!g.INDICATOR.canUpload(file.size)) {
+								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}
 
 							ACTIVITY.push('file upload', 'saving');							
 
-							var fileGUID = GetGUID(),
+							var fileGUID = abUtils.GetGUID(),
 								key = self.ownerid + '/' + self.docGUID + '/attachments/' + fileGUID,
 								partSize = 6 * 1024 * 1024;
 
 							var file_obj = {
 								guid: fileGUID,
 								name: file.name,
-								iconURL: mimeTypeToIconURL(file.type),
+								iconURL: abUtils.mimeTypeToIconURL(file.type),
 								key: key,
 								size: file.size,
 								percent: '0%',
@@ -411,7 +413,7 @@
 									Key: key,
 									Body: file,
 									ContentType: file.type,
-									ContentDisposition: GetContentDisposition(file.name),
+									ContentDisposition: abUtils.GetContentDisposition(file.name),
 									ACL: 'public-read'
 								};
 
@@ -428,14 +430,14 @@
 								}
 							});
 							upload.send(function(err, data) {
-								if(err) { onError(err); } 
+								if(err) { abUtils.onError(err); } 
 								else {
 									var params = {
 										Bucket: data.Bucket, 
 										Prefix: data.Key
 									};
 									s3.listObjectsV2(params, function(err, data) {
-										if (err) { onError(err); } 
+										if (err) { abUtils.onError(err); } 
 										else {
 											file_obj.modified = data.Contents[0].LastModified;
 											self.updateFilesList();
@@ -525,9 +527,9 @@
 					Key: self.files[file_index].key
 				};
 				s3.deleteObject(params, function (err, data) {
-					if (err) { onError(err); } 
+					if (err) { abUtils.onError(err); } 
 					else {
-						updateUsedSpaceDelta(-self.files[file_index].size);
+						g.INDICATOR.updateUsedSpaceDelta(-self.files[file_index].size);
 						$file.fadeOut(800, function() {
 							self.files.splice(file_index, 1);
 							self.updateFilesList();
@@ -613,11 +615,11 @@
 
 		$abDoc = $(self.docContainer);
 		$editor = $('<div id="editor"></div>');
-		$drop_zone = $('<div id="dropzone" class="'+( self.readOnly ? ' readonly' : '' )+'"></div>');
+		$drop_zone = $('<div id="dropzone" class="'+( self.readOnly ? ' readOnly' : '' )+'"></div>');
 		$clip_icon = $('<img id="clip-icon" src="/img/icons/paperclip.svg">');
 		$clip_input = $('<input id="clip-input" name="clip" multiple="multiple" type="file">');
 		$files_wrap = $('<div id="files_wrap"></div>');
-		$files_message = $('<div id="dropzone-message">'+g._translatorData['emptyDropzoneMessage'][g.LANG]+'</div>');
+		$files_message = $('<div id="dropzone-message">'+g.abUtils.translatorData['emptyDropzoneMessage'][g.LANG]+'</div>');
 
 		$abDoc.empty();
 		$drop_zone.append(
@@ -642,7 +644,7 @@
 			})
 			.catch( function(error) {
 				if (error.code !== 'NoSuchKey') {
-					onFatalError(error, 'couldNotLoadDoc');
+					abUtils.onFatalError(error, 'couldNotLoadDoc');
 					throw 'fatal';
 				} else if(self.docGUID === self.rootGUID) {
 					return $.get('/root/' + g.LANG + '.html');				
@@ -660,7 +662,7 @@
 
 				//quill config
 				var editor_options = {
-					placeholder: g._translatorData['typeYourText'][g.LANG],
+					placeholder: g.abUtils.translatorData['typeYourText'][g.LANG],
 					theme: 'bubble',
 					scrollingContainer: '#document',
 					readOnly: self.readOnly,
@@ -734,7 +736,7 @@
 								Key: self.ownerid + '/' + self.docGUID + '/index.html',
 								Body: self.editor.root.innerHTML,
 								ContentType: 'text/html',
-								ContentDisposition: GetContentDisposition('index.html'),
+								ContentDisposition: abUtils.GetContentDisposition('index.html'),
 								ACL: 'public-read'
 							};
 							Promise.all([ 
@@ -771,8 +773,8 @@
 							s3.headObject(params).promise().then(
 								function(data) {
 									var name = decodeURIComponent(data.ContentDisposition.substring(29)),
-										mime = mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(name)[1]),
-										iconURL = mimeTypeToIconURL(mime);
+										mime = abUtils.mimeTypeByExtension(/(?:\.([^.]+))?$/.exec(name)[1]),
+										iconURL = abUtils.mimeTypeToIconURL(mime);
 
 									self.files.push({
 										guid: file.Key.split('/').pop(),
@@ -784,7 +786,7 @@
 									});
 								},
 								function(error) { 
-									onError(error); 
+									abUtils.onError(error); 
 									throw error;
 								}
 							)
