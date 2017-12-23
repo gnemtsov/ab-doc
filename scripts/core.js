@@ -327,7 +327,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
               .open(event.state.doc);
     };
       
-
     //onbeforeunload
     window.onbeforeunload = function (e) {
         if ($update.hasClass('pending') || $update.hasClass('saving')) {
@@ -340,6 +339,14 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             return _translatorData['changesPending'][LANG];
         }
     }
+
+    //yoloPromise
+    window.yoloPromise = new Promise(function(resolve, reject){
+        window.onGoogleYoloLoad = function(googleyolo) {
+            console.log('Core.js: googleyolo ready.');
+            resolve();
+        };                        
+    });
 
     //---------core globals--------
 
@@ -474,10 +481,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             abAuth.showModal('signIn');
         });
 
-        // Call sign in dialog
+        // Call google sign in
         $('body').on('click', 'a.link-google', function (e) {
             e.preventDefault();
-            abAuth.showGoogleHint();
+            abAuth.showGoogleHintsOrSignIn(1);
         });
 
         // Sign out
