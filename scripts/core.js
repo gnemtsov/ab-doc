@@ -378,7 +378,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                 if(abDoc.docGUID === self.doc){ //just show and exit, if doc has been already loaded
                                     if(!$app.is(":visible")){
                                         $container.children().hide();
-                                        $app.children().addBack().show();
+                                        $app.show();
                                         $abDoc.show();
                                     }                                        
                                     return;
@@ -411,7 +411,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                                 abDoc.promise.then( //doc is ready, show!
                                     function(){
                                         $big_preloader.remove();
-                                        $app.children().addBack().show();
+                                        $app.show();
                                         $abDoc.show();
                                     }
                                 );
@@ -492,7 +492,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
         $container = $('#main-container'); //main
 
-        $app = $('#app'); //app & pages
+        $app = $('#app'); //app (contains tree, splitter and document)
         $welcome = $('#welcome'); 
         $about = $('#about');
 
@@ -668,7 +668,11 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         // Window resizing
         // Keep tree column width, resize others and change height when resizing window
         $(window).resize( function(event) {
-            event.preventDefault();
+
+            console.log('window.resize');
+			if (event) {
+				event.preventDefault();
+			}
 
             if (window.innerWidth < smallWidth) {
                 switch (COLUMNS_MODE) {
@@ -770,41 +774,30 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
                 // Update columns' sizes when in 'tree' mode
                 case 'tree': 
-                    $('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
-                    $splitter.removeClass('thin');
-                    
-                    var sw = $splitter.outerWidth();
-                    
-                    $ztree.show();
-                    $ztree.css('left', sw + 'px');
-                    $ztree.outerWidth(window.innerWidth - sw);
-                    $splitter.css('left', 0 + 'px');
-                    $document.hide();
+					$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
+					$splitter.removeClass('thin');
+					
+					var sw = $splitter.outerWidth();
+					
+					$ztree.show();
+					$ztree.css('left', sw + 'px');
+					$ztree.outerWidth(window.innerWidth - sw);
+					$splitter.css('left', window.innerWidth - 1 + 'px');
+					$document.hide();
                     return true;
 
                 // Update columns' sizes when in 'document' mode
                 case 'document': 
-                    if (small) {
-                        $('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
-                        $splitter.addClass('thin');
-                        
-                        $document.css('left', 0 + 'px');
-                        $document.outerWidth(window.innerWidth - 1);
-                        $document.show();
-                        $splitter.css('left', window.innerWidth - 1 + 'px');
-                        $ztree.hide();	
-                    } else {
-                        $('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
-                        $splitter.removeClass('thin');
-                        
-                        var sw = $splitter.outerWidth();
-                        
-                        $document.css('left', sw + 'px');
-                        $document.outerWidth(window.innerWidth - sw);
-                        $document.show();
-                        $splitter.css('left', 0 + 'px');
-                        $ztree.hide();	
-                    }
+					$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
+					$splitter.addClass('thin');
+					
+					var sw = $splitter.outerWidth();
+					
+					$document.css('left', sw + 'px');
+					$document.outerWidth(window.innerWidth - sw);
+					$document.show();
+					$splitter.css('left', 0 + 'px');
+					$ztree.hide();
                     return true;
 
                 // Used when in 'split' mode. Sets tree's width = w, document's width and splitter's position to fit page

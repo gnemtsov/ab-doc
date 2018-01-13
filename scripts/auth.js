@@ -27,7 +27,7 @@
             var out;
             self.cognitoSyncDataset.get(key, function(error, value) {
                 if(error){
-                    onError(error);
+                    abUtils.onError(error);
                 } else {
                     out = value;
                 }
@@ -37,7 +37,7 @@
         self.put = function(key, value){
             self.cognitoSyncDataset.put(key, value, function(error, record) {
                 if(error){
-                    onError(error);
+                    abUtils.onError(error);
                 }
             });
         };
@@ -176,7 +176,7 @@
                         self.cognitoUser.signInUserSession.getRefreshToken(), 
                         function(error, session){
                             if (error) {
-                                onError(error);
+                                abUtils.onError(error);
                                 self.signOut();
                             } else {
                                 self.credentials.params.Logins = {};
@@ -198,7 +198,7 @@
                             console.log('Auth.js: googleUser tokens refreshed at ' + Date() );
                         })
                         .catch( function(error){
-                            onError(error);
+                            abUtils.onError(error);
                             self.signOut();
                         }
                     );
@@ -362,7 +362,7 @@
                 g.location.reload();
             }).catch(function(error){
                 console.log(error);
-                onError(error);
+                abUtils.onError(error);
             });
         },
 
@@ -593,7 +593,7 @@
                     console.log(error);
                     var mute_errors = ['requestFailed', 'userCanceled', 'operationCanceled', 'illegalConcurrentRequest', 'unsupportedBrowser', 'noCredentialsAvailable'];
                     if(mute_errors.indexOf(error.type) === -1 && error.error !== 'popup_closed_by_user') {
-                        onError(error);
+                        abUtils.onError(error);
                     } 
                 });
         },
