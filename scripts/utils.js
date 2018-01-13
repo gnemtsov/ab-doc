@@ -519,7 +519,10 @@ var abUtils = {
 			console.log("Error!", err);
 		}
 		
-	    var message = this.translatorData[err][LANG] !== undefined ? this.translatorData[err][LANG] : this.translatorData['somethingWentWrong'][LANG];
+		var message = this.translatorData['somethingWentWrong'][LANG];
+		if(this.translatorData[err] !== undefined && this.translatorData[err][LANG] !== undefined) {
+			message = this.translatorData[err][LANG];
+		}
 	
 		this.errorPopover(message);
 		$('nav').popover('show');

@@ -34,6 +34,8 @@ AWS.config = {
 //TODO use user pool attribute locale instead of LANG http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
 var LANG = localStorage.getItem('ab-doc.translator.lang') ? localStorage.getItem('ab-doc.translator.lang') : 'en';
 var s3;
+var isTouchDevice = (('ontouchstart' in window) || ('onmsgesturechange' in window));
+var isSmallDevice = window.innerWidth < 600;
 
 var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
     $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
@@ -505,6 +507,13 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         $selectedDoc = $('#selectedDoc'); 
         $abDoc = $('#abDoc');
 
+        if (isTouchDevice) {
+            $('body').addClass('touch-device');
+        }
+        if (isSmallDevice) {
+            $('body').addClass('small-device');
+        }
+
         //define owner and doc from pathname
         var path = window.location.pathname.split('/'),
             owner, doc;
@@ -624,8 +633,6 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         *   split <-----> document
         */
 
-
-        var smallWidth = 600; // if (window's width < smallWidth) window is considered small, otherwise it's big
         var navHeight = $nav.outerHeight(); // save navbar's initial height
         var COLUMNS_MODE, 
             TREE_WIDTH;
@@ -636,7 +643,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 event.preventDefault();
             }
             
-            if (window.innerWidth < smallWidth) {
+            if (isSmallDevice) {
                 switch (COLUMNS_MODE) {
                     case 'tree':
                         COLUMNS_MODE = 'document';
@@ -662,7 +669,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 }
             }
             
-            updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
+            updateMode();
         });
         
         // Window resizing
@@ -674,7 +681,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 				event.preventDefault();
 			}
 
-            if (window.innerWidth < smallWidth) {
+            isSmallDevice = window.innerWidth < 600;
+            isSmallDevice ? $('body').addClass('small-device') : $('body').removeClass('small-device');
+
+            if (isSmallDevice) {
                 switch (COLUMNS_MODE) {
                     case 'document':
                     case 'tree':
@@ -693,9 +703,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             }
 
             TREE_WIDTH = Math.max(Math.min(TREE_WIDTH, window.innerWidth - thresholdRight), thresholdLeft);
-            if( !updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH) ) {
+            if( !updateMode() ) {
                 COLUMNS_MODE = 'split';
-                updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
+                updateMode();
             }
             
             // app-container's height
@@ -762,22 +772,25 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 				
 				TREE_WIDTH = Math.max(Math.min(newZTreeWidth, window.innerWidth - thresholdRight), thresholdLeft);
 				console.log(TREE_WIDTH, thresholdRight);
-				updateMode(COLUMNS_MODE, window.innerWidth < smallWidth, TREE_WIDTH);
+				updateMode();
 				oldX = newX;
 			}
 		});
 
-        // Update columns' sizes, use given mode
+        // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
-        function updateMode(mode, small, w) {
-            switch(mode) {
+        function updateMode() {
+
+            var sw = $splitter.outerWidth();
+
+            switch(COLUMNS_MODE) {
 
                 // Update columns' sizes when in 'tree' mode
                 case 'tree': 
 					$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
 					$splitter.removeClass('thin');
-					
-					var sw = $splitter.outerWidth();
+                    $document.removeClass('doc-solo');
+                    $ztree.addClass('tree-solo');
 					
 					$ztree.show();
 					$ztree.css('left', sw + 'px');
@@ -790,9 +803,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 case 'document': 
 					$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
 					$splitter.addClass('thin');
-					
-					var sw = $splitter.outerWidth();
-					
+                    $document.addClass('doc-solo');
+                    $ztree.removeClass('tree-solo');
+										
 					$document.css('left', sw + 'px');
 					$document.outerWidth(window.innerWidth - sw);
 					$document.show();
@@ -800,20 +813,20 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 					$ztree.hide();
                     return true;
 
-                // Used when in 'split' mode. Sets tree's width = w, document's width and splitter's position to fit page
+                // Used when in 'split' mode. Sets tree's width = TREE_WIDTH, document's width and splitter's position to fit page
                 case 'split': 
                     $('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
                     $splitter.removeClass('thin');
-                    
-                    var sw = $splitter.outerWidth();
-                    
+                    $document.removeClass('doc-solo');
+                    $ztree.removeClass('tree-solo');
+                                        
                     $ztree.show();
                     $ztree.css('left', 0 + 'px');
-                    $ztree.outerWidth(w);
-                    $splitter.css('left', w + 'px');
+                    $ztree.outerWidth(TREE_WIDTH);
+                    $splitter.css('left', TREE_WIDTH + 'px');
                     $document.show();
-                    $document.outerWidth(window.innerWidth - w - sw);
-                    $document.css('left', (w + sw) + 'px');
+                    $document.outerWidth(window.innerWidth - TREE_WIDTH - sw);
+                    $document.css('left', (TREE_WIDTH + sw) + 'px');
                     return true;
 
                 default:
