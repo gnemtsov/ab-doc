@@ -537,7 +537,7 @@
                 $('.authenticated-mode').addClass('hidden');
 
                 $('.unauthenticated-mode').not( ".link-google" ).removeClass('hidden');
-                if(g.googleyolo !== undefined){
+                if(self.googleAuth !== undefined && g.googleyolo !== undefined){
                     $('.unauthenticated-mode.link-google').removeClass('hidden');
                 }
                 $username.text(g.abUtils.translatorData['account'][g.LANG]);
@@ -861,23 +861,41 @@
                     self.googleClientId = "1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com";
 
                     var authPromise = new Promise(function(resolve, reject){
-                        gapi.load('auth2', function() {
-                            gapi.auth2.init({
-                                client_id: self.googleClientId,
-                                scope: 'profile email'
-                            }).then(
-                                function(){
-                                    console.log('Auth.js: self.googleAuth ready.');
-                                    self.googleAuth = gapi.auth2.getAuthInstance();
-                                    resolve();
+                        gapi.load(
+                            'auth2', 
+                            {
+                                callback: function() {
+                                    gapi.auth2.init({
+                                        client_id: self.googleClientId,
+                                        scope: 'profile email'
+                                    }).then(
+                                        function(){
+                                            console.log('Auth.js: self.googleAuth ready.');
+                                            self.googleAuth = gapi.auth2.getAuthInstance();
+                                            resolve();
+                                        },
+                                        function(error){
+                                            console.log('Auth.js: self.googleAuth init failed!', error);
+                                            reject();
+                                        }
+                                    );
+                                },
+                                onerror: function() {
+                                    console.log('Auth.js: gapi.auth2 failed to load!');
+                                    reject();
+                                },
+                                timeout: 5000, // 5 seconds.
+                                ontimeout: function() {
+                                    console.log('Auth.js: gapi.auth2 failed could not load in a timely manner!');
+                                    reject();
                                 }
-                            );                        
-                        });
+                            }
+                        );
                     });
 
                     Promise.all([authPromise, g.yoloPromise]).then(function(){ //auth and yolo ready, let's rock!
 
-                       if(self.googleAuth.isSignedIn.get()){
+                        if(self.googleAuth.isSignedIn.get()){
 
                             console.log('Auth.js: Already authorized by Google! Signing in...');
                             self.userType = 'google';
@@ -936,6 +954,11 @@
                             }
                         }
 
+                    })
+                    .catch(function(){ //even if google auth services failed resolve Auth promise!
+                        self.updateNavUsername();
+                        self.initModal();
+                        resolve();  
                     });
 
                 }

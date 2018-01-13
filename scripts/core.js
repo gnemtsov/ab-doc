@@ -463,7 +463,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     window.yoloPromise = new Promise(function(resolve, reject){
         window.onGoogleYoloLoad = function(googleyolo) {
             console.log('Core.js: googleyolo ready.');
-            resolve();
+            resolve(1);
         };                        
     });
 
