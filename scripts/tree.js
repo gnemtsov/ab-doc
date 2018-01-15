@@ -92,6 +92,12 @@
 		}
 	}
 
+	abTree.prototype.beforeClick = function (treeId, treeNode, clickFlag) {
+		//self.addHoverDom(treeId, treeNode);
+		// will be used later
+		return true;
+	}
+
 	abTree.prototype.onClick = function (event, treeId, treeNode, clickFlag) {
 		var self = this;
 		
@@ -105,6 +111,8 @@
 	}
 
 	abTree.prototype.addHoverDom = function (treeId, treeNode) {
+		console.log('addHoverDom');
+		
 		var self = this;
 		
 		var sObj = $("#" + treeNode.tId + "_span");
@@ -353,6 +361,7 @@
 						}
 					},
 					callback: {
+						beforeClick: self.beforeClick.bind(self),
 						beforeDrag: self.readOnly ? false : self.beforeDrag.bind(self),
 						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
 						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),

@@ -395,6 +395,7 @@ ul.tmpTargetzTree {
     overflow-x: hidden;
     overflow-y: auto;
     padding: 1rem;
+    margin-bottom: 80px;
 }
 
 #document.doc-solo {
