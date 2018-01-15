@@ -780,15 +780,15 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
         function updateMode() {
-
-            var sw = $splitter.outerWidth();
-
             switch(COLUMNS_MODE) {
 
                 // Update columns' sizes when in 'tree' mode
                 case 'tree': 
 					$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
 					$splitter.removeClass('thin');
+					// sw was declared and calculated before switch, 
+					// but it should be calculated after css changes
+					var sw = $splitter.outerWidth();
                     $document.removeClass('doc-solo');
                     $ztree.addClass('tree-solo');
 					
@@ -803,6 +803,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 case 'document': 
 					$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
 					$splitter.addClass('thin');
+					var sw = $splitter.outerWidth();
                     $document.addClass('doc-solo');
                     $ztree.removeClass('tree-solo');
 										
@@ -817,6 +818,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 case 'split': 
                     $('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
                     $splitter.removeClass('thin');
+                    var sw = $splitter.outerWidth();
                     $document.removeClass('doc-solo');
                     $ztree.removeClass('tree-solo');
                                         
