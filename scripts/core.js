@@ -487,7 +487,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
     //------Document ready!------//
     $(document).ready( function() {
-
+		
         $nav = $('nav'); //navbar
         $update = $('#update');
         $lang_select = $('#selectLang');
@@ -738,7 +738,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 			oldX;
 		
 		$splitter.mousedown(function(event) {
-			event.preventDefault();
+			if (event) {
+				event.preventDefault();
+			}
 			
 			if (COLUMNS_MODE === 'split') {
 				splitterDragging = true;
@@ -746,17 +748,23 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 			
 			oldX = event.clientX;
 		});
-		
+		$splitter.on('touchstart', function(event) {
+			$splitter.mousedown();
+		});
+
 		$(document).mouseup(function(event) {
 			//event.preventDefault();
 			
 			splitterDragging = false;
 		});
-		
-		$(document).mousemove(function(event) {
+		$(document).on('touchcancel touchend', function(event) {
+			$splitter.mouseup();
+		});
+				
+		function mouseMove(x, y) {
 			// splitterDragging is true only in 'split' mode
 			if (splitterDragging) {
-				var newX = event.clientX;
+				var newX = x;
 				
 				var totalWidth = window.innerWidth,
 					zTreeWidth = $ztree.outerWidth(),
@@ -774,6 +782,15 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 				console.log(TREE_WIDTH, thresholdRight);
 				updateMode();
 				oldX = newX;
+			}
+		}
+		$(document).mousemove(function(event) {
+			mouseMove(event.clientX, event.clientY);
+		});
+		$(document).on('touchmove', function(event) {
+			var touch = event.targetTouches[0];
+			if (touch) {
+				mouseMove(touch.clientX, touch.clientY);
 			}
 		});
 
