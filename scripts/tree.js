@@ -93,8 +93,16 @@
 	}
 
 	abTree.prototype.beforeClick = function (treeId, treeNode, clickFlag) {
-		//self.addHoverDom(treeId, treeNode);
-		// will be used later
+		var self = this;
+		
+		if (g.isTouchDevice) {
+			if (self.lastClicked != treeNode) {
+				self.lastClicked = treeNode;
+				self.addHoverDom(treeId, treeNode);
+				return false;
+			}
+		}
+		
 		return true;
 	}
 
