@@ -112,6 +112,11 @@
 		// expand the node
 		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		ROUTER.open(treeNode.id);
+		
+		if (g.isSmallDevice) {
+			g.COLUMNS_MODE = 'document';
+			$(window).resize();
+		}
 	}
 
 	abTree.prototype.showRemoveBtn = function (id, node) {

@@ -634,8 +634,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         */
 
         var navHeight = $nav.outerHeight(); // save navbar's initial height
-        var COLUMNS_MODE, 
-            TREE_WIDTH;
+        var TREE_WIDTH;
                     
         // Toggle button
         $('#toggleButton').mousedown( function(event) {
@@ -644,28 +643,28 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             }
             
             if (isSmallDevice) {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'tree':
-                        COLUMNS_MODE = 'document';
+                        g.COLUMNS_MODE = 'document';
                         break;
                     case 'document':
-                        COLUMNS_MODE = 'tree';
+                        g.COLUMNS_MODE = 'tree';
                         break;
                     default:
-                        console.log('Wrong COLUMNS_MODE!');
-                        COLUMNS_MODE = 'tree';
+                        console.log('Wrong g.COLUMNS_MODE!');
+                        g.COLUMNS_MODE = 'tree';
                 }
             } else {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'split':
-                        COLUMNS_MODE = 'document';
+                        g.COLUMNS_MODE = 'document';
                         break;
                     case 'document':
-                        COLUMNS_MODE = 'split';
+                        g.COLUMNS_MODE = 'split';
                         break;
                     default:
-                        console.log('Wrong COLUMNS_MODE!');
-                        COLUMNS_MODE = 'split';
+                        console.log('Wrong g.COLUMNS_MODE!');
+                        g.COLUMNS_MODE = 'split';
                 }
             }
             
@@ -685,26 +684,26 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             isSmallDevice ? $('body').addClass('small-device') : $('body').removeClass('small-device');
 
             if (isSmallDevice) {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'document':
                     case 'tree':
                         break;
                     default:
-                        COLUMNS_MODE = 'tree';
+                        g.COLUMNS_MODE = 'tree';
                 }
             } else {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'document':
                     case 'split':
                         break;
                     default:
-                        COLUMNS_MODE = 'split';
+                        g.COLUMNS_MODE = 'split';
                 }
             }
 
             TREE_WIDTH = Math.max(Math.min(TREE_WIDTH, window.innerWidth - thresholdRight), thresholdLeft);
             if( !updateMode() ) {
-                COLUMNS_MODE = 'split';
+                g.COLUMNS_MODE = 'split';
                 updateMode();
             }
             
@@ -729,7 +728,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             TREE_WIDTH = window.innerWidth * 0.25;
         }
         console.log(TREE_WIDTH);
-        COLUMNS_MODE = localStorage.getItem('ab-doc.columns.mode');
+        g.COLUMNS_MODE = localStorage.getItem('ab-doc.columns.mode');
         // Let window.resize() correct the layout
         $(window).resize();
 
@@ -742,7 +741,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 				event.preventDefault();
 			}
 			
-			if (COLUMNS_MODE === 'split') {
+			if (g.COLUMNS_MODE === 'split') {
 				splitterDragging = true;
 			}
 			
@@ -773,7 +772,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 					
 				if (newZTreeWidth < thresholdLeft) {
 					// go to 'document' mode if approaching left edge
-					COLUMNS_MODE = 'document';
+					g.COLUMNS_MODE = 'document';
 					splitterDragging = false;
 					ok = true;			
 				}
@@ -797,7 +796,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
         function updateMode() {
-            switch(COLUMNS_MODE) {
+            switch(g.COLUMNS_MODE) {
 
                 // Update columns' sizes when in 'tree' mode
                 case 'tree': 
