@@ -97,6 +97,9 @@
 		
 		if (g.isTouchDevice) {
 			if (self.lastClicked != treeNode) {
+				if (self.lastClicked) {
+					self.removeHoverDom(treeId, self.lastClicked);
+				}
 				self.lastClicked = treeNode;
 				self.addHoverDom(treeId, treeNode);
 				return false;
@@ -119,35 +122,41 @@
 		}
 	}
 
-	abTree.prototype.showRemoveBtn = function (id, node) {
-		return !node.head;
-	}
-
 	abTree.prototype.addHoverDom = function (treeId, treeNode) {
 		console.log('addHoverDom');
 		
 		var self = this;
 		
 		var sObj = $("#" + treeNode.tId + "_span");
-		if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) {
+		if (treeNode.editNameFlag || $('#' + treeNode.tId + '_add').length>0) {
 			return;
 		}
 		
-		var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
-			+ "' title='add node' onfocus='this.blur();'></span>";
+		var addStr = "<span class='button add' id='" + treeNode.tId
+			+ "_add' title='add node' onfocus='this.blur();'></span>";
+		
+		if (!self.readOnly) {
+			addStr += "<span class='button edit' id='" + treeNode.tId
+				+ "_edit' title='rename' treenode_edit=''></span>";
+		}
+			
+		if (!self.readOnly && !treeNode.head) {
+			addStr += "<span class='button remove' id='" + treeNode.tId
+				+ "_remove' title='remove' treenode_remove=''></span>";		
+		}
 			
 		sObj.after(addStr);
 		
 		// Add new item
-		var btn = $("#addBtn_"+treeNode.tId);
-		if (btn) btn.bind("click", function() {
+		var btnAdd = $('#' + treeNode.tId + '_add');
+		if (btnAdd) btnAdd.bind('click', function() {
 			var name,
 				path,
 				ok = false,
 				i = 1;
 			while(!ok) {
-				name = "new item " + i;
-				path = self.buildPath(treeNode) + "/" + name;
+				name = 'new item ' + i;
+				path = self.buildPath(treeNode) + '/' + name;
 				function filter(n) {
 					return self.buildPath(n) === path;
 				}
@@ -169,10 +178,26 @@
 
 			return false;
 		});
+		
+		// Remove an item
+		var btnRemove = $('#' + treeNode.tId + '_remove');
+		if (btnRemove) btnRemove.bind('click', function() {
+			self.tree.removeNode(treeNode, true);
+			return false;
+		});
+		
+		// Rename an item
+		var btnRename = $('#' + treeNode.tId + '_edit');
+		if (btnRename) btnRemove.bind('click', function() {
+			self.tree.editName(treeNode);
+			return false;
+		});
 	};
 
 	abTree.prototype.removeHoverDom = function(treeId, treeNode) {
-		$("#addBtn_"+treeNode.tId).unbind().remove();
+		$('#' + treeNode.tId + '_add').unbind().remove();
+		$('#' + treeNode.tId + '_remove').unbind().remove();
+		$('#' + treeNode.tId + '_edit').unbind().remove();
 	};
 
 	abTree.prototype.buildPath = function(treeNode) {
@@ -365,8 +390,8 @@
 					},
 					edit: {
 						enable: !self.readOnly,
-						showRemoveBtn: self.readOnly ? false : self.showRemoveBtn.bind(self),
-						showRenameBtn: !self.readOnly
+						showRemoveBtn: false,
+						showRenameBtn: false
 					},
 					data: {
 						simpleData: {
