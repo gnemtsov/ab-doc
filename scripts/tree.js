@@ -421,13 +421,21 @@
 						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
 						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
-						onRename: self.onRename.bind(self)
+						onRename: self.onRename.bind(self),
+						
+						onMouseDown: function(){console.log('ztree mouse down test');},
+						onMouseUp: function(){console.log('ztree mouse up test');}
 					}
 				};
 							
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
 				self.selectedNode = self.tree.getNodes()[0];
-
+				
+				// attach touch handlers
+				$abTree.on('touchstart touchmove touchend touchcancel', function(event) {
+					abUtils.touchToMove(event);
+				});
+				
 				if(!self.readOnly){ //init timer if not readOnly
 
 					TIMERS.set(function () {
