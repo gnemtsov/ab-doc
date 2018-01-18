@@ -95,6 +95,23 @@
 	abTree.prototype.beforeClick = function (treeId, treeNode, clickFlag) {
 		var self = this;
 		
+		// Clicking on a node makes it expand/collapse. Node should not collapse
+		// if selected node is inside it, so:
+		// can collapse this node only if no selected nodes are it's child
+		// currently there is only 1 selected node in a moment,
+		// but it will change in the future.
+		// expanding works always
+		var ok = !treeNode.open || self.tree.getSelectedNodes().reduce( function(acc, selected) {
+			var path = selected.getPath();
+			path.splice(-1, 1);
+			return acc && !path.includes(treeNode);
+		}, true);
+		
+		// expand the node
+		if (ok) {
+			self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
+		}
+		
 		if (g.isTouchDevice) {
 			if (self.lastClicked != treeNode) {
 				if (self.lastClicked) {
@@ -112,8 +129,6 @@
 	abTree.prototype.onClick = function (event, treeId, treeNode, clickFlag) {
 		var self = this;
 		
-		// expand the node
-		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		ROUTER.open(treeNode.id);
 		
 		if (g.isSmallDevice) {

@@ -748,7 +748,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 			oldX = event.clientX;
 		});
 		$splitter.on('touchstart', function(event) {
-			$splitter.mousedown();
+			$splitter.trigger('mousedown');
 		});
 
 		$(document).mouseup(function(event) {
@@ -757,7 +757,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 			splitterDragging = false;
 		});
 		$(document).on('touchcancel touchend', function(event) {
-			$splitter.mouseup();
+			$splitter.trigger('mouseup');
 		});
 				
 		function mouseMove(x, y) {
