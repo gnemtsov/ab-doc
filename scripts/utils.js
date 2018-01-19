@@ -588,7 +588,10 @@ var abUtils = {
 									  first.clientX, first.clientY, 
 									  false, false, false, false, 0, null);
 
-		first.target.dispatchEvent(simulatedEvent);
+		document
+			.elementFromPoint(first.clientX, first.clientY)
+			.dispatchEvent(simulatedEvent);
+
 		event.preventDefault();
 	}
 };

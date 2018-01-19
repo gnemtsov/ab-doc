@@ -435,7 +435,7 @@
 				$abTree.on('touchstart touchmove touchend touchcancel', function(event) {
 					abUtils.touchToMove(event);
 				});
-				
+								
 				if(!self.readOnly){ //init timer if not readOnly
 
 					TIMERS.set(function () {
