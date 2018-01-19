@@ -562,37 +562,73 @@ var abUtils = {
 		});
 	},
 	
-	// converts touch event to move event
-	// and calls it
-	touchToMove: function(event) {
-		var touches = event.changedTouches,
-			first = touches[0],
-			type = "";
+	// Attaches touch-events listeners on element
+	// and converts them to mouse-events
+	// 
+	attachTouchToMoveListeners: function(element, moveRadius) {
+		var downX, downY;
+		element.on('touchstart touchmove touchend touchcancel', function(event) {
+			var touches = event.changedTouches,
+				first = touches[0],
+				type = "";
+				
+			switch(event.type)
+			{
+				case "touchstart":  type = "mousedown"; break;
+				case "touchmove":   type = "mousemove"; break;        
+				case "touchend":   
+				case "touchcancel": type = "mouseup";   break;
+				default:            return;
+			}
 			
-		switch(event.type)
-		{
-			case "touchstart":  type = "mousedown"; break;
-			case "touchmove":   type = "mousemove"; break;        
-			case "touchend":   
-			case "touchcancel": type = "mouseup";   break;
-			default:            return;
-		}
+			if (type === 'touchstart') {
+				downX = first.clientX;
+				downY = fisrt.clientY;
+			}
+			
+			var ok = true; // ok - will call mouseevent
+			if ((event.type === 'touchmove') && moveRadius) {
+				// do not call mousemove if moved not too far
+				// to prevent drag and drop
+				if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY))) {
+					ok = false;
+				}
+			}
 
-		// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
-		//                screenX, screenY, clientX, clientY, ctrlKey, 
-		//                altKey, shiftKey, metaKey, button, relatedTarget);
+			if (ok) {
+				// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+				//                screenX, screenY, clientX, clientY, ctrlKey, 
+				//                altKey, shiftKey, metaKey, button, relatedTarget);
 
-		var simulatedEvent = document.createEvent("MouseEvent");
-		simulatedEvent.initMouseEvent(type, true, true, window, 1, 
-									  first.screenX, first.screenY, 
-									  first.clientX, first.clientY, 
-									  false, false, false, false, 0, null);
+				var simulatedEvent = document.createEvent('MouseEvent');
+				simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+											  first.screenX, first.screenY, 
+											  first.clientX, first.clientY, 
+											  false, false, false, false, 0, null);
+				
+				// On touchmove event target is an element, which was touched first
+				// On mousemove target event is an element, which is currently under the cursor
+				document
+					.elementFromPoint(first.clientX, first.clientY)
+					.dispatchEvent(simulatedEvent);
+					
+				if (event.type === 'touchend') {
+					var simulatedEvent = document.createEvent('MouseEvent');
+					simulatedEvent.initMouseEvent('click', true, true, window, 1, 
+												  first.screenX, first.screenY, 
+												  first.clientX, first.clientY, 
+												  false, false, false, false, 0, null);
+					
+					// On touchmove event target is an element, which was touched first
+					// On mousemove target event is an element, which is currently under the cursor
+					document
+						.elementFromPoint(first.clientX, first.clientY)
+						.dispatchEvent(simulatedEvent);					
+				}
+			}
 
-		document
-			.elementFromPoint(first.clientX, first.clientY)
-			.dispatchEvent(simulatedEvent);
-
-		event.preventDefault();
+			event.preventDefault();
+		});
 	}
 };
 

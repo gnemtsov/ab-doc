@@ -369,6 +369,9 @@
 				document.title = $(this).val();
 			}
 		});	
+		$abTree.on('click', function() {
+			console.log('click!');
+		});
 
 		var params = {
 			Bucket: STORAGE_BUCKET,
@@ -432,9 +435,7 @@
 				self.selectedNode = self.tree.getNodes()[0];
 				
 				// attach touch handlers
-				$abTree.on('touchstart touchmove touchend touchcancel', function(event) {
-					abUtils.touchToMove(event);
-				});
+				abUtils.attachTouchToMoveListeners($abTree, 8);
 								
 				if(!self.readOnly){ //init timer if not readOnly
 
