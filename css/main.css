@@ -926,11 +926,13 @@ margin: 10rem auto 0 auto;
 
 @media print {
 	#document {
-		height: 100%;
-		width: 100%;
-		position: fixed;
-		top: 0;
-		left: 0;
+		background-color: #fff !important;
+		height: 100% !important;
+		width: 100% !important;
+		position: fixed !important;
+		top: 0 !important;
+		left: 0 !important;
+		z-index: 900000 !important;
 	}
 }
 
