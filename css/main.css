@@ -925,9 +925,13 @@ margin: 10rem auto 0 auto;
 /*---------------------------------------------------------*/
 
 @media print {
+	body, html {
+		height: auto !important;
+	}
+	
 	#document {
 		background-color: #fff !important;
-		height: 100% !important;
+		height: auto !important;
 		width: 100% !important;
 		position: fixed !important;
 		top: 0 !important;
