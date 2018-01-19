@@ -565,8 +565,9 @@ var abUtils = {
 	// Attaches touch-events listeners on element
 	// and converts them to mouse-events
 	// 
-	attachTouchToMoveListeners: function(element, moveRadius) {
-		var downX, downY;
+	attachTouchToMoveListeners: function(element, moveRadius, waitBeforeMove) {
+		var downX = 0, downY = 0,
+			lastTouchstart = 0;
 		element.on('touchstart touchmove touchend touchcancel', function(event) {
 			var touches = event.changedTouches,
 				first = touches[0],
@@ -584,14 +585,22 @@ var abUtils = {
 			if (event.type === 'touchstart') {
 				downX = first.clientX;
 				downY = first.clientY;
+				lastTouchstart = Date.now();
 			}
 			
 			var ok = true; // ok - will call mouseevent
-			if ((event.type === 'touchmove') && moveRadius) {
+			if (event.type === 'touchmove') {
 				// do not call mousemove if moved not too far
-				// to prevent drag and drop
-				if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY) < moveRadius)) {
-					ok = false;
+				// to prevent drag and drop (optional)
+				if (moveRadius) {
+					if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY) < moveRadius)) {
+						ok = false;
+					}
+				}
+				// do not call mousemove until some time after touchstart
+				// to prevent drag and drop (optional)
+				if (waitBeforeMove) {
+					ok = ok && (Date.now() - lastTouchstart >= waitBeforeMove);
 				}
 			}
 
