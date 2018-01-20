@@ -37,8 +37,7 @@ var s3;
 var isTouchDevice = (('ontouchstart' in window) || ('onmsgesturechange' in window));
 var isSmallDevice = window.innerWidth < 600;
 
-var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
-    $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
+var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
 (function (g, $) {
 
@@ -259,11 +258,11 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             //set readOnly
             if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
                 this.readOnly = true;
-                $('.readOnly-mode').removeClass('hidden');
+                $('.readonly-mode').removeClass('hidden');
                 $('.edit-mode').addClass('hidden');
             } else {
                 this.readOnly = false;
-                $('.readOnly-mode').addClass('hidden');
+                $('.readonly-mode').addClass('hidden');
                 $('.edit-mode').removeClass('hidden');
             }
             
@@ -352,8 +351,10 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                     var full_reload = false;
                     if(abTree === undefined || abTree.ownerid !== self.owner || abTree.readOnly !== self.readOnly){
                         full_reload = true;
-                        $container.children().hide();
-                        $container.prepend($big_preloader); //show main preloader
+                        $container.children().not('.big-preloader').hide();
+                        if(!$container.find('.big-preloader').length){
+                            $container.prepend($big_preloader); //show main preloader
+                        }
 
                         if(abAuth.isAuthorized() && this.owner === abAuth.credentials.identityId){
                             g.INDICATOR.updateUsedSpace(abAuth.credentials.identityId);
@@ -479,7 +480,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     
     //UI
     var $nav, $update, $lang_select, 
-        $container, 
+        $container, $big_preloader,
         $app, $welcome, $about, 
         $ztree, $abTree, 
         $splitter, 
@@ -493,6 +494,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         $lang_select = $('#selectLang');
 
         $container = $('#main-container'); //main
+        $big_preloader = $('.big-preloader'); //big-preloader
 
         $app = $('#app'); //app (contains tree, splitter and document)
         $welcome = $('#welcome'); 

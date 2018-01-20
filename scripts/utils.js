@@ -181,6 +181,10 @@ var abUtils = {
 			"ru": "Пароль успешно изменен. Дождитесь перенаправления..",
 			"en": "Password reset successful. Wait for redirect.."
 		},
+		"popup_blocked_by_browser": {
+			"ru": "Всплывающее окно авторизации заблокировано вашим браузером.",
+			"en": "Your browser is blocking sign in popup window."
+		},
 		"registration": {
 			"ru": "Регистрация",
 			"en": "Create account"
@@ -215,7 +219,7 @@ var abUtils = {
 		},
 		"somethingWentWrong": {
 			"ru": "Что-то пошло не так..",
-			"en": "Somenthing went wrong.."
+			"en": "Something went wrong.."
 		},
 		"typeYourText": {
 			"ru": "Напишите что-нибудь удивительное...",
