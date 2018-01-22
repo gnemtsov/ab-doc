@@ -566,13 +566,14 @@ var abUtils = {
 		});
 	},
 	
-	// Attaches touch-events listeners on element
-	// and converts them to mouse-events
-	// 
-	attachTouchToMoveListeners: function(element, moveRadius, waitBeforeMove) {
+	// Converts touch-events to mouse-events
+	touchToMouseProxy: function(moveRadius, waitBeforeMove) {
 		var downX = 0, downY = 0,
 			lastTouchstart = 0;
-		element.on('touchstart touchmove touchend touchcancel', function(event) {
+		return function(event) {
+			console.log('proxy', event);
+			event.preventDefault();
+			
 			var touches = event.changedTouches,
 				first = touches[0],
 				types = [];
@@ -614,22 +615,32 @@ var abUtils = {
 					//                screenX, screenY, clientX, clientY, ctrlKey, 
 					//                altKey, shiftKey, metaKey, button, relatedTarget);
 
-					var simulatedEvent = document.createEvent('MouseEvent');
+					/*var simulatedEvent = document.createEvent('MouseEvent');
 					simulatedEvent.initMouseEvent(type, true, true, window, 1, 
 												  first.screenX, first.screenY, 
 												  first.clientX, first.clientY, 
-												  false, false, false, false, 0, null);
+												  false, false, false, false, 0, null);*/
+												  
+					var simulatedEvent = new MouseEvent(type, {
+						'type': type,
+						'screenX': first.screenX,
+						'screenY': first.screenY,
+						'clientX': first.clientX,
+						'clientY': first.clientY,
+						'view': window,
+						'buttons': 1,
+						'relatedTarget': null
+					});
 					
 					// On touchmove event target is an element, which was touched first
-					// On mousemove target event is an element, which is currently under the cursor
+					// On mousemove event target is an element, which is currently under the cursor
 					document
 						.elementFromPoint(first.clientX, first.clientY)
 						.dispatchEvent(simulatedEvent);
+					console.log(simulatedEvent, 'dispatched to ', document.elementFromPoint(first.clientX, first.clientY));
 				});
 			}
-
-			event.preventDefault();
-		});
+		};
 	}
 };
 

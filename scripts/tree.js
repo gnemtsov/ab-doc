@@ -369,8 +369,11 @@
 				document.title = $(this).val();
 			}
 		});	
-		$abTree.on('click', function() {
-			console.log('click!');
+		$abTree.on('click', function(event) {
+			console.log('click!', event);
+		});
+		$abTree.on('mousemove mouseup mousedown', function(event) {
+			event.preventDefault();
 		});
 
 		var params = {
@@ -424,10 +427,7 @@
 						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
 						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
-						onRename: self.onRename.bind(self),
-						
-						onMouseDown: function(){console.log('ztree mouse down test');},
-						onMouseUp: function(){console.log('ztree mouse up test');}
+						onRename: self.onRename.bind(self)
 					}
 				};
 							
@@ -435,7 +435,7 @@
 				self.selectedNode = self.tree.getNodes()[0];
 				
 				// attach touch handlers
-				abUtils.attachTouchToMoveListeners($abTree, 12, 0);
+				//$abTree.on('touchstart touchmove touchend touchcancel', abUtils.touchToMouseProxy(12, 0));
 
 				if(!self.readOnly){ //init timer if not readOnly
 

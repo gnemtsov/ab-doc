@@ -738,7 +738,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		var splitterDragging = false,
 			oldX;
 		
-		$splitter.mousedown(function(event) {
+		$splitter.on('mousedown', function(event) {
 			if (event) {
 				event.preventDefault();
 			}
@@ -753,7 +753,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			$splitter.trigger('mousedown');
 		});
 
-		$(document).mouseup(function(event) {
+		$(document).on('mouseup', function(event) {
 			//event.preventDefault();
 			
 			splitterDragging = false;
@@ -762,10 +762,10 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			$splitter.trigger('mouseup');
 		});
 				
-		function mouseMove(x, y) {
+		$(document).on('mousemove', function(event) {
 			// splitterDragging is true only in 'split' mode
 			if (splitterDragging) {
-				var newX = x;
+				var newX = event.clientX;
 				
 				var totalWidth = window.innerWidth,
 					zTreeWidth = $ztree.outerWidth(),
@@ -784,16 +784,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				updateMode();
 				oldX = newX;
 			}
-		}
-		$(document).mousemove(function(event) {
-			mouseMove(event.clientX, event.clientY);
 		});
-		$(document).on('touchmove', function(event) {
-			var touch = event.targetTouches[0];
-			if (touch) {
-				mouseMove(touch.clientX, touch.clientY);
-			}
-		});
+		$(document).on('touchstart touchmove touchcancel touchend', g.abUtils.touchToMouseProxy(12, 0));
 
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
