@@ -164,7 +164,7 @@
 		
 		// Add new item
 		var btnAdd = $('#' + treeNode.tId + '_add');
-		if (btnAdd) btnAdd.on('click mouseup', function() {
+		if (btnAdd) btnAdd.on('click mouseup mousedown', function(event) {
 			var name,
 				path,
 				ok = false,
@@ -196,14 +196,14 @@
 		
 		// Remove an item
 		var btnRemove = $('#' + treeNode.tId + '_remove');
-		if (btnRemove) btnRemove.on('click mouseup', function() {
+		if (btnRemove) btnRemove.on('click mouseup mousedown', function(event) {
 			self.tree.removeNode(treeNode, true);
 			return false;
 		});
 		
 		// Rename an item
 		var btnRename = $('#' + treeNode.tId + '_edit');
-		if (btnRename) btnRename.on('click mouseup', function() {
+		if (btnRename) btnRename.on('click mouseup mousedown', function(event) {
 			self.tree.editName(treeNode);
 			return false;
 		});
