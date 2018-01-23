@@ -341,8 +341,8 @@ ul.tmpTargetzTree {
     margin: 0px 0px;
 }
 
-.touch-device #splitter {
-	width: 20px;
+:not(.small-device).touch-device #splitter {
+	width: 40px;
 }
 
 /*#ztree:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
