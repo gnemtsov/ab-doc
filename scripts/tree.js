@@ -164,49 +164,58 @@
 		
 		// Add new item
 		var btnAdd = $('#' + treeNode.tId + '_add');
-		if (btnAdd) btnAdd.on('click mouseup mousedown', function(event) {
-			var name,
-				path,
-				ok = false,
-				i = 1;
-			while(!ok) {
-				name = 'new item ' + i;
-				path = self.buildPath(treeNode) + '/' + name;
-				function filter(n) {
-					return self.buildPath(n) === path;
+		if (btnAdd) {
+			btnAdd.on('click', function() {
+				var name,
+					path,
+					ok = false,
+					i = 1;
+				while(!ok) {
+					name = 'new item ' + i;
+					path = self.buildPath(treeNode) + '/' + name;
+					function filter(n) {
+						return self.buildPath(n) === path;
+					}
+					if(!self.tree.getNodesByFilter(filter, true)) {
+						ok = true;
+					}
+					i++;
 				}
-				if(!self.tree.getNodesByFilter(filter, true)) {
-					ok = true;
-				}
-				i++;
-			}
-			var guid = abUtils.GetGUID();
-			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
-			var newNode = self.tree.getNodeByParam('id', guid);
-			
-			ROUTER.open(guid);
-			
-			self.tree.editName(newNode);
-			$('#' + newNode.tId + '_input').select();
-			
-			ACTIVITY.push('tree modify', 'pending');
+				var guid = abUtils.GetGUID();
+				self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
+				var newNode = self.tree.getNodeByParam('id', guid);
+				
+				ROUTER.open(guid);
+				
+				self.tree.editName(newNode);
+				$('#' + newNode.tId + '_input').select();
+				
+				ACTIVITY.push('tree modify', 'pending');
 
-			return false;
-		});
+				return false;
+			});
+			btnAdd.on('mousedown mouseup', function(){});
+		}
 		
 		// Remove an item
 		var btnRemove = $('#' + treeNode.tId + '_remove');
-		if (btnRemove) btnRemove.on('click mouseup mousedown', function(event) {
-			self.tree.removeNode(treeNode, true);
-			return false;
-		});
+		if (btnRemove) {
+			btnRemove.on('click', function() {
+				self.tree.removeNode(treeNode, true);
+				return false;
+			});
+			btnRemove.on('mousedown mouseup', function(){});
+		}
 		
 		// Rename an item
 		var btnRename = $('#' + treeNode.tId + '_edit');
-		if (btnRename) btnRename.on('click mouseup mousedown', function(event) {
-			self.tree.editName(treeNode);
-			return false;
-		});
+		if (btnRename) {
+			btnRename.on('click mouseup mousedown', function() {
+				self.tree.editName(treeNode);
+				return false;
+			});
+			btnRename.on('mousedown mouseup', function(){});
+		}	
 	};
 
 	abTree.prototype.removeHoverDom = function(treeId, treeNode) {
