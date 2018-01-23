@@ -183,6 +183,9 @@ a.navbar-brand img{
 #ztree.ab-closed {
     padding: 0px;
 }
+#ztree.tree-solo {
+	overflow-x: auto;
+}
 
 
 .ztree *{
@@ -338,7 +341,6 @@ ul.tmpTargetzTree {
 #splitter.thin {
     width: 0px;
     padding: 0px;
-    margin: 0px 0px;
 }
 
 :not(.small-device).touch-device #splitter {
