@@ -384,6 +384,15 @@ ul.tmpTargetzTree {
     margin-left: -1px;
 }
 
+.touch-device #toggleButton {
+	width: 30px;
+	height: 60px;
+}
+
+.touch-device #toggleButton.ab-opened {
+	margin-left: -30px;
+}
+
 
 /*---------------------------------------------------------*/
 /*-------------------------document------------------------*/
