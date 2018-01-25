@@ -147,20 +147,20 @@
 			return;
 		}
 		
-		var addStr = "<span class='button add' id='" + treeNode.tId
+		if (!self.readOnly) {
+			var addStr = "<span class='button add' id='" + treeNode.tId
 			+ "_add' title='add node' onfocus='this.blur();'></span>";
 		
-		if (!self.readOnly) {
 			addStr += "<span class='button edit' id='" + treeNode.tId
 				+ "_edit' title='rename' treenode_edit=''></span>";
-		}
 			
-		if (!self.readOnly && !treeNode.head) {
-			addStr += "<span class='button remove' id='" + treeNode.tId
-				+ "_remove' title='remove' treenode_remove=''></span>";		
+			if (!treeNode.head) {
+				addStr += "<span class='button remove' id='" + treeNode.tId
+					+ "_remove' title='remove' treenode_remove=''></span>";		
+			}
+				
+			sObj.after(addStr);
 		}
-			
-		sObj.after(addStr);
 		
 		// Add new item
 		var btnAdd = $('#' + treeNode.tId + '_add');
