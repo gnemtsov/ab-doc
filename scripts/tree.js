@@ -261,7 +261,8 @@
 	abTree.prototype.beforeRemove = function(treeId, treeNode) {
 		var self = this;
 		
-		$('#buttonDelete').click( function() {
+		$('#buttonDelete').off('click');
+		$('#buttonDelete').on('click', function() {
 			
 			// recursively go through all children
 			var f = function(n) {
