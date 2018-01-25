@@ -219,9 +219,9 @@
 	};
 
 	abTree.prototype.removeHoverDom = function(treeId, treeNode) {
-		$('#' + treeNode.tId + '_add').unbind().remove();
-		$('#' + treeNode.tId + '_remove').unbind().remove();
-		$('#' + treeNode.tId + '_edit').unbind().remove();
+		$('#' + treeNode.tId + '_add').off().remove();
+		$('#' + treeNode.tId + '_remove').off().remove();
+		$('#' + treeNode.tId + '_edit').off().remove();
 	};
 
 	abTree.prototype.buildPath = function(treeNode) {
