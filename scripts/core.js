@@ -254,6 +254,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             } else {
                 this.owner = owner;
             }
+            this.ownerChanged = true;
 
             //set readOnly
             if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
@@ -283,16 +284,21 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
 
             //"onbeforeunload" imitator
-            if ( PRODUCTION &&
-                 ($update.hasClass('pending') || $update.hasClass('saving')) &&
-                 !confirm(abUtils.translatorData['changesPending'][LANG]) ) {
-                $update.removeClass('pending saving');
-                return; 
-            }
-            $update.removeClass('pending saving');
+            function imitateOnBeforeUpload() {
+				if ( PRODUCTION &&
+					 ($update.hasClass('pending') || $update.hasClass('saving')) &&
+					 !confirm(abUtils.translatorData['changesPending'][LANG]) ) {
+					$update.removeClass('pending saving');
+					return false; 
+				}
+				$update.removeClass('pending saving');
+				return true;
+			}
             
             switch(doc){    
                 case 'welcome': //welcome
+					if (!imitateOnBeforeUpload()) return;
+                
                     if(abAuth.isAuthorized()){
                         self.open();
                         return;
@@ -309,6 +315,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     break;
     
                 case 'about': //about
+					if (!imitateOnBeforeUpload()) return;
                     $container.children().hide();
 
                     self.owner = undefined;
@@ -330,6 +337,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     
                 default: //empty or equals GUID
 
+					if (self.ownerChanged && !imitateOnBeforeUpload()) return;
+
                     //in brackets won't go!
                     //impossible: owner not set and readOnly=false
                     //owner doc readOnly
@@ -349,6 +358,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
  
                     //full app reload if abTree has not been defined already or owner/readOnly has changed
                     var full_reload = false;
+                    console.log('abtree', abTree);
                     if(abTree === undefined || abTree.ownerid !== self.owner || abTree.readOnly !== self.readOnly){
                         full_reload = true;
                         $container.children().not('.big-preloader').hide();
@@ -422,7 +432,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                         }
                     );
             }
-
+			delete self['ownerChanged'];
         },
 
         updatePath: function(){

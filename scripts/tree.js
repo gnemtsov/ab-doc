@@ -486,7 +486,7 @@
 								s3.putObject(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
-								ACTIVITY.flush('tree modify');					
+								ACTIVITY.flush('tree modify');			
 							});
 
 						}
