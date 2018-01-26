@@ -740,6 +740,13 @@ padding-left: 6px;
     display: none;
 }
 
+.touch-device #dropzone-message{
+	display: none;
+}
+.touch-device #dropzone{
+	min-height: 20px;
+}
+
 /*==================*/
 /* dropzone's files */
 /*==================*/
