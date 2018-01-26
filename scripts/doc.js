@@ -727,6 +727,9 @@
 					});					
 
 					TIMERS.set(function () {
+						if(ACTIVITY.get('document modify') === 'saving') {
+							g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
+						}
 						if(ACTIVITY.get('document modify') === 'pending'){
 							
 							ACTIVITY.push('document modify', 'saving');
@@ -744,6 +747,8 @@
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
 								ACTIVITY.flush('document modify');					
+							}).catch(function(){
+								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 							});
 						}
 					}, 3000, 'doc');

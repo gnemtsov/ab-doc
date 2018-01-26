@@ -85,6 +85,10 @@ var abUtils = {
 			"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com.",
 			"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com."
 		},
+		"couldNotSave": {
+			"ru": "Сбой при сохранении изменений. Вы можете потерять последние изменения. Попробуйте перезагрузить страницу.",
+			"en": "Couldn't save changes. You may lose your last changes. Try reloading page."
+		},
 		"deleteQuestion1": {
 			"ru": "Документ",
 			"en": "You are going to delete document"
@@ -546,10 +550,11 @@ var abUtils = {
 
 	onWarning: function(msg) {
 		this.errorPopover(msg);
+		$('nav').popover('hide');
 		$('nav').popover('show');
 		setTimeout(function() {
 			$('nav').popover('hide');
-		}, 2500);
+		}, 4000);
 	},
 
 	errorPopover: function(c) {
