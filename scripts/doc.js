@@ -726,12 +726,11 @@
 						e.preventDefault();
 					});					
 
-					var needsResaving = false;
 					TIMERS.set(function () {
 						if(ACTIVITY.get('document modify') === 'saving') {
 							g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 						}
-						if(ACTIVITY.get('document modify') === 'pending' || needsResaving){
+						if(ACTIVITY.get('document modify') === 'pending'){
 							
 							ACTIVITY.push('document modify', 'saving');
 
@@ -748,10 +747,8 @@
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
 								ACTIVITY.flush('document modify');
-								needsResaving = false;				
 							}).catch(function(){
 								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
-								needsResaving = true;
 							});
 						}
 					}, 3000, 'doc');

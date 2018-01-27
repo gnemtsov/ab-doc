@@ -449,12 +449,11 @@
 
 				if(!self.readOnly){ //init timer if not readOnly
 
-					var needsResaving = false;
 					TIMERS.set(function () {
 						if(ACTIVITY.get('document modify') === 'saving') {
 							g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 						}
-						if(ACTIVITY.get('tree modify') === 'pending' || needsResaving){
+						if(ACTIVITY.get('tree modify') === 'pending'){
 
 							ACTIVITY.push('tree modify', 'saving');
 
@@ -491,10 +490,8 @@
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
 								ACTIVITY.flush('tree modify');
-								needsResaving = false;			
 							}).catch(function(){
 								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
-								needsResaving = true;
 							});
 
 						}

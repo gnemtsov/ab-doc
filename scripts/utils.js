@@ -86,8 +86,8 @@ var abUtils = {
 			"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com."
 		},
 		"couldNotSave": {
-			"ru": "Сбой при сохранении изменений. Вы можете потерять последние изменения. Попробуйте перезагрузить страницу.",
-			"en": "Couldn't save changes. You may lose your last changes. Try reloading page."
+			"ru": "Не удалось сохранить изменения. Скопируйте содержимое документа в буфер обмена и попробуйте перезагрузить страницу.",
+			"en": "Couldn't save changes. Copy document content to clipboard and try reloading the whole page."
 		},
 		"deleteQuestion1": {
 			"ru": "Документ",
