@@ -660,6 +660,7 @@ padding-left: 6px;
 #dropzone:not(.used) {
     -webkit-transition: width 500ms;
     transition: width 500ms;
+    max-height: 150px;
 }
 #dropzone.used {
     width: 300px;

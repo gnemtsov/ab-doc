@@ -21,6 +21,11 @@
 		updateFilesList: function(){
 			var self = this;
 
+			//we need this check, because function can be called from promise, when another doc is already loaded
+			if($abDoc.attr('data-doc-guid') !== self.docGUID){
+				return;
+			}
+
 			self.files.length ? $drop_zone.addClass('used') : $drop_zone.removeClass('used');
 			self.files.sort(
 				function(a,b) {
@@ -230,8 +235,8 @@
 							if (file.type.match('image.*')) { //insert only pics, other files upload as attachments
 								var index_obj = { value: drop_index + i };
 								self.editor.disable();
-								ACTIVITY.push('embed drop', 'saving');
-								self.editor.insertEmbed(index_obj.value, 'image', 'img/ab-doc-preloader-nano.gif', 'silent');
+								ACTIVITY.push('doc embed drop', 'saving');
+								self.editor.insertEmbed(index_obj.value, 'image', '/img/ab-doc-preloader-nano.gif', 'silent');
 																
 								//upload pic to S3
 								var picGUID = abUtils.GetGUID();
@@ -260,7 +265,7 @@
 												delta.retain(index_obj.value)
 													 .retain(1, { width: this.naturalWidth, height: this.naturalHeight });
 												self.editor.updateContents(delta, 'api');
-												if(ACTIVITY.flush('embed drop') === undefined){
+												if(ACTIVITY.flush('doc embed drop').get('doc embed drop') === undefined){
 													self.editor.enable();
 												}
 											}
@@ -392,7 +397,7 @@
 								return;
 							}
 
-							ACTIVITY.push('file upload', 'saving');							
+							ACTIVITY.push('doc file upload', 'saving');							
 
 							var fileGUID = abUtils.GetGUID(),
 								key = self.ownerid + '/' + self.docGUID + '/attachments/' + fileGUID,
@@ -441,7 +446,7 @@
 										else {
 											file_obj.modified = data.Contents[0].LastModified;
 											self.updateFilesList();
-											ACTIVITY.flush('file upload');												
+											ACTIVITY.flush('doc file upload');												
 										}
 									});
 								}
@@ -495,7 +500,7 @@
 				$file.fadeOut(800, function() {
 					self.files.splice(file_index, 1);
 					self.updateFilesList();
-					ACTIVITY.flush('file upload');												
+					ACTIVITY.flush('doc file upload');												
 				});
 			});
 
@@ -518,7 +523,7 @@
 					fileGUID = $file.attr('data-guid'),
 					file_index = self.files.map(function(f) {return f.guid; }).indexOf( fileGUID );					
 				
-				ACTIVITY.push('file delete', 'saving');												
+				ACTIVITY.push('doc file delete', 'saving');												
 				$file.find('.file-question')
 					 .html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
@@ -533,7 +538,7 @@
 						$file.fadeOut(800, function() {
 							self.files.splice(file_index, 1);
 							self.updateFilesList();
-							ACTIVITY.flush('file delete');												
+							ACTIVITY.flush('doc file delete');												
 						});
 					}
 				});									
@@ -554,16 +559,14 @@
 
 			$editor.on('mouseup', 'img', function (e) {
 				var $img = $(this);
-				if(e.which === 1 && $img.attr('width') > $editor.width() && $editor.attr('data-modified') === '0' && $editor.attr('waiting') === '0'){
+				if(e.which === 1 && $img.attr('width') > $editor.width()){
 					if($img.attr('src').indexOf('data:image/svg+xml;base64') === -1){
-						if($editor.attr('editable') === '1') {
-							$editor.data('editor').disable();
-						}
+						self.editor.disable();
 						var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + this.width + '" height="' + this.height + '"/>';
 						$img.css('background-image', 'url('+ $img.attr('src') +')');
 						$img.css('cursor', 'crosshair');
-						image_zooming_id = $img.attr('src').split('/').pop().split('.')[0];
-						$img.attr('id', image_zooming_id);
+						self.image_zooming_id = $img.attr('src').split('/').pop().split('.')[0];
+						$img.attr('id', self.image_zooming_id);
 						$img.attr('src', 'data:image/svg+xml;base64,'+btoa(svg));
 						backgroundReposition(e, this);
 					}else{
@@ -581,11 +584,11 @@
 			$editor.on('mouseout', 'img', function (e) {
 				var $img = $(this);
 				if($img.attr('src').indexOf('data:image/svg+xml;base64') !== -1){
-					image_zooming_id = '';
+					self.image_zooming_id = '';
 					$img.attr( 'src', $img.css('background-image').replace(/url\(("|')(.+)("|')\)/gi, '$2') );
 					$img.removeAttr('id').removeAttr('style');
-					if($editor.attr('editable') === '1') {
-						$editor.data('editor').enable();
+					if(!self.readOnly) {
+						self.editor.enable()
 					}
 				}
 			});
@@ -614,6 +617,7 @@
 		}
 
 		$abDoc = $(self.docContainer);
+		$abDoc.attr('data-doc-guid', self.docGUID);
 		$editor = $('<div id="editor"></div>');
 		$drop_zone = $('<div id="dropzone" class="'+( self.readOnly ? ' readonly' : '' )+'"></div>');
 		$clip_icon = $('<img id="clip-icon" src="/img/icons/paperclip.svg">');
@@ -719,7 +723,7 @@
 					self.attachWrapHandlers();
 					self.attachEditorHandlers();
 					self.editor.on('text-change', function () {
-						ACTIVITY.push('document modify', 'pending');
+						ACTIVITY.push('doc modify', 'pending');
 					});
 
 					$('body').on('mousedown', '.ql-toolbar', function(e){ //prevent default on quill toolbar click
@@ -727,13 +731,8 @@
 					});					
 
 					TIMERS.set(function () {
-						if(ACTIVITY.get('document modify') === 'saving') {
-							g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
-						}
-						if(ACTIVITY.get('document modify') === 'pending'){
-							
-							ACTIVITY.push('document modify', 'saving');
-
+						if(ACTIVITY.get('doc modify') === 'pending'){							
+							ACTIVITY.push('doc modify', 'saving');
 							var params = {
 								Bucket: STORAGE_BUCKET,
 								Key: self.ownerid + '/' + self.docGUID + '/index.html',
@@ -746,7 +745,7 @@
 								s3.upload(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
-								ACTIVITY.flush('document modify');
+								ACTIVITY.flush('doc modify');
 							}).catch(function(){
 								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 							});

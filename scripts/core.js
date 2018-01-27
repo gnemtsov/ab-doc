@@ -82,15 +82,18 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         lines: {}, //each activity has own line of pending and saving events
 
         push: function (activity, state){
+            var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 this.lines[activity].push(state);
             } else {
                 this.lines[activity] = [state];
             }
             this.refresh();
+            return self;
         },
 
         get: function(activity){
+            var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 var length = this.lines[activity].length;
                 return this.lines[activity][length-1];
@@ -100,6 +103,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
         flush: function(activity){
+            var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 var index = this.lines[activity].indexOf('saving');
                 if(index !== -1){
@@ -107,7 +111,16 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                 }
             }		
             this.refresh();
-            return this.get(activity);
+            return self;
+        },
+
+        drop: function(activity){
+            var self = this;
+            if (this.lines.hasOwnProperty(activity)){
+                delete this.lines[activity];
+                this.refresh();
+            }		
+            return self;
         },
 
         refresh: function(){
@@ -254,7 +267,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             } else {
                 this.owner = owner;
             }
-            this.ownerChanged = true;
 
             //set readOnly
             if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
@@ -283,25 +295,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             var self = this;
             console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
 
-            //"onbeforeunload" imitator
-            function imitateOnBeforeUpload() {
-				if ( PRODUCTION &&
-					 ($update.hasClass('pending') || $update.hasClass('saving')) &&
-					 !confirm(abUtils.translatorData['changesPending'][LANG]) ) {
-					$update.removeClass('pending saving');
-					return false; 
-				}
-				$update.removeClass('pending saving');
-				return true;
-			}
-            
             switch(doc){    
                 case 'welcome': //welcome
-					if (!imitateOnBeforeUpload()) return;
                 
-                    if(abAuth.isAuthorized()){
-                        self.open();
-                        return;
+                    if(abAuth.isAuthorized()){                        
+                        return self.open();
                     }
 
                     $container.children().hide();
@@ -311,11 +309,24 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     self.readOnly = false,
                     self.updatePath();
 
-                    $welcome.show();            
+                    $welcome.show();
                     break;
     
                 case 'about': //about
-					if (!imitateOnBeforeUpload()) return;
+
+                    if(ACTIVITY.get('tree modify') === 'pending' || 
+                       ACTIVITY.get('doc modify') === 'pending' ||
+                       ACTIVITY.get('doc embed drop') === 'saving'                    
+                    ){
+                        if(confirm(abUtils.translatorData['changesPending'][LANG])){
+                            ACTIVITY.drop('tree modify')
+                                    .drop('doc modify')
+                                    .drop('doc embed drop');
+                        } else {
+                            return;
+                        }
+                    }
+
                     $container.children().hide();
 
                     self.owner = undefined;
@@ -337,7 +348,16 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     
                 default: //empty or equals GUID
 
-					if (self.ownerChanged && !imitateOnBeforeUpload()) return;
+                    if(ACTIVITY.get('doc modify') === 'pending' ||
+                       ACTIVITY.get('doc embed drop') === 'saving'                    
+                    ){
+                        if(confirm(abUtils.translatorData['changesPending'][LANG])){
+                            ACTIVITY.drop('doc modify')
+                                    .drop('doc embed drop');
+                        } else {
+                            return;
+                        }
+                    }
 
                     //in brackets won't go!
                     //impossible: owner not set and readOnly=false
@@ -352,13 +372,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     //- - - (impossible)
 
                     if((!self.owner || !doc) && self.readOnly){ //(4, 6, 7)
-                        self.open('welcome');
-                        return;
-                    } 
+                        return self.open('welcome');
+                    }                    
  
                     //full app reload if abTree has not been defined already or owner/readOnly has changed
                     var full_reload = false;
-                    console.log('abtree', abTree);
                     if(abTree === undefined || abTree.ownerid !== self.owner || abTree.readOnly !== self.readOnly){
                         full_reload = true;
                         $container.children().not('.big-preloader').hide();
@@ -431,8 +449,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                             }                    
                         }
                     );
+
             }
-			delete self['ownerChanged'];
         },
 
         updatePath: function(){
