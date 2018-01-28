@@ -626,9 +626,13 @@
 		$files_message = $('<div id="dropzone-message">'+g.abUtils.translatorData['emptyDropzoneMessage'][g.LANG]+'</div>');
 
 		$abDoc.empty();
+
+		if(!$('#clip-input').length){
+			$('body').append($clip_input);
+		}
+
 		$drop_zone.append(
 			$clip_icon,
-			$clip_input,
 			$files_wrap,
 			$files_message
 		);	

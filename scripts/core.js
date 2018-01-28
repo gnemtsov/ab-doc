@@ -758,8 +758,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             TREE_WIDTH = window.innerWidth * 0.25;
         }
         console.log(TREE_WIDTH);
-        g.COLUMNS_MODE = localStorage.getItem('ab-doc.columns.mode');
+        
         // Let window.resize() correct the layout
+        g.COLUMNS_MODE = g.isSmallDevice ? 'document' : 'split';
         $(window).resize();
 
         // Splitter moving

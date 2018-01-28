@@ -649,9 +649,21 @@ padding-left: 6px;
 
 .small-device #dropzone{
     float: none;
+    width: inherit;
     margin-top: 1rem;
     margin-left: 0;
     margin-bottom: 2rem;
+}
+
+.touch-device #dropzone-message{
+	display: none;
+}
+
+.touch-device #dropzone{
+	min-height: 70px;
+}
+.touch-device #dropzone:not(.used){
+    margin: 0;
 }
 
 #dropzone.readonly:not(.used) {
@@ -711,12 +723,11 @@ padding-left: 6px;
     opacity: 1;
 }
 #clip-input {
-    position: absolute; /*behind clip-icon*/
-    top: 0;
-    right: 38px;
+    position: absolute;
+    top: -999px;
+    right: 0px;
     opacity: 0;
     max-height: 1px;
-    max-width: 1px;
 }
 
 #dropzone #dropzone-message{
@@ -741,12 +752,6 @@ padding-left: 6px;
     display: none;
 }
 
-.touch-device #dropzone-message{
-	display: none;
-}
-.touch-device #dropzone{
-	min-height: 20px;
-}
 
 /*==================*/
 /* dropzone's files */

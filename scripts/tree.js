@@ -116,23 +116,24 @@
 			self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		}
 		
+		//automatically switch to doc-solo on second click/touch for small devices
 		if (g.isSmallDevice) {
-			g.COLUMNS_MODE = 'document';
-			$(window).resize();
-		}
-
-		if (g.isTouchDevice) {
-			if (self.lastClicked != treeNode) {
-				if (self.lastClicked) {
+			if(self.lastClicked === undefined || self.lastClicked.id !== treeNode.id){
+				if (self.lastClicked !== undefined) {
 					self.removeHoverDom(treeId, self.lastClicked);
 				}
 				self.lastClicked = treeNode;
 				self.addHoverDom(treeId, treeNode);
+			} else {
+				g.COLUMNS_MODE = 'document';
+				$(window).resize();
+				ROUTER.open(treeNode.id);
 			}
+		} else {
+			ROUTER.open(treeNode.id);
 		}
 		
-		ROUTER.open(treeNode.id);
-		return false; //we don't need click to fire, node is selected by ROUTER
+		return false; //we don't need click to fire, node is always selected by ROUTER
 	}
 
 	abTree.prototype.addHoverDom = function (treeId, treeNode) {
@@ -376,9 +377,6 @@
 				$('#selectedDoc').text($(this).val());
 				document.title = $(this).val();
 			}
-		});	
-		$abTree.on('click', function() {
-			console.log('click!');
 		});
 
 		var params = {
