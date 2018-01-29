@@ -649,9 +649,21 @@ padding-left: 6px;
 
 .small-device #dropzone{
     float: none;
+    width: inherit;
     margin-top: 1rem;
     margin-left: 0;
     margin-bottom: 2rem;
+}
+
+.touch-device #dropzone-message{
+	display: none;
+}
+
+.touch-device #dropzone{
+	min-height: 70px;
+}
+.touch-device #dropzone:not(.used){
+    margin: 0;
 }
 
 #dropzone.readonly:not(.used) {
@@ -660,6 +672,7 @@ padding-left: 6px;
 #dropzone:not(.used) {
     -webkit-transition: width 500ms;
     transition: width 500ms;
+    max-height: 150px;
 }
 #dropzone.used {
     width: 300px;
@@ -710,12 +723,11 @@ padding-left: 6px;
     opacity: 1;
 }
 #clip-input {
-    position: absolute; /*behind clip-icon*/
-    top: 0;
-    right: 38px;
+    position: absolute;
+    top: -999px;
+    right: 0px;
     opacity: 0;
     max-height: 1px;
-    max-width: 1px;
 }
 
 #dropzone #dropzone-message{
@@ -740,12 +752,6 @@ padding-left: 6px;
     display: none;
 }
 
-.touch-device #dropzone-message{
-	display: none;
-}
-.touch-device #dropzone{
-	min-height: 20px;
-}
 
 /*==================*/
 /* dropzone's files */
@@ -943,18 +949,22 @@ margin: 10rem auto 0 auto;
 /*---------------------------------------------------------*/
 
 @media print {
-	body, html {
-		height: auto !important;
-	}
-	
-	#document {
-		background-color: #fff !important;
-		height: auto !important;
-		width: 100% !important;
-		position: fixed !important;
-		top: 0 !important;
-		left: 0 !important;
-		z-index: 900000 !important;
-	}
-}
 
+    #app{
+        width: 100%;
+        height: 100%;
+        position: relative;
+        top: 0 !important;
+    }
+    .navbar, #ztree, #splitter {
+        display: none;
+    }
+    #document{
+        display: block;
+        width: auto;
+        height: auto;
+        left: 0 !important;
+        overflow: visible;  
+    }
+
+}

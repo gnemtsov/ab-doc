@@ -101,40 +101,39 @@
 		// currently there is only 1 selected node in a moment,
 		// but it will change in the future.
 		// expanding works always
-		var ok = !treeNode.open || self.tree.getSelectedNodes().reduce( function(acc, selected) {
-			var path = selected.getPath();
-			path.splice(-1, 1);
-			return acc && (path.indexOf(treeNode) === -1);
-		}, true);
+		var ok = !treeNode.open || 
+				 self.tree.getSelectedNodes().reduce( 
+					function(acc, selected) {
+						var path = selected.getPath();
+						path.splice(-1, 1);
+						return acc && (path.indexOf(treeNode) === -1);
+					}, 
+					true
+			 	 );
 		
 		// expand the node
 		if (ok) {
 			self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		}
 		
+		//automatically switch to doc-solo on second click/touch for small devices
 		if (g.isSmallDevice) {
-			if (self.lastClicked != treeNode) {
-				if (self.lastClicked) {
+			if(self.lastClicked === undefined || self.lastClicked.id !== treeNode.id){
+				if (self.lastClicked !== undefined) {
 					self.removeHoverDom(treeId, self.lastClicked);
 				}
 				self.lastClicked = treeNode;
 				self.addHoverDom(treeId, treeNode);
-				return false;
+			} else {
+				g.COLUMNS_MODE = 'document';
+				$(window).resize();
+				ROUTER.open(treeNode.id);
 			}
+		} else {
+			ROUTER.open(treeNode.id);
 		}
 		
-		return true;
-	}
-
-	abTree.prototype.onClick = function (event, treeId, treeNode, clickFlag) {
-		var self = this;
-		
-		ROUTER.open(treeNode.id);
-		
-		if (g.isSmallDevice) {
-			g.COLUMNS_MODE = 'document';
-			$(window).resize();
-		}
+		return false; //we don't need click to fire, node is always selected by ROUTER
 	}
 
 	abTree.prototype.addHoverDom = function (treeId, treeNode) {
@@ -378,9 +377,6 @@
 				$('#selectedDoc').text($(this).val());
 				document.title = $(this).val();
 			}
-		});	
-		$abTree.on('click', function() {
-			console.log('click!');
 		});
 
 		var params = {
@@ -432,7 +428,6 @@
 						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
 						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),
 						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
-						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
 						onRename: self.onRename.bind(self),
 						
@@ -449,12 +444,8 @@
 
 				if(!self.readOnly){ //init timer if not readOnly
 
-					var needsResaving = false;
 					TIMERS.set(function () {
-						if(ACTIVITY.get('document modify') === 'saving') {
-							g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
-						}
-						if(ACTIVITY.get('tree modify') === 'pending' || needsResaving){
+						if(ACTIVITY.get('tree modify') === 'pending'){
 
 							ACTIVITY.push('tree modify', 'saving');
 
@@ -491,10 +482,8 @@
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
 								ACTIVITY.flush('tree modify');
-								needsResaving = false;			
 							}).catch(function(){
 								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
-								needsResaving = true;
 							});
 
 						}
