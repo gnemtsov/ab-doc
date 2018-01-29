@@ -112,7 +112,7 @@
 			self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
 		}
 		
-		if (g.isTouchDevice) {
+		if (g.isSmallDevice) {
 			if (self.lastClicked != treeNode) {
 				if (self.lastClicked) {
 					self.removeHoverDom(treeId, self.lastClicked);
