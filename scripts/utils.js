@@ -578,6 +578,8 @@ var abUtils = {
 		var downX = 0, downY = 0,
 			lastTouchstart = 0;
 		element.on('touchstart touchmove touchend touchcancel', function(event) {
+			console.log('touch event!', event);
+			
 			var touches = event.changedTouches,
 				first = touches[0],
 				types = [];

@@ -104,7 +104,7 @@
 		var ok = !treeNode.open || self.tree.getSelectedNodes().reduce( function(acc, selected) {
 			var path = selected.getPath();
 			path.splice(-1, 1);
-			return acc && !path.includes(treeNode);
+			return acc && (path.indexOf(treeNode) === -1);
 		}, true);
 		
 		// expand the node
