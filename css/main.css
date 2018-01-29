@@ -183,6 +183,9 @@ a.navbar-brand img{
 #ztree.ab-closed {
     padding: 0px;
 }
+#ztree.tree-solo {
+	overflow-x: auto;
+}
 
 
 .ztree *{
@@ -338,7 +341,10 @@ ul.tmpTargetzTree {
 #splitter.thin {
     width: 0px;
     padding: 0px;
-    margin: 0px 0px;
+}
+
+:not(.small-device).touch-device #splitter {
+	width: 40px;
 }
 
 /*#ztree:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
@@ -376,6 +382,15 @@ ul.tmpTargetzTree {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     margin-left: -1px;
+}
+
+.touch-device #toggleButton {
+	width: 30px;
+	height: 60px;
+}
+
+.touch-device #toggleButton.ab-opened {
+	margin-left: -30px;
 }
 
 
@@ -430,7 +445,7 @@ ul.tmpTargetzTree {
 }
 
 #editor .ql-editor {
-    padding: 0px;
+    padding: 0px 0px 60px 0px;
     overflow-y: inherit;
 }
 
@@ -634,9 +649,21 @@ padding-left: 6px;
 
 .small-device #dropzone{
     float: none;
+    width: inherit;
     margin-top: 1rem;
     margin-left: 0;
     margin-bottom: 2rem;
+}
+
+.touch-device #dropzone-message{
+	display: none;
+}
+
+.touch-device #dropzone{
+	min-height: 70px;
+}
+.touch-device #dropzone:not(.used){
+    margin: 0;
 }
 
 #dropzone.readonly:not(.used) {
@@ -645,6 +672,7 @@ padding-left: 6px;
 #dropzone:not(.used) {
     -webkit-transition: width 500ms;
     transition: width 500ms;
+    max-height: 150px;
 }
 #dropzone.used {
     width: 300px;
@@ -695,12 +723,11 @@ padding-left: 6px;
     opacity: 1;
 }
 #clip-input {
-    position: absolute; /*behind clip-icon*/
-    top: 0;
-    right: 38px;
+    position: absolute;
+    top: -999px;
+    right: 0px;
     opacity: 0;
     max-height: 1px;
-    max-width: 1px;
 }
 
 #dropzone #dropzone-message{
@@ -724,6 +751,7 @@ padding-left: 6px;
 #dropzone.used #dropzone-message{
     display: none;
 }
+
 
 /*==================*/
 /* dropzone's files */
@@ -912,4 +940,31 @@ margin: 10rem auto 0 auto;
   100% { 
 	  transform: scale(0.0);
   }
+}
+
+
+
+/*---------------------------------------------------------*/
+/*---------------------------print-------------------------*/
+/*---------------------------------------------------------*/
+
+@media print {
+
+    #app{
+        width: 100%;
+        height: 100%;
+        position: relative;
+        top: 0 !important;
+    }
+    .navbar, #ztree, #splitter {
+        display: none;
+    }
+    #document{
+        display: block;
+        width: auto;
+        height: auto;
+        left: 0 !important;
+        overflow: visible;  
+    }
+
 }

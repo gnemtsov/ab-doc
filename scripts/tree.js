@@ -92,66 +92,135 @@
 		}
 	}
 
-	abTree.prototype.onClick = function (event, treeId, treeNode, clickFlag) {
+	abTree.prototype.beforeClick = function (treeId, treeNode, clickFlag) {
 		var self = this;
 		
+		// Clicking on a node makes it expand/collapse. Node should not collapse
+		// if selected node is inside it, so:
+		// can collapse this node only if no selected nodes are it's child
+		// currently there is only 1 selected node in a moment,
+		// but it will change in the future.
+		// expanding works always
+		var ok = !treeNode.open || 
+				 self.tree.getSelectedNodes().reduce( 
+					function(acc, selected) {
+						var path = selected.getPath();
+						path.splice(-1, 1);
+						return acc && (path.indexOf(treeNode) === -1);
+					}, 
+					true
+			 	 );
+		
 		// expand the node
-		self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
-		ROUTER.open(treeNode.id);
-	}
-
-	abTree.prototype.showRemoveBtn = function (id, node) {
-		return !node.head;
+		if (ok) {
+			self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
+		}
+		
+		//automatically switch to doc-solo on second click/touch for small devices
+		if (g.isSmallDevice) {
+			if(self.lastClicked === undefined || self.lastClicked.id !== treeNode.id){
+				if (self.lastClicked !== undefined) {
+					self.removeHoverDom(treeId, self.lastClicked);
+				}
+				self.lastClicked = treeNode;
+				self.addHoverDom(treeId, treeNode);
+			} else {
+				g.COLUMNS_MODE = 'document';
+				$(window).resize();
+				ROUTER.open(treeNode.id);
+			}
+		} else {
+			ROUTER.open(treeNode.id);
+		}
+		
+		return false; //we don't need click to fire, node is always selected by ROUTER
 	}
 
 	abTree.prototype.addHoverDom = function (treeId, treeNode) {
+		console.log('addHoverDom');
+		
 		var self = this;
 		
 		var sObj = $("#" + treeNode.tId + "_span");
-		if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) {
+		if (treeNode.editNameFlag || $('#' + treeNode.tId + '_add').length>0) {
 			return;
 		}
 		
-		var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
-			+ "' title='add node' onfocus='this.blur();'></span>";
+		if (!self.readOnly) {
+			var addStr = "<span class='button add' id='" + treeNode.tId
+			+ "_add' title='add node' onfocus='this.blur();'></span>";
+		
+			addStr += "<span class='button edit' id='" + treeNode.tId
+				+ "_edit' title='rename' treenode_edit=''></span>";
 			
-		sObj.after(addStr);
+			if (!treeNode.head) {
+				addStr += "<span class='button remove' id='" + treeNode.tId
+					+ "_remove' title='remove' treenode_remove=''></span>";		
+			}
+				
+			sObj.after(addStr);
+		}
 		
 		// Add new item
-		var btn = $("#addBtn_"+treeNode.tId);
-		if (btn) btn.bind("click", function() {
-			var name,
-				path,
-				ok = false,
-				i = 1;
-			while(!ok) {
-				name = "new item " + i;
-				path = self.buildPath(treeNode) + "/" + name;
-				function filter(n) {
-					return self.buildPath(n) === path;
+		var btnAdd = $('#' + treeNode.tId + '_add');
+		if (btnAdd) {
+			btnAdd.on('click', function() {
+				var name,
+					path,
+					ok = false,
+					i = 1;
+				while(!ok) {
+					name = 'new item ' + i;
+					path = self.buildPath(treeNode) + '/' + name;
+					function filter(n) {
+						return self.buildPath(n) === path;
+					}
+					if(!self.tree.getNodesByFilter(filter, true)) {
+						ok = true;
+					}
+					i++;
 				}
-				if(!self.tree.getNodesByFilter(filter, true)) {
-					ok = true;
-				}
-				i++;
-			}
-			var guid = abUtils.GetGUID();
-			self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
-			var newNode = self.tree.getNodeByParam('id', guid);
-			
-			ROUTER.open(guid);
-			
-			self.tree.editName(newNode);
-			$('#' + newNode.tId + '_input').select();
-			
-			ACTIVITY.push('tree modify', 'pending');
+				var guid = abUtils.GetGUID();
+				self.tree.addNodes(treeNode, {id: guid, name: name, files: []});
+				var newNode = self.tree.getNodeByParam('id', guid);
+				
+				ROUTER.open(guid);
+				
+				self.tree.editName(newNode);
+				$('#' + newNode.tId + '_input').select();
+				
+				ACTIVITY.push('tree modify', 'pending');
 
-			return false;
-		});
+				return false;
+			});
+			btnAdd.on('mousedown mouseup', function(){});
+		}
+		
+		// Remove an item
+		var btnRemove = $('#' + treeNode.tId + '_remove');
+		if (btnRemove) {
+			btnRemove.on('click', function() {
+				self.tree.removeNode(treeNode, true);
+				return false;
+			});
+			btnRemove.on('mousedown mouseup', function(){});
+		}
+		
+		// Rename an item
+		var btnRename = $('#' + treeNode.tId + '_edit');
+		if (btnRename) {
+			btnRename.on('click mouseup mousedown', function() {
+				self.tree.editName(treeNode);
+				return false;
+			});
+			btnRename.on('mousedown mouseup', function(){});
+		}	
 	};
 
 	abTree.prototype.removeHoverDom = function(treeId, treeNode) {
-		$("#addBtn_"+treeNode.tId).unbind().remove();
+		$('#' + treeNode.tId + '_add').off().remove();
+		$('#' + treeNode.tId + '_remove').off().remove();
+		$('#' + treeNode.tId + '_edit').off().remove();
 	};
 
 	abTree.prototype.buildPath = function(treeNode) {
@@ -191,7 +260,8 @@
 	abTree.prototype.beforeRemove = function(treeId, treeNode) {
 		var self = this;
 		
-		$('#buttonDelete').click( function() {
+		$('#buttonDelete').off('click');
+		$('#buttonDelete').on('click', function() {
 			
 			// recursively go through all children
 			var f = function(n) {
@@ -307,7 +377,7 @@
 				$('#selectedDoc').text($(this).val());
 				document.title = $(this).val();
 			}
-		});	
+		});
 
 		var params = {
 			Bucket: STORAGE_BUCKET,
@@ -344,8 +414,8 @@
 					},
 					edit: {
 						enable: !self.readOnly,
-						showRemoveBtn: self.readOnly ? false : self.showRemoveBtn.bind(self),
-						showRenameBtn: !self.readOnly
+						showRemoveBtn: false,
+						showRenameBtn: false
 					},
 					data: {
 						simpleData: {
@@ -353,18 +423,24 @@
 						}
 					},
 					callback: {
+						beforeClick: self.beforeClick.bind(self),
 						beforeDrag: self.readOnly ? false : self.beforeDrag.bind(self),
 						beforeDrop: self.readOnly ? false : self.beforeDrop.bind(self),
 						beforeRename: self.readOnly ? false : self.beforeRename.bind(self),
 						beforeRemove: self.readOnly ? false : self.beforeRemove.bind(self),
-						onClick: self.onClick.bind(self),
 						onDrop: self.onDrop.bind(self),
-						onRename: self.onRename.bind(self)
+						onRename: self.onRename.bind(self),
+						
+						onMouseDown: function(){console.log('ztree mouse down test');},
+						onMouseUp: function(){console.log('ztree mouse up test');}
 					}
 				};
 							
 				self.tree = $.fn.zTree.init($abTree, self.zSettings, self.zNodes);
 				self.selectedNode = self.tree.getNodes()[0];
+				
+				// attach touch handlers
+				abUtils.attachTouchToMoveListeners($abTree, 12, 0);
 
 				if(!self.readOnly){ //init timer if not readOnly
 
@@ -405,7 +481,9 @@
 								s3.putObject(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
-								ACTIVITY.flush('tree modify');					
+								ACTIVITY.flush('tree modify');
+							}).catch(function(){
+								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 							});
 
 						}

@@ -37,8 +37,7 @@ var s3;
 var isTouchDevice = (('ontouchstart' in window) || ('onmsgesturechange' in window));
 var isSmallDevice = window.innerWidth < 600;
 
-var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>'),
-    $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
+var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
 (function (g, $) {
 
@@ -83,15 +82,18 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         lines: {}, //each activity has own line of pending and saving events
 
         push: function (activity, state){
+            var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 this.lines[activity].push(state);
             } else {
                 this.lines[activity] = [state];
             }
             this.refresh();
+            return self;
         },
 
         get: function(activity){
+            var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 var length = this.lines[activity].length;
                 return this.lines[activity][length-1];
@@ -101,6 +103,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         },
 
         flush: function(activity){
+            var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 var index = this.lines[activity].indexOf('saving');
                 if(index !== -1){
@@ -108,7 +111,16 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 }
             }		
             this.refresh();
-            return this.get(activity);
+            return self;
+        },
+
+        drop: function(activity){
+            var self = this;
+            if (this.lines.hasOwnProperty(activity)){
+                delete this.lines[activity];
+                this.refresh();
+            }		
+            return self;
         },
 
         refresh: function(){
@@ -259,11 +271,11 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             //set readOnly
             if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
                 this.readOnly = true;
-                $('.readOnly-mode').removeClass('hidden');
+                $('.readonly-mode').removeClass('hidden');
                 $('.edit-mode').addClass('hidden');
             } else {
                 this.readOnly = false;
-                $('.readOnly-mode').addClass('hidden');
+                $('.readonly-mode').addClass('hidden');
                 $('.edit-mode').removeClass('hidden');
             }
             
@@ -283,20 +295,11 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             var self = this;
             console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
 
-            //"onbeforeunload" imitator
-            if ( PRODUCTION &&
-                 ($update.hasClass('pending') || $update.hasClass('saving')) &&
-                 !confirm(abUtils.translatorData['changesPending'][LANG]) ) {
-                $update.removeClass('pending saving');
-                return; 
-            }
-            $update.removeClass('pending saving');
-            
             switch(doc){    
                 case 'welcome': //welcome
-                    if(abAuth.isAuthorized()){
-                        self.open();
-                        return;
+                
+                    if(abAuth.isAuthorized()){                        
+                        return self.open();
                     }
 
                     $container.children().hide();
@@ -306,10 +309,24 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                     self.readOnly = false,
                     self.updatePath();
 
-                    $welcome.show();            
+                    $welcome.show();
                     break;
     
                 case 'about': //about
+
+                    if(ACTIVITY.get('tree modify') === 'pending' || 
+                       ACTIVITY.get('doc modify') === 'pending' ||
+                       ACTIVITY.get('doc embed drop') === 'saving'                    
+                    ){
+                        if(confirm(abUtils.translatorData['changesPending'][LANG])){
+                            ACTIVITY.drop('tree modify')
+                                    .drop('doc modify')
+                                    .drop('doc embed drop');
+                        } else {
+                            return;
+                        }
+                    }
+
                     $container.children().hide();
 
                     self.owner = undefined;
@@ -331,6 +348,17 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     
                 default: //empty or equals GUID
 
+                    if(ACTIVITY.get('doc modify') === 'pending' ||
+                       ACTIVITY.get('doc embed drop') === 'saving'                    
+                    ){
+                        if(confirm(abUtils.translatorData['changesPending'][LANG])){
+                            ACTIVITY.drop('doc modify')
+                                    .drop('doc embed drop');
+                        } else {
+                            return;
+                        }
+                    }
+
                     //in brackets won't go!
                     //impossible: owner not set and readOnly=false
                     //owner doc readOnly
@@ -344,16 +372,17 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                     //- - - (impossible)
 
                     if((!self.owner || !doc) && self.readOnly){ //(4, 6, 7)
-                        self.open('welcome');
-                        return;
-                    } 
+                        return self.open('welcome');
+                    }                    
  
                     //full app reload if abTree has not been defined already or owner/readOnly has changed
                     var full_reload = false;
                     if(abTree === undefined || abTree.ownerid !== self.owner || abTree.readOnly !== self.readOnly){
                         full_reload = true;
-                        $container.children().hide();
-                        $container.prepend($big_preloader); //show main preloader
+                        $container.children().not('.big-preloader').hide();
+                        if(!$container.find('.big-preloader').length){
+                            $container.prepend($big_preloader); //show main preloader
+                        }
 
                         if(abAuth.isAuthorized() && this.owner === abAuth.credentials.identityId){
                             g.INDICATOR.updateUsedSpace(abAuth.credentials.identityId);
@@ -420,8 +449,8 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                             }                    
                         }
                     );
-            }
 
+            }
         },
 
         updatePath: function(){
@@ -479,7 +508,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
     
     //UI
     var $nav, $update, $lang_select, 
-        $container, 
+        $container, $big_preloader,
         $app, $welcome, $about, 
         $ztree, $abTree, 
         $splitter, 
@@ -487,12 +516,13 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 
     //------Document ready!------//
     $(document).ready( function() {
-
+		
         $nav = $('nav'); //navbar
         $update = $('#update');
         $lang_select = $('#selectLang');
 
         $container = $('#main-container'); //main
+        $big_preloader = $('.big-preloader'); //big-preloader
 
         $app = $('#app'); //app (contains tree, splitter and document)
         $welcome = $('#welcome'); 
@@ -634,8 +664,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
         */
 
         var navHeight = $nav.outerHeight(); // save navbar's initial height
-        var COLUMNS_MODE, 
-            TREE_WIDTH;
+        var TREE_WIDTH;
                     
         // Toggle button
         $('#toggleButton').mousedown( function(event) {
@@ -644,28 +673,28 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             }
             
             if (isSmallDevice) {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'tree':
-                        COLUMNS_MODE = 'document';
+                        g.COLUMNS_MODE = 'document';
                         break;
                     case 'document':
-                        COLUMNS_MODE = 'tree';
+                        g.COLUMNS_MODE = 'tree';
                         break;
                     default:
-                        console.log('Wrong COLUMNS_MODE!');
-                        COLUMNS_MODE = 'tree';
+                        console.log('Wrong g.COLUMNS_MODE!');
+                        g.COLUMNS_MODE = 'tree';
                 }
             } else {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'split':
-                        COLUMNS_MODE = 'document';
+                        g.COLUMNS_MODE = 'document';
                         break;
                     case 'document':
-                        COLUMNS_MODE = 'split';
+                        g.COLUMNS_MODE = 'split';
                         break;
                     default:
-                        console.log('Wrong COLUMNS_MODE!');
-                        COLUMNS_MODE = 'split';
+                        console.log('Wrong g.COLUMNS_MODE!');
+                        g.COLUMNS_MODE = 'split';
                 }
             }
             
@@ -685,26 +714,26 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             isSmallDevice ? $('body').addClass('small-device') : $('body').removeClass('small-device');
 
             if (isSmallDevice) {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'document':
                     case 'tree':
                         break;
                     default:
-                        COLUMNS_MODE = 'tree';
+                        g.COLUMNS_MODE = 'tree';
                 }
             } else {
-                switch (COLUMNS_MODE) {
+                switch (g.COLUMNS_MODE) {
                     case 'document':
                     case 'split':
                         break;
                     default:
-                        COLUMNS_MODE = 'split';
+                        g.COLUMNS_MODE = 'split';
                 }
             }
 
             TREE_WIDTH = Math.max(Math.min(TREE_WIDTH, window.innerWidth - thresholdRight), thresholdLeft);
             if( !updateMode() ) {
-                COLUMNS_MODE = 'split';
+                g.COLUMNS_MODE = 'split';
                 updateMode();
             }
             
@@ -729,8 +758,9 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
             TREE_WIDTH = window.innerWidth * 0.25;
         }
         console.log(TREE_WIDTH);
-        COLUMNS_MODE = localStorage.getItem('ab-doc.columns.mode');
+        
         // Let window.resize() correct the layout
+        g.COLUMNS_MODE = g.isSmallDevice ? 'document' : 'split';
         $(window).resize();
 
         // Splitter moving
@@ -738,25 +768,33 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 			oldX;
 		
 		$splitter.mousedown(function(event) {
-			event.preventDefault();
+			if (event) {
+				event.preventDefault();
+			}
 			
-			if (COLUMNS_MODE === 'split') {
+			if (g.COLUMNS_MODE === 'split') {
 				splitterDragging = true;
 			}
 			
 			oldX = event.clientX;
 		});
-		
+		$splitter.on('touchstart', function(event) {
+			$splitter.trigger('mousedown');
+		});
+
 		$(document).mouseup(function(event) {
 			//event.preventDefault();
 			
 			splitterDragging = false;
 		});
-		
-		$(document).mousemove(function(event) {
+		$(document).on('touchcancel touchend', function(event) {
+			$splitter.trigger('mouseup');
+		});
+				
+		function mouseMove(x, y) {
 			// splitterDragging is true only in 'split' mode
 			if (splitterDragging) {
-				var newX = event.clientX;
+				var newX = x;
 				
 				var totalWidth = window.innerWidth,
 					zTreeWidth = $ztree.outerWidth(),
@@ -765,7 +803,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 					
 				if (newZTreeWidth < thresholdLeft) {
 					// go to 'document' mode if approaching left edge
-					COLUMNS_MODE = 'document';
+					g.COLUMNS_MODE = 'document';
 					splitterDragging = false;
 					ok = true;			
 				}
@@ -775,20 +813,29 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
 				updateMode();
 				oldX = newX;
 			}
+		}
+		$(document).mousemove(function(event) {
+			mouseMove(event.clientX, event.clientY);
+		});
+		$(document).on('touchmove', function(event) {
+			var touch = event.targetTouches[0];
+			if (touch) {
+				mouseMove(touch.clientX, touch.clientY);
+			}
 		});
 
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
         function updateMode() {
-
-            var sw = $splitter.outerWidth();
-
-            switch(COLUMNS_MODE) {
+            switch(g.COLUMNS_MODE) {
 
                 // Update columns' sizes when in 'tree' mode
                 case 'tree': 
 					$('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
 					$splitter.removeClass('thin');
+					// sw was declared and calculated before switch, 
+					// but it should be calculated after css changes
+					var sw = $splitter.outerWidth();
                     $document.removeClass('doc-solo');
                     $ztree.addClass('tree-solo');
 					
@@ -803,6 +850,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 case 'document': 
 					$('#toggleButton, #splitter').removeClass('ab-opened').addClass('ab-closed');
 					$splitter.addClass('thin');
+					var sw = $splitter.outerWidth();
                     $document.addClass('doc-solo');
                     $ztree.removeClass('tree-solo');
 										
@@ -817,6 +865,7 @@ var $big_preloader = $('<div class="big-preloader"><div class="bounce1"></div><d
                 case 'split': 
                     $('#toggleButton, #splitter').removeClass('ab-closed').addClass('ab-opened');
                     $splitter.removeClass('thin');
+                    var sw = $splitter.outerWidth();
                     $document.removeClass('doc-solo');
                     $ztree.removeClass('tree-solo');
                                         

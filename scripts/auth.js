@@ -205,7 +205,7 @@
 
                 }
 
-            }, 180000000, 'auth' );
+            }, 3000000, 'auth' );
 
             return promise;
         },
@@ -536,8 +536,8 @@
             } else {
                 $('.authenticated-mode').addClass('hidden');
 
-                $('.unauthenticated-mode').not( ".link-google" ).removeClass('hidden');
-                if(self.googleAuth !== undefined && g.googleyolo !== undefined){
+                $('.unauthenticated-mode').not('.link-google').removeClass('hidden');
+                if(self.googleAuth !== undefined){
                     $('.unauthenticated-mode.link-google').removeClass('hidden');
                 }
                 $username.text(g.abUtils.translatorData['account'][g.LANG]);
@@ -562,40 +562,48 @@
 
         showGoogleHintsOrSignIn: function(forceSignIn){
             var self = this;
-            g.googleyolo
-                .hint(self.googleAuthParams)
-                .catch(function(error) {
-                    if(forceSignIn && ['unsupportedBrowser', 'noCredentialsAvailable'].indexOf(error.type) !== -1){
-                        console.log('Auth.js: Google hints unavailable! However, we can still use default google sign in...');
+
+            if(g.googleyolo === undefined){
+                console.log('Auth.js: Google sign in...');
+                return self.googleAuth.signIn();
+            } else {
+                g.googleyolo
+                    .hint(self.googleAuthParams)
+                    .catch(function(error) {
+                        if(forceSignIn && ['unsupportedBrowser', 'noCredentialsAvailable'].indexOf(error.type) !== -1){
+                            console.log('Auth.js: Google hints unavailable! However, we can still use default google sign in...');
+                            return;
+                        } else {
+                            throw error;
+                        }
+                    })
+                    .then(function() {
+                        console.log('Auth.js: Google sign in...');
+                        return self.googleAuth.signIn();
+                    })
+                    .then(function(user){
+                        self.userType = 'google';
+                        self.googleUser = user;
+                        self.tmpUsername = user.getBasicProfile().getName(); //set this data - it can be first user visit
+                        self.tmpEmail = user.getBasicProfile().getEmail();
+                        g.localStorage.setItem('abNoGoogleRetrieve', 0);
+                        return self.loggedIn( self.GoogleProviderName, user.getAuthResponse().id_token );
+                    })
+                    .then(function(){
+                        self.updateNavUsername();
+                        g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
                         return;
-                    } else {
-                        throw error;
-                    }
-                })
-                .then(function() {
-                    console.log('Auth.js: Google sign in...');
-                    return self.googleAuth.signIn();
-                })
-                .then(function(user){
-                    self.userType = 'google';
-                    self.googleUser = user;
-                    self.tmpUsername = user.getBasicProfile().getName(); //set this data - it can be first user visit
-                    self.tmpEmail = user.getBasicProfile().getEmail();
-                    g.localStorage.setItem('abNoGoogleRetrieve', 0);
-                    return self.loggedIn( self.GoogleProviderName, user.getAuthResponse().id_token );
-                })
-                .then(function(){
-                    self.updateNavUsername();
-                    g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
-                    return;
-                })
-                .catch(function(error) {
-                    console.log(error);
-                    var mute_errors = ['requestFailed', 'userCanceled', 'operationCanceled', 'illegalConcurrentRequest', 'unsupportedBrowser', 'noCredentialsAvailable'];
-                    if(mute_errors.indexOf(error.type) === -1 && error.error !== 'popup_closed_by_user') {
-                        abUtils.onError(error);
-                    } 
-                });
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        var mute_errors = ['requestFailed', 'userCanceled', 'operationCanceled', 'illegalConcurrentRequest', 'unsupportedBrowser', 'noCredentialsAvailable'];
+                        if(error.error === 'popup_blocked_by_browser'){
+                            abUtils.onError('popup_blocked_by_browser');
+                        } else if(mute_errors.indexOf(error.type) === -1 && error.error !== 'popup_closed_by_user') {
+                            abUtils.onError(error);
+                        } 
+                    });
+            }
         },
 
         getInputHTML: function(type, params){

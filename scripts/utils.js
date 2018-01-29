@@ -85,6 +85,10 @@ var abUtils = {
 			"ru": "Не удалось загрузить ваше дерево. Попробуйте перезагрузить страницу. Если ошибка повторится, напишите на support@erp-lab.com.",
 			"en": "Couldn't load your tree. Try reloading the page. If you get this error again, contact us at support@erp-lab.com."
 		},
+		"couldNotSave": {
+			"ru": "Не удалось сохранить изменения. Скопируйте содержимое документа в буфер обмена и попробуйте перезагрузить страницу.",
+			"en": "Couldn't save changes. Copy document content to clipboard and try reloading the whole page."
+		},
 		"deleteQuestion1": {
 			"ru": "Документ",
 			"en": "You are going to delete document"
@@ -181,6 +185,10 @@ var abUtils = {
 			"ru": "Пароль успешно изменен. Дождитесь перенаправления..",
 			"en": "Password reset successful. Wait for redirect.."
 		},
+		"popup_blocked_by_browser": {
+			"ru": "Всплывающее окно авторизации заблокировано вашим браузером.",
+			"en": "Your browser is blocking sign in popup window."
+		},
 		"registration": {
 			"ru": "Регистрация",
 			"en": "Create account"
@@ -215,7 +223,7 @@ var abUtils = {
 		},
 		"somethingWentWrong": {
 			"ru": "Что-то пошло не так..",
-			"en": "Somenthing went wrong.."
+			"en": "Something went wrong.."
 		},
 		"typeYourText": {
 			"ru": "Напишите что-нибудь удивительное...",
@@ -542,10 +550,11 @@ var abUtils = {
 
 	onWarning: function(msg) {
 		this.errorPopover(msg);
+		$('nav').popover('hide');
 		$('nav').popover('show');
 		setTimeout(function() {
 			$('nav').popover('hide');
-		}, 2500);
+		}, 4000);
 	},
 
 	errorPopover: function(c) {
@@ -559,6 +568,74 @@ var abUtils = {
 				<div class="popover bg-danger" role="tooltip">\
 					<div class="popover-body text-light"></div>\
 				</div>'
+		});
+	},
+	
+	// Attaches touch-events listeners on element
+	// and converts them to mouse-events
+	// 
+	attachTouchToMoveListeners: function(element, moveRadius, waitBeforeMove) {
+		var downX = 0, downY = 0,
+			lastTouchstart = 0;
+		element.on('touchstart touchmove touchend touchcancel', function(event) {
+			console.log('touch event!', event);
+			
+			var touches = event.changedTouches,
+				first = touches[0],
+				types = [];
+				
+			switch(event.type)
+			{
+				case 'touchstart':  types = ['mousedown']; break;
+				case 'touchmove':   types = ['mousemove']; break;        
+				case 'touchend':    types = ['mouseup', 'click'];   break;
+				case 'touchcancel': types = ['mouseup'];   break;
+				default:            return;
+			}
+			
+			if (event.type === 'touchstart') {
+				downX = first.clientX;
+				downY = first.clientY;
+				lastTouchstart = Date.now();
+			}
+			
+			var ok = true; // ok - will call mouseevent
+			if (event.type === 'touchmove') {
+				// do not call mousemove if moved not too far
+				// to prevent drag and drop (optional)
+				if (moveRadius) {
+					if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY) < moveRadius)) {
+						ok = false;
+					}
+				}
+				// do not call mousemove until some time after touchstart
+				// to prevent drag and drop (optional)
+				if (waitBeforeMove) {
+					ok = ok && (Date.now() - lastTouchstart >= waitBeforeMove);
+				}
+			}
+
+			if (ok) {
+				types.forEach( function (type) {
+					// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+					//                screenX, screenY, clientX, clientY, ctrlKey, 
+					//                altKey, shiftKey, metaKey, button, relatedTarget);
+
+					var simulatedEvent = document.createEvent('MouseEvent');
+					simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+												  first.screenX, first.screenY, 
+												  first.clientX, first.clientY, 
+												  false, false, false, false, 0, null);
+					
+					// On touchmove event target is an element, which was touched first
+					// On mousemove target event is an element, which is currently under the cursor
+					document
+						.elementFromPoint(first.clientX, first.clientY)
+						.dispatchEvent(simulatedEvent);
+				});
+			}
+
+			event.preventDefault();
 		});
 	}
 };
