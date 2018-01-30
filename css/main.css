@@ -505,11 +505,11 @@ ul.tmpTargetzTree {
 
 #editor ul, #editor .ql-editor ul, #editor ol,
     #editor .ql-editor ol {
-    margin-bottom: 6px;
+    margin-bottom: 1.5em;
 }
 
 #editor li {
-    padding-bottom: 24px;
+    padding-bottom: 0.4rem;
 }
 
 #editor blockquote,
