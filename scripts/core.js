@@ -710,7 +710,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				event.preventDefault();
 			}
 
-            isSmallDevice = window.innerWidth < 600;
+            isSmallDevice = window.innerWidth < 1600;
             isSmallDevice ? $('body').addClass('small-device') : $('body').removeClass('small-device');
 
             if (isSmallDevice) {
@@ -823,6 +823,82 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				mouseMove(touch.clientX, touch.clientY);
 			}
 		});
+
+		// Testing!
+		// Swiping
+		// TODO: move it to utils
+		{
+			var startX = 0, 
+				startY = 0,
+				startT = 0,
+				finishedSwiping = false;
+			$(window).on('touchmove', function(event) {
+				if (!isSmallDevice) {
+					return;
+				}
+				
+				var touch = event.targetTouches[0];
+				var x = touch.clientX,
+					y = touch.clientY,
+					dx = x - startX,
+					dy = y - startY,
+					dt = Date.now() - startT;
+					
+				console.log('swiping ', dx, dy, dt);
+					
+				if (!finishedSwiping && 
+					Math.abs(dx) > 10 && Math.abs(dy) < 250 && 
+					dt < 10000) {
+					if ((dx < 0) && (g.COLUMNS_MODE === 'tree')) {
+						g.COLUMNS_MODE = 'document';
+					}
+					if ((dx > 0) && (g.COLUMNS_MODE === 'ducument')) {
+						g.COLUMNS_MODE = 'tree';
+					}
+					
+					console.log('finished swiping');
+										
+					updateMode();
+					finishedSwiping = true;
+				}
+			});
+			
+			$(document).on('touchdown', function(event) {
+				console.log('touchdown?');
+				if (!isSmallDevice) {
+					return;
+				}
+				
+				if (g.COLUMNS_MODE === 'tree') {
+					g.COLUMNS_MODE = 'document';
+				}
+				if (g.COLUMNS_MODE === 'ducument') {
+					g.COLUMNS_MODE = 'tree';
+				}			
+				updateMode();
+				
+				var touch = event.targetTouches[0];
+				finishedSwiping = false;
+				startX = touch.clientX;
+				startY = touch.clientY;
+				startT = Date.now();
+				console.log('Starting swipe', startX, startY, startT);
+			});
+			
+			//TMP
+			$(document).on('mousedown', function(event) {
+				console.log('touchdown?');
+				if (!isSmallDevice) {
+					return;
+				}
+				
+				finishedSwiping = false;
+				startX = event.clientX;
+				startY = event.clientY;
+				startT = Date.now();
+				console.log('Starting swipe', startX, startY, startT);
+			});
+		}
 
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
