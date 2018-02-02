@@ -503,6 +503,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     //auth
     var abAuth = $.fn.abAuth();
     
+    //global listener
+    var abGlobalListener = $.fn.abGlobalListener();
+    
     //tree&doc
     var abTree, abDoc;
     
@@ -710,7 +713,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				event.preventDefault();
 			}
 
-            isSmallDevice = window.innerWidth < 1600;
+            isSmallDevice = window.innerWidth < 600;
             isSmallDevice ? $('body').addClass('small-device') : $('body').removeClass('small-device');
 
             if (isSmallDevice) {
@@ -832,7 +835,23 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				startY = 0,
 				startT = 0,
 				finishedSwiping = false;
-			$(window).on('touchmove', function(event) {
+			$(document).on('touchmove', function(event) {});
+			$(document).on('touchstart', function(event) {});
+			
+			abGlobalListener.addListener('touchstart', function(event) {
+				if (!isSmallDevice) {
+					return;
+				}
+				
+				var touch = event.targetTouches[0];
+				finishedSwiping = false;
+				startX = touch.clientX;
+				startY = touch.clientY;
+				startT = Date.now();
+				console.log('Starting swipe', startX, startY, startT);
+			});
+
+			abGlobalListener.addListener('touchmove', function(event) {
 				if (!isSmallDevice) {
 					return;
 				}
@@ -847,12 +866,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				console.log('swiping ', dx, dy, dt);
 					
 				if (!finishedSwiping && 
-					Math.abs(dx) > 10 && Math.abs(dy) < 250 && 
-					dt < 10000) {
+					Math.abs(dx) > 100 && Math.abs(dy) < 25 && 
+					dt < 1000) {
 					if ((dx < 0) && (g.COLUMNS_MODE === 'tree')) {
 						g.COLUMNS_MODE = 'document';
 					}
-					if ((dx > 0) && (g.COLUMNS_MODE === 'ducument')) {
+					if ((dx > 0) && (g.COLUMNS_MODE === 'document')) {
 						g.COLUMNS_MODE = 'tree';
 					}
 					
@@ -861,42 +880,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					updateMode();
 					finishedSwiping = true;
 				}
-			});
-			
-			$(document).on('touchdown', function(event) {
-				console.log('touchdown?');
-				if (!isSmallDevice) {
-					return;
-				}
-				
-				if (g.COLUMNS_MODE === 'tree') {
-					g.COLUMNS_MODE = 'document';
-				}
-				if (g.COLUMNS_MODE === 'ducument') {
-					g.COLUMNS_MODE = 'tree';
-				}			
-				updateMode();
-				
-				var touch = event.targetTouches[0];
-				finishedSwiping = false;
-				startX = touch.clientX;
-				startY = touch.clientY;
-				startT = Date.now();
-				console.log('Starting swipe', startX, startY, startT);
-			});
-			
-			//TMP
-			$(document).on('mousedown', function(event) {
-				console.log('touchdown?');
-				if (!isSmallDevice) {
-					return;
-				}
-				
-				finishedSwiping = false;
-				startX = event.clientX;
-				startY = event.clientY;
-				startT = Date.now();
-				console.log('Starting swipe', startX, startY, startT);
 			});
 		}
 
