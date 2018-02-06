@@ -668,10 +668,6 @@
 			})
 			.then( function(html) {
 
-				if (self.readOnly) {
-					
-				}
-
 				//quill config
 				var editor_options = {
 					placeholder: self.readOnly ? '' : g.abUtils.translatorData['typeYourText'][g.LANG],
@@ -720,6 +716,10 @@
 				
 				console.log(html);
 				console.log($.parseHTML(html));
+				
+				if (self.readOnly) {
+					
+				}
 
 				$editor.html($.parseHTML(html));
 				//$editor.html(html);
@@ -748,7 +748,7 @@
 							var params = {
 								Bucket: STORAGE_BUCKET,
 								Key: self.ownerid + '/' + self.docGUID + '/index.html',
-								Body: self.editor.root.innerHTML + '<img src="http://127.0.0.1/no.jpg" onerror="alert(\"xss2!\");"></img><script>alert("xss!");</script>',
+								Body: self.editor.root.innerHTML,
 								ContentType: 'text/html',
 								ContentDisposition: abUtils.GetContentDisposition('index.html'),
 								ACL: 'public-read'
