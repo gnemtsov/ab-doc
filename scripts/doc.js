@@ -73,6 +73,17 @@
 					}
 				} else { //file is stored in S3
 					var $a = $('<a href="' + AWS_CDN_ENDPOINT + file.key + '"></a>');
+					
+					/*---EMERGENCY CODE BEGIN---*/
+					if (ROUTER.readOnly) {
+						$a = $('<span></span>');
+						$a.on('click', function(event) {
+							event.preventDefault();
+							alert('TODO: modal window!');
+						});
+					}
+					/*---EMERGENCY CODE END---*/
+					
 					$icon.wrap($a);
 					$name.wrap($a);
 					$meta.append('<span class="file-size">' + abUtils.GetSize(file.size) + '</span>'); 
@@ -715,13 +726,16 @@
 				};
 				
 				console.log(html);
-				console.log($.parseHTML(html));
+				var parsedHTML = $.parseHTML(html);
+				console.log(parsedHTML);
 				
-				if (self.readOnly) {
-					
+				/*---EMERGENCY CODE BEGIN---*/
+				if (self.readOnly && Emergency.noReadOnlyImages) {
+					$(parsedHTML).find('img').replaceWith('<img src="/img/icons/photo.svg">');
 				}
+				/*---EMERGENCY CODE END---*/
 
-				$editor.html($.parseHTML(html));
+				$editor.html(parsedHTML);
 
 				self.editor = new Quill('#editor', editor_options);
 				var length = self.editor.getLength();
