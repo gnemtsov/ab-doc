@@ -10,7 +10,7 @@
 		// If we need to listen to this event globally,
 		// we modify listener
 		if ( abGlobalListener.prototype._registeredEventTypes.indexOf(type) > -1 ) {
-			console.log('Adding listener', arguments);
+			//console.log('Adding listener', arguments);
 			var listener = arguments[1],
 				newListener = function(event) {
 					// send event to global listeners
@@ -31,7 +31,7 @@
 				};
 			arguments[1] = newListener;
 		} else {
-			console.log('Ignoring listener', arguments);
+			//console.log('Ignoring listener', arguments);
 		}
 		// Now do what addEventListener was supposed to do
 		oldAddEventListener.apply(this, arguments);

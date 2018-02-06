@@ -599,7 +599,7 @@
 
 	//** constructor **/
 	abDoc.init = function(params) {
-
+		console.log('abDoc.init');
 		var self = this;
 
 		self.imgMoving = false;		
@@ -668,6 +668,10 @@
 			})
 			.then( function(html) {
 
+				if (self.readOnly) {
+					
+				}
+
 				//quill config
 				var editor_options = {
 					placeholder: self.readOnly ? '' : g.abUtils.translatorData['typeYourText'][g.LANG],
@@ -713,8 +717,12 @@
 						}
 					}
 				};
+				
+				console.log(html);
+				console.log($.parseHTML(html));
 
-				$editor.html(html);
+				$editor.html($.parseHTML(html));
+				//$editor.html(html);
 				self.editor = new Quill('#editor', editor_options);
 				var length = self.editor.getLength();
 				if (self.editor.getText(length - 2, 2) === '\n\n') {
@@ -740,11 +748,12 @@
 							var params = {
 								Bucket: STORAGE_BUCKET,
 								Key: self.ownerid + '/' + self.docGUID + '/index.html',
-								Body: self.editor.root.innerHTML,
+								Body: self.editor.root.innerHTML + '<img src="http://127.0.0.1/no.jpg" onerror="alert(\"xss2!\");"></img><script>alert("xss!");</script>',
 								ContentType: 'text/html',
 								ContentDisposition: abUtils.GetContentDisposition('index.html'),
 								ACL: 'public-read'
 							};
+							console.log('saving', params);
 							Promise.all([ 
 								s3.upload(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })

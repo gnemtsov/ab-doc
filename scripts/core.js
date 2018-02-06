@@ -4,6 +4,14 @@
 /*******************************Core*******************************/
 /******************************************************************/
 
+/*---EMERGENCY CODE BEGIN---*/
+var Emergency = {
+	noRegistration: true,
+	noReadOnlyAttachmentsDownloading: true,
+	noReadOnlyImages: true
+};
+/*---EMERGENCY CODE END---*/
+
 //------PROD | DEV dependencies------
 if (location.hostname === 'ab-doc.com') { //PROD
 
@@ -835,8 +843,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				startY = 0,
 				startT = 0,
 				finishedSwiping = false;
-			$(document).on('touchmove', function(event) {});
-			$(document).on('touchstart', function(event) {});
+			$(window).on('touchmove', function(event) {});
+			$(window).on('touchstart', function(event) {});
 			
 			abGlobalListener.addListener('touchstart', function(event) {
 				if (!isSmallDevice) {
