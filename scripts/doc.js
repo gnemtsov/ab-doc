@@ -722,7 +722,7 @@
 				}
 
 				$editor.html($.parseHTML(html));
-				//$editor.html(html);
+
 				self.editor = new Quill('#editor', editor_options);
 				var length = self.editor.getLength();
 				if (self.editor.getText(length - 2, 2) === '\n\n') {
