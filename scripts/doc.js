@@ -732,7 +732,7 @@
 				console.log(parsedHTML);
 				
 				/*---EMERGENCY CODE BEGIN---*/
-				if (self.readOnly && Emergency.noReadOnlyImages) {
+				if (self.readOnly && Emergency && Emergency.noReadOnlyImages) {
 					$(parsedHTML).find('img').replaceWith('<img src="/img/icons/photo.svg">');
 				}
 				/*---EMERGENCY CODE END---*/
