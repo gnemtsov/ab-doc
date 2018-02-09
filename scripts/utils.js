@@ -53,6 +53,12 @@ var abUtils = {
 			"ru": "Вы уверены?",
 			"en": "Are you sure?"
 		},
+		/*---EMERGENCY CODE BEGIN---*/
+		"attachedDisabledTitle": {
+			"ru": "Доступ к загрузке приложений временно ограничен",
+			"en": "Downloading of attached files is temporarily disabled"
+		},
+		/*---EMERGENCY CODE END---*/
 		"back": {
 			"ru": "Главная",
 			"en": "Home"

@@ -79,7 +79,7 @@
 						$a = $('<span></span>');
 						$a.on('click', function(event) {
 							event.preventDefault();
-							alert('TODO: modal window!');
+							$('#modalAttachedDisabled').modal('show');
 						});
 					}
 					/*---EMERGENCY CODE END---*/
