@@ -231,6 +231,14 @@ var abUtils = {
 			"ru": "Что-то пошло не так..",
 			"en": "Something went wrong.."
 		},
+		"subscribe": {
+			"ru": "Регистрация временно приостановлена",
+			"en": "Creating accounts is temporarily disabled"
+		},
+		"subscribeButton": {
+			"ru": "Подписаться на новости",
+			"en": "Subscribe for news"
+		},
 		"typeYourText": {
 			"ru": "Напишите что-нибудь удивительное...",
 			"en": "Compose something awesome..."

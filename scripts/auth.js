@@ -530,6 +530,22 @@
                     $submit.abRelease();
                 });
         },
+        
+        /*---EMERGENCY CODE BEGIN---*/
+        subscribeHandler: function(e){
+            var self = this;
+
+            e.preventDefault();
+            e.stopPropagation();
+            $submit.abFreeze();
+
+            var email = $('#formAuthEmail').val();
+            console.log('Subscribing', email);
+            // TODO: lamdba or DB
+            
+            $modal.modal('hide');
+        },        
+        /*---EMERGENCY CODE END---*/
 
         //-----UI functions-----
         updateNavUsername: function(){
@@ -708,6 +724,23 @@
             $mfooter.empty();
 
             switch(type){
+				/*---EMERGENCY CODE BEGIN---*/
+				case 'subscribe':
+					$mtitle.text( g.abUtils.translatorData['subscribe'][g.LANG] );
+                    $form.append( 
+                        self.getInputHTML('text', {
+                            id: 'formAuthEmail',
+                            label: 'email',
+                            placeholder: 'yourEmail'
+                        })
+                    );                    
+                    $submit.text( g.abUtils.translatorData['subscribeButton'][g.LANG] );
+                    $submit.on('click', self.subscribeHandler.bind(self));
+                    $mfooter.append($submit);
+                    break;
+                    					
+				/*---EMERGENCY CODE END---*/
+				
                 case 'signUp': //sign up
                     $mtitle.text( g.abUtils.translatorData['registration'][g.LANG] );
                     $form.append(

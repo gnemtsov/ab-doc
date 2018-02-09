@@ -628,7 +628,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         $('body').on('click', 'a.navbar-brand', function (e) {
             e.preventDefault();
             ROUTER.setOwner().open();
-        });
+        });z
         
         // Call sign up dialog
         $('body').on('click', 'a.link-sign-up', function (e) {
@@ -637,10 +637,23 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         });
         
         // Call sign in dialog
-        $('body').on('click', 'a.link-sign-in', function (e) {
+		/*---EMERGENCY CODE BEGIN---*/
+		if (Emergency && Emergency.noRegistration) {
+			$('body').on('click', 'a.link-sign-in', function (e) {
+				e.preventDefault();
+				abAuth.showModal('subscribe');
+			});
+		} else {
+			$('body').on('click', 'a.link-sign-in', function (e) {
+				e.preventDefault();
+				abAuth.showModal('signIn');
+			});
+		}
+		/*---EMERGENCY CODE END---*/
+        /*$('body').on('click', 'a.link-sign-in', function (e) {
             e.preventDefault();
             abAuth.showModal('signIn');
-        });
+        });*/
 
         // Call google sign in
         $('body').on('click', 'a.link-google', function (e) {
