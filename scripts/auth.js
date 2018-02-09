@@ -256,6 +256,7 @@
                     Password: password
                 });
 
+				self.tmpPassword = password;
                 self.cognitoUser.authenticateUser(authenticationDetails, {
                     onSuccess: function (session) {
                         self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
@@ -455,8 +456,12 @@
                     g.ROUTER.setOwner(g.ROUTER.owner).open(g.ROUTER.doc);
                 })
                 .catch(function(error){
-                    self.showAlert(error.code);
-                    console.log(error);                               
+					if (error.name === 'UserNotConfirmedException') {
+						self.showModal('confirm');
+					} else {
+						self.showAlert(error.code);
+						console.log(error);
+					}                               
                     $submit.abRelease();
                 });
         },
