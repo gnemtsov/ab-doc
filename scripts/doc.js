@@ -75,12 +75,14 @@
 					var $a = $('<a href="' + AWS_CDN_ENDPOINT + file.key + '"></a>');
 					
 					/*---EMERGENCY CODE BEGIN---*/
-					if (ROUTER.readOnly) {
-						$a = $('<span></span>');
-						$a.on('click', function(event) {
-							event.preventDefault();
-							$('#modalAttachedDisabled').modal('show');
-						});
+					if (Emergency && Emergency.noReadOnlyAttachmentsDownloading) {
+						if (ROUTER.readOnly) {
+							$a = $('<span></span>');
+							$a.on('click', function(event) {
+								event.preventDefault();
+								$('#modalAttachedDisabled').modal('show');
+							});
+						}
 					}
 					/*---EMERGENCY CODE END---*/
 					
