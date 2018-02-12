@@ -40,6 +40,148 @@ var isSmallDevice = window.innerWidth < 600;
 var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
 (function (g, $) {
+	// Attaches touch-events listeners on element
+	// and converts them to mouse-events
+	// 
+	g.attachTouchToMouseListeners = function(element, moveRadius, waitBeforeMove) {
+		var downX = 0, downY = 0,
+			lastTouchstart = 0;
+		element.on('touchstart touchmove touchend touchcancel', function(event) {
+			console.log('touch event!', event);
+			
+			var touches = event.changedTouches,
+				first = touches[0],
+				types = [];
+				
+			switch(event.type)
+			{
+				case 'touchstart':  types = ['mousedown']; break;
+				case 'touchmove':   types = ['mousemove']; break;        
+				case 'touchend':    types = ['mouseup', 'click'];   break;
+				case 'touchcancel': types = ['mouseup'];   break;
+				default:            return;
+			}
+			
+			if (event.type === 'touchstart') {
+				downX = first.clientX;
+				downY = first.clientY;
+				lastTouchstart = Date.now();
+			}
+			
+			var ok = true; // ok - will call mouseevent
+			if (event.type === 'touchmove') {
+				// do not call mousemove if moved not too far
+				// to prevent drag and drop (optional)
+				if (moveRadius) {
+					if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY) < moveRadius)) {
+						ok = false;
+					}
+				}
+				// do not call mousemove until some time after touchstart
+				// to prevent drag and drop (optional)
+				if (waitBeforeMove) {
+					ok = ok && (Date.now() - lastTouchstart >= waitBeforeMove);
+				}
+			}
+
+			if (ok) {
+				types.forEach( function (type) {
+					// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+					//                screenX, screenY, clientX, clientY, ctrlKey, 
+					//                altKey, shiftKey, metaKey, button, relatedTarget);
+
+					var simulatedEvent = document.createEvent('MouseEvent');
+					simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+												  first.screenX, first.screenY, 
+												  first.clientX, first.clientY, 
+												  false, false, false, false, 0, null);
+					
+					// On touchmove event target is an element, which was touched first
+					// On mousemove target event is an element, which is currently under the cursor
+					document
+						.elementFromPoint(first.clientX, first.clientY)
+						.dispatchEvent(simulatedEvent);
+				});
+			}
+
+			event.preventDefault();
+		});
+	}
+	
+	// GLOBAL LISTENER
+	
+	var abGlobalListener = function () {
+		return new abGlobalListener.init();
+	}
+	
+	abGlobalListener.prototype = {
+		_listeners: {},
+		_registeredEventTypes: [],
+		
+		// changing registered types doesn't remove old listeners
+		// if their types were removed
+		// and doesn't add previously unregistered listeners
+		// if their types were added
+		setRegisteredEventTypes(types) {
+			this.__proto__._registeredEventTypes = types;
+		},
+
+		addListener: function(type, callback) {
+			if (!this.__proto__._listeners[type]) {
+				this.__proto__._listeners[type] = [];
+			}
+			this.__proto__._listeners[type].push(callback);
+		},
+		
+		removeListeners: function(type) {
+			delete this.__proto__._listeners[type];
+		}
+	}
+	
+	// overriding standart addEventListener so that every registered event
+    // would go to abGlobalListener too.
+	var oldAddEventListener = EventTarget.prototype.addEventListener;
+	EventTarget.prototype.addEventListener = function () {
+		var type = arguments[0];
+		// If we need to listen to this event globally,
+		// we modify listener
+		if ( abGlobalListener.__proto__._registeredEventTypes.indexOf(type) > -1 ) {
+			console.log('Adding listener', arguments);
+			var listener = arguments[1],
+				newListener = function(event) {
+					// send event to global listeners
+					if (abGlobalListener.__proto__._listeners[event.type]) {
+						abGlobalListener.__proto__._listeners[event.type]
+							.forEach( function (f) {
+								f(event);
+							});
+					}
+					
+					// call vanilla litener
+					// listener is EventListener or a function
+					if (listener.handleEvent instanceof Function) {
+						listener.handleEvent(event);
+					} else {
+						listener(event);
+					}
+				};
+			arguments[1] = newListener;
+		} else {
+			console.log('Ignoring listener', arguments);
+		}
+		// Now do what addEventListener was supposed to do
+		oldAddEventListener.apply(this, arguments);
+	}
+	
+	//** constructor **/
+	abGlobalListener.init = function() {}
+
+	// trick borrowed from jQuery so we don't have to use the 'new' keyword
+	abGlobalListener.init.prototype = abGlobalListener.prototype;
+	// add our abGlobalListener object to jQuery
+	$.fn.abGlobalListener = abGlobalListener;
+	
+	abGlobalListener().setRegisteredEventTypes(['touchstart', 'touchmove']);
 
     //TIMERS object
     //tracks all timers and prevents memory leaks
@@ -503,6 +645,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     //auth
     var abAuth = $.fn.abAuth();
     
+    //global listener
+    var abGlobalListener = $.fn.abGlobalListener();
+    
     //tree&doc
     var abTree, abDoc;
     
@@ -824,6 +969,62 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			}
 		});
 
+		// Testing!
+		// Swiping
+		// TODO: move it to utils
+		{
+			var startX = 0, 
+				startY = 0,
+				startT = 0,
+				finishedSwiping = false;
+			$(document).on('touchmove', function(event) {});
+			$(document).on('touchstart', function(event) {});
+			
+			abGlobalListener.addListener('touchstart', function(event) {
+				if (!isSmallDevice) {
+					return;
+				}
+				
+				var touch = event.targetTouches[0];
+				finishedSwiping = false;
+				startX = touch.clientX;
+				startY = touch.clientY;
+				startT = Date.now();
+				console.log('Starting swipe', startX, startY, startT);
+			});
+
+			abGlobalListener.addListener('touchmove', function(event) {
+				if (!isSmallDevice) {
+					return;
+				}
+				
+				var touch = event.targetTouches[0];
+				var x = touch.clientX,
+					y = touch.clientY,
+					dx = x - startX,
+					dy = y - startY,
+					dt = Date.now() - startT;
+					
+				console.log('swiping ', dx, dy, dt);
+					
+				if (!finishedSwiping && 
+					Math.abs(dx) > 100 && Math.abs(dy) < 25 && 
+					dt < 1000) {
+					if ((dx < 0) && (g.COLUMNS_MODE === 'tree')) {
+						g.COLUMNS_MODE = 'document';
+					}
+					if ((dx > 0) && (g.COLUMNS_MODE === 'document')) {
+						g.COLUMNS_MODE = 'tree';
+					}
+					
+					console.log('finished swiping');
+										
+					updateMode();
+					finishedSwiping = true;
+				}
+			});
+		}
+
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value
         function updateMode() {
@@ -884,5 +1085,4 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         }
 
     });
-
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later

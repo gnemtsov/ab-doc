@@ -440,7 +440,7 @@
 				self.selectedNode = self.tree.getNodes()[0];
 				
 				// attach touch handlers
-				abUtils.attachTouchToMoveListeners($abTree, 12, 0);
+				attachTouchToMouseListeners($abTree, 12, 0);
 
 				if(!self.readOnly){ //init timer if not readOnly
 
