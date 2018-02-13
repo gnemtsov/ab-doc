@@ -75,6 +75,13 @@ span.about-block-border{
     width: 100%;
 }
 
+/*---MODAL LOG CODE BEGIN---*/
+#log {
+	overflow-y: auto;
+	text-overflow: ellipsis;
+	max-height: 400px;
+}
+/*---MODAL LOG CODE END---*/
 
 /*---------------------------------------------------------*/
 /*-------------------------navbar--------------------------*/
