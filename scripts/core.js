@@ -4,21 +4,6 @@
 /*******************************Core*******************************/
 /******************************************************************/
 
-/*---MODAL LOG CODE BEGIN---*/
-var oldLog = console.log;
-console.log = function() {
-	var args = Array.from(arguments);
-	$('#log').append(args.map(JSON.stringify).join(' ') + '<br>');
-	oldLog.apply(this, arguments);
-}
-
-$('.navbar-nav')
-	.append('<li id="navbar-log" class="nav-item"><a class="navbar-text link-log" href="#">Log</a></li>');
-$('.link-log').on('click', function() {
-	$('#modalLog').modal('show');
-});
-/*---MODAL LOG CODE END---*/
-
 //------PROD | DEV dependencies------
 if (location.hostname === 'ab-doc.com') { //PROD
 
