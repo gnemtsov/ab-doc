@@ -394,6 +394,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     //IMPORTANT! Don't forget to always set owner, when owner or viewer can possibly change!
     //TODO Probably needs revision when ACL model will be settled, http://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_ListUsers.html
     g.ROUTER = {
+		_staticPages: {},
         owner: void(0),
         doc: void(0),
         readOnly: false,
@@ -432,7 +433,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             
             return this;
         },
-        
+
         open: function(doc){
             var self = this;
             console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
@@ -455,37 +456,40 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     break;
     
                 case 'about': //about
+                case 'current_version':
+                case 'user_agreement':
+					if(ACTIVITY.get('tree modify') === 'pending' || 
+					   ACTIVITY.get('doc modify') === 'pending' ||
+					   ACTIVITY.get('doc embed drop') === 'saving'                    
+					) {
+						if(confirm(abUtils.translatorData['changesPending'][LANG])){
+							ACTIVITY.drop('tree modify')
+									.drop('doc modify')
+									.drop('doc embed drop');
+						} else {
+							return;
+						}
+					}
 
-                    if(ACTIVITY.get('tree modify') === 'pending' || 
-                       ACTIVITY.get('doc modify') === 'pending' ||
-                       ACTIVITY.get('doc embed drop') === 'saving'                    
-                    ){
-                        if(confirm(abUtils.translatorData['changesPending'][LANG])){
-                            ACTIVITY.drop('tree modify')
-                                    .drop('doc modify')
-                                    .drop('doc embed drop');
-                        } else {
-                            return;
-                        }
-                    }
+					$container.children().hide();
 
-                    $container.children().hide();
+					self.owner = undefined;
+					self.doc = doc;
+					self.readOnly = false,
+					self.updatePath();
 
-                    self.owner = undefined;
-                    self.doc = 'about';
-                    self.readOnly = false,
-                    self.updatePath();
-
-                    if (!$about.html().trim().length) {
-                        $container.prepend($big_preloader);            
-                        $.get('/about/' + LANG + '.html', function(data){
-                            $about.html(data);
-                            $big_preloader.remove();
-                            $about.show();
-                        });
-                    } else {
-                        $about.show();
-                    }
+					if (!self._staticPages[doc]) {
+						$container.prepend($big_preloader);            
+						$.get('/' + doc + '/' + LANG + '.html', function(data){
+							self._staticPages[doc] = data;
+							$static_page.html(data);
+							$big_preloader.remove();
+							$static_page.show();
+						});
+					} else {
+						$static_page.html(self._staticPages[doc]);
+						$static_page.show();
+					}	
                     break;
     
                 default: //empty or equals GUID
@@ -654,7 +658,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     //UI
     var $nav, $update, $lang_select, 
         $container, $big_preloader,
-        $app, $welcome, $about, 
+        $app, $welcome, $static_page, 
         $ztree, $abTree, 
         $splitter, 
         $document, $selectedDoc, $abDoc;
@@ -671,7 +675,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
         $app = $('#app'); //app (contains tree, splitter and document)
         $welcome = $('#welcome'); 
-        $about = $('#about');
+        $static_page = $('#static-page'); // about, user agreement, version
 
         $ztree = $('#ztree'); //tree
         $abTree = $('#abTree'); 
@@ -793,7 +797,24 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             e.preventDefault();
             ROUTER.open('about');
         });
+        
+        // About click
+        $('body').on('click', 'a.link-about', function (e) {
+            e.preventDefault();
+            ROUTER.open('about');
+        });
+        
+        // About click
+        $('body').on('click', 'a.link-current-version', function (e) {
+            e.preventDefault();
+            ROUTER.open('current_version');
+        });
 
+        // About click
+        $('body').on('click', 'a.link-user-agreement', function (e) {
+            e.preventDefault();
+            ROUTER.open('user_agreement');
+        });
         
         //--------- Columns resizing ----------
         /* Three possible modes:
@@ -884,7 +905,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             
             // app-container's height
             $app.outerHeight(window.innerHeight - 1 - navHeight);
-            $about.outerHeight(window.innerHeight - 1 - navHeight);
+            $static_page.outerHeight(window.innerHeight - 1 - navHeight);
         });
         
         // Init columns
@@ -896,7 +917,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         
         $app.outerHeight(window.innerHeight - 1 - navHeight);
         $app.css('top', $nav.outerHeight() + 'px');
-        $about.outerHeight(window.innerHeight - 1 - navHeight);
+        $static_page.outerHeight(window.innerHeight - 1 - navHeight);
             
         TREE_WIDTH = parseFloat(localStorage.getItem('ab-doc.columns.treeWidth'));
         if (isNaN(TREE_WIDTH)) {

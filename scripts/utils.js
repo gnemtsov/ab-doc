@@ -6,7 +6,7 @@ var abUtils = {
 	// One sentence - no dots, two sentences - two dots!
 	translatorData: {
 		"about": {
-			"ru": "О программе",
+			"ru": "О проекте",
 			"en": "About"
 		},
 		"account": {
@@ -88,6 +88,10 @@ var abUtils = {
 		"couldNotSave": {
 			"ru": "Не удалось сохранить изменения. Скопируйте содержимое документа в буфер обмена и попробуйте перезагрузить страницу.",
 			"en": "Couldn't save changes. Copy document content to clipboard and try reloading the whole page."
+		},
+		"currentVersion": {
+			"ru": "Текущая версия",
+			"en": "Current version"
 		},
 		"deleteQuestion1": {
 			"ru": "Документ",
@@ -228,6 +232,10 @@ var abUtils = {
 		"typeYourText": {
 			"ru": "Напишите что-нибудь удивительное...",
 			"en": "Compose something awesome..."
+		},
+		"userAgreement": {
+			"ru": "Пользовательское соглашения",
+			"en": "User agreement"
 		},
 		"username": {
 			"ru": "Имя пользователя",

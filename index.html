@@ -48,8 +48,16 @@
 							<a class="dropdown-item link-sign-out authenticated-mode hidden" data-translate="exit" href="#"></a>
 						</div>
 					</li>
-					<li id="navbar-about" class="nav-item">
+					<!--li id="navbar-about" class="nav-item">
 						<a class="navbar-text link-about" data-translate="about" href="#"></a>
+					</li-->
+					<li class="nav-item dropdown">
+						<a class="nav-link navbar-text dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">AB-DOC</a>
+						<div class="dropdown-menu">
+							<a class="dropdown-item link-about" data-translate="about" href="#"></a>
+							<a class="dropdown-item link-current-version" data-translate="currentVersion" href="#"></a>
+							<a class="dropdown-item link-user-agreement" data-translate="userAgreement" href="#"></a>
+						</div>
 					</li>
 					<li class="nav-item">
 						<select class="form-control" id="selectLang" size="1">
@@ -73,7 +81,7 @@
 				</div>
 			</div>			
 
-			<div id="about" class="container"></div>
+			<div id="static-page" class="container"></div>
 			 
 			<div id="app" class="row">
 				<div id="ztree" class="ab-opened">
