@@ -435,7 +435,11 @@
 								}
 							});
 							upload.send(function(err, data) {
-								if(err) { abUtils.onError(err); } 
+								if(err) {
+									if (err.name !== 'RequestAbortedError') {
+										abUtils.onError(err);
+									}
+								} 
 								else {
 									var params = {
 										Bucket: data.Bucket, 
@@ -496,7 +500,7 @@
 
 				$file.addClass('.freeze');
 				self.files[file_index].upload.abort();
-				
+					
 				$file.fadeOut(800, function() {
 					self.files.splice(file_index, 1);
 					self.updateFilesList();
