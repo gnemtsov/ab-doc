@@ -75,6 +75,16 @@ span.about-block-border{
     width: 100%;
 }
 
+#static-page {
+	overflow: hidden;
+	overflow-y: auto;
+}
+
+/* user agreement list */
+.user-agreement ol { counter-reset: item; }
+.user-agreement li { display: block; }
+.user-agreement li:before { content: counters(item, ".") ". "; counter-increment: item; }
+.user-agreement h5 { display: inline-block; margin-top: 1rem;}
 
 /*---------------------------------------------------------*/
 /*-------------------------navbar--------------------------*/
