@@ -310,6 +310,7 @@ ul.ztree.zTreeDragUL {
     border: 2px black dotted;
     padding-left: 6px;
     padding-right: 8px;
+    z-index: 1100;
 }
 ul.tmpTargetzTree {
     background-color: inherit;
