@@ -78,6 +78,18 @@ span.about-block-border{
 #static-page {
 	overflow: hidden;
 	overflow-y: auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 992px){
+    #static-page {
+        padding: 0 10rem;
+    }
+}
+@media (max-width: 992px){
+    #top-header {
+        font-size: 3rem;
+    }
 }
 
 /* user agreement list */
