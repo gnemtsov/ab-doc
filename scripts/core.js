@@ -569,6 +569,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                             if(docNODE === undefined){
                                 abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
                                 $big_preloader.remove();
+                                setTimeout(function() {
+									location.href = "/";
+								}, 1500);
                             } else {
                                 abTree.selectNode(docNODE);
                                 $selectedDoc[0].innerHTML = docNODE.name;
@@ -613,6 +616,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     };
 
     window.onpopstate = function(event) { //revert ROUTER state when back|forward click
+		console.log('onpopstate', event);
 		if (event.state) { // sometimes event.state is null
 			ROUTER.setOwner(event.state.owner)
 				  .open(event.state.doc);
