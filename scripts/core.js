@@ -138,6 +138,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		}
 	}
 	
+	// Workaround for Safari (Safari doesn't have EventTarget)
+	var EventTarget = EventTarget || Element;
+	
 	// overriding standart addEventListener so that every registered event
     // would go to abGlobalListener too.
 	var oldAddEventListener = EventTarget.prototype.addEventListener;
