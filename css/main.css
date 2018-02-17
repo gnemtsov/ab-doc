@@ -650,12 +650,17 @@ padding-left: 6px;
 .small-device #dropzone{
     float: none;
     width: inherit;
+    min-height: auto;
     margin-top: 1rem;
     margin-left: 0;
     margin-bottom: 2rem;
 }
 
 .touch-device #dropzone-message{
+	display: none;
+}
+
+.small-device #dropzone-message{
 	display: none;
 }
 
