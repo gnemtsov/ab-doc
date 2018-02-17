@@ -1,5 +1,4 @@
 "use strict";
-console.log('start of tree.js');
 
 /******************************************************************/
 /******************************Tree********************************/
@@ -7,7 +6,6 @@ console.log('start of tree.js');
 //TOTHINK first click only selects node, second click opens|closes folder
 
 (function (g, $) {
-	console.log('tree.js init');
 	//----------- abTree object--------------//
 	var	$abTree /*tree UL*/;
 
@@ -507,5 +505,3 @@ console.log('start of tree.js');
 	$.fn.abTree = abTree;
 	
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later
-
-console.log('end of tree.js');

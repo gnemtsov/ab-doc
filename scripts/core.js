@@ -1,5 +1,4 @@
 "use strict";
-console.log('start of core.js');
 
 /******************************************************************/
 /*******************************Core*******************************/
@@ -41,7 +40,6 @@ var isSmallDevice = window.innerWidth < 600;
 var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
 (function (g, $) {
-	console.log('core.js init');
 	// Attaches touch-events listeners on element
 	// and converts them to mouse-events
 	// 
@@ -109,15 +107,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			event.preventDefault();
 		});
 	}
-	console.log('core.js init (1)');
 	
 	// GLOBAL LISTENER
 	
 	var abGlobalListener = function () {
 		return new abGlobalListener.init();
 	}
-	
-	console.log('core.js init (2)');
 	
 	abGlobalListener.prototype = {
 		_listeners: {},
@@ -143,11 +138,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		}
 	}
 	
-	console.log('core.js init (3)');
-	
-	// Workaround for Safari (Safari doesn't have EventTarget)
-	var EventTarget = EventTarget || Element;
-	
 	// overriding standart addEventListener so that every registered event
     // would go to abGlobalListener too.
 	var oldAddEventListener = EventTarget.prototype.addEventListener;
@@ -155,8 +145,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		var type = arguments[0];
 		// If we need to listen to this event globally,
 		// we modify listener
-		if ( abGlobalListener.__proto__._registeredEventTypes && abGlobalListener.__proto__._registeredEventTypes.indexOf(type) > -1 ) {
-			//console.log('Adding listener', arguments);
+		if ( abGlobalListener.__proto__._registeredEventTypes.indexOf(type) > -1 ) {
+			console.log('Adding listener', arguments);
 			var listener = arguments[1],
 				newListener = function(event) {
 					// send event to global listeners
@@ -177,20 +167,14 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				};
 			arguments[1] = newListener;
 		} else {
-			//console.log('Ignoring listener', arguments);
+			console.log('Ignoring listener', arguments);
 		}
 		// Now do what addEventListener was supposed to do
 		oldAddEventListener.apply(this, arguments);
 	}
 	
-	console.log('core.js init (4)');
-	
 	//** constructor **/
-	abGlobalListener.init = function() {
-		console.log('abGlobalListener.init');
-	}
-	
-	console.log('core.js init (5)');
+	abGlobalListener.init = function() {}
 
 	// trick borrowed from jQuery so we don't have to use the 'new' keyword
 	abGlobalListener.init.prototype = abGlobalListener.prototype;
@@ -198,8 +182,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 	$.fn.abGlobalListener = abGlobalListener;
 	
 	abGlobalListener().setRegisteredEventTypes(['touchstart', 'touchmove']);
-
-	console.log('core.js init (6)');
 
     //TIMERS object
     //tracks all timers and prevents memory leaks
@@ -209,7 +191,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
     g.TIMERS = {
         on: true,    //timers are ON when true
         set: function(callback, interval, name){
-			console.log('TIMERS.set', interval, name);
             if(['on', 'set', 'execute', 'destroy', 'Timer'].indexOf(name) !== -1){
                 throw new Error('Invalid timer name: ' + name); 
             }
@@ -227,14 +208,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             }
         },
         Timer: function(callback, interval){ //timer constructor
-			console.log('TIMERS.Timer', interval);
             this.id = setInterval(callback, interval);
             this.execute = callback;
             this.destroy = function(){ clearInterval(this.id); };
         }
     };
-
-	console.log('core.js init (7)');
 
     //ACTIVITY object
     //stores activities states and updates indicator in navbar.
@@ -246,7 +224,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         lines: {}, //each activity has own line of pending and saving events
 
         push: function (activity, state){
-			console.log('ACTIVITY.push', activity, state);
             var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 this.lines[activity].push(state);
@@ -258,7 +235,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
         get: function(activity){
-			console.log('ACTIVITY.get', activity);
             var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 var length = this.lines[activity].length;
@@ -269,7 +245,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
         flush: function(activity){
-			console.log('ACTIVITY.flush', activity);
             var self = this;
             if(this.lines.hasOwnProperty(activity)){
                 var index = this.lines[activity].indexOf('saving');
@@ -282,7 +257,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
         drop: function(activity){
-			console.log('ACTIVITY.drop', activity);
             var self = this;
             if (this.lines.hasOwnProperty(activity)){
                 delete this.lines[activity];
@@ -292,7 +266,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
         refresh: function(){
-			console.log('ACTIVITY.refresh');
             var keys = Object.keys(this.lines),
                 pending = false,
                 saving = false;
@@ -306,8 +279,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             saving ? $update.addClass('saving') : $update.removeClass('saving');						
         }
     }
-    
-    console.log('core.js init (8)');
 
     //INDICATOR object
     //stores and updates used space
@@ -325,7 +296,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
 		// GUI-only
 		updateIndicator: function() {
-			console.log('INDICATOR.updateIndicator');
 			var size = 32,
 				bucket_capacity = this.maxUsedSpace,
 				space_occupied = this.userUsedSpace + this.userUsedSpaceDelta + this.userUsedSpacePending;
@@ -371,7 +341,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		},
 
 		updateUsedSpace: function(ownerid) {
-			console.log('INDICATOR.updateUsedSpace', ownerid);
 			// update variables, do nothing on error
 			var self = this;
 			g.abUtils.listS3Files(ownerid + '/').then( 
@@ -389,7 +358,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		},
 
 		canUpload: function(size) {
-			console.log('INDICATOR.canUpload', size);
 			return this.userUsedSpace
 				+ this.userUsedSpaceDelta
 				+ this.userUsedSpacePending
@@ -397,7 +365,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		},
 
 		updateUsedSpaceDelta: function(d) {
-			console.log('INDICATOR.updateUsedSpaceDelta', d);
 			if ((typeof(d) !== 'number') || isNaN(d)) {
 				console.log('updateUsedSpaceDelta wrong d:', d);
 				return;
@@ -408,7 +375,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		},
 
 		updateUsedSpacePending: function(p) {
-			console.log('INDICATOR.updateUsedSpacePending', p);
 			if ((typeof(p) !== 'number') || isNaN(p)) {
 				console.log('updateUsedSpacePending wrong p:', p);
 				return;
@@ -419,7 +385,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		}
 	};
 
-	console.log('core.js init (9)');
 
     //ROUTER object constructor
     //stores current owner and opens routes
@@ -434,7 +399,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         readOnly: false,
 
         setOwner: function(owner){
-			console.log('ROUTER.setOwner', owner);
             //set owner
             if(owner === undefined || owner === ''){
                 if (abAuth.isAuthorized()) {
@@ -470,7 +434,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
         
         open: function(doc){
-			console.log('ROUTER.open', doc);
             var self = this;
             console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
 
@@ -633,7 +596,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
         updatePath: function(){
-			console.log('ROUTER.updatePath', doc);
             var self = this,
                 parts = [];
             if(self.owner !== undefined){
@@ -650,8 +612,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
     };
 
-	console.log('core.js init (9)');
-
     window.onpopstate = function(event) { //revert ROUTER state when back|forward click
 		if (event.state) { // sometimes event.state is null
 			ROUTER.setOwner(event.state.owner)
@@ -659,8 +619,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		}
     };
       
-    console.log('core.js init (10)');
-    
     //onbeforeunload
     window.onbeforeunload = function (e) {
         if ($update.hasClass('pending') || $update.hasClass('saving')) {
@@ -674,8 +632,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         }
     }
 
-	console.log('core.js init (11)');
-
     //yoloPromise
     window.yoloPromise = new Promise(function(resolve, reject){
         window.onGoogleYoloLoad = function(googleyolo) {
@@ -683,8 +639,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             resolve(1);
         };                        
     });
-
-	console.log('core.js init (12)');
 
     //---------core globals--------
 
@@ -704,8 +658,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         $ztree, $abTree, 
         $splitter, 
         $document, $selectedDoc, $abDoc;
-
-	console.log('core.js init (13)');
 
     //------Document ready!------//
     $(document).ready( function() {
@@ -1134,4 +1086,3 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
     });
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later
-console.log('end of core.js');

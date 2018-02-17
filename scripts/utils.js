@@ -1,5 +1,4 @@
 "use strict";
-console.log('start of utils.js');
 
 var abUtils = {
 	// Data for translation
@@ -304,7 +303,6 @@ var abUtils = {
 
 	// Loads list of files with spicified prefix and returns Promise(files, error)
 	listS3Files: function(prefix) {
-		console.log('listS3Files', prefix);
 		var files = [];
 		var params = {
 			Bucket: STORAGE_BUCKET,
@@ -344,7 +342,6 @@ var abUtils = {
 
 
 	GetContentDisposition: function (str) {
-		console.log('GetContentDisposition', str);
 		return "attachment; filename*=UTF-8''" +
 			encodeURIComponent(str).
 			// Замечание: хотя RFC3986 резервирует "!", RFC5987 это не делает, так что нам не нужно избегать этого
@@ -355,7 +352,6 @@ var abUtils = {
 	},
 
 	GetGUID: function() {
-		console.log('GetGUID');
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
 			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 			return v.toString(16);
@@ -363,7 +359,6 @@ var abUtils = {
 	},
 
 	GetSize: function(bytes) {
-		console.log('GetSize', bytes);
 		if (bytes < 1024) { return bytes + ' b'; }
 		else if (bytes < 1048576) { return (bytes / 1024).toFixed(1) + ' Kb'; }
 		else if (bytes < 1073741824) { return (bytes / 1048576).toFixed(1) + ' Mb'; }
@@ -374,14 +369,12 @@ var abUtils = {
 	//encoding functions source:
 	//https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
 	fixedEncodeURIComponent: function(str) {
-		console.log('fixedEncodeURIComponent', str);
 		return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
 		  return '%' + c.charCodeAt(0).toString(16);
 		});
 	},
 
 	encodeRFC5987ValueChars: function(str) {
-		console.log('encodeRFC5987ValueChars', str);
 		return encodeURIComponent(str).
 			// Замечание: хотя RFC3986 резервирует "!", RFC5987 это не делает, так что нам не нужно избегать этого
 			replace(/['()]/g, escape). // i.e., %27 %28 %29
@@ -395,7 +388,6 @@ var abUtils = {
 	// It returns type if it knows specified ext
 	// And returns undefined otherwise
 	mimeTypeByExtension: function(ext) {
-		console.log('mimeTypeByExtension', ext);
 		// Extenstion to MIME type
 		var em = {
 			"adp": "audio/adpcm",
@@ -512,7 +504,6 @@ var abUtils = {
 
 
 	mimeTypeToIconURL: function(type) {
-		console.log('mimeTypeToIconURL', type);
 		if (typeof type === 'string') {
 			if (type.match('image.*')) {
 				return '/img/icons/photo.svg';
@@ -528,7 +519,6 @@ var abUtils = {
 	},
 
 	capitalizeFirstLetter: function(string) {
-		console.log('capitalizeFirstLetter', string);
 		return string.charAt(0).toUpperCase() + string.slice(1);
 	},
 
@@ -585,5 +575,3 @@ var abUtils = {
 
 /* Handy cookie wrapper from here https://github.com/madmurphy/cookies.js (GPL3) */
 var docCookies={getItem:function(e){return e?decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=\\s*([^;]*).*$)|^.*$"),"$1"))||null:null},setItem:function(e,o,n,t,r,c){if(!e||/^(?:expires|max\-age|path|domain|secure)$/i.test(e))return!1;var s="";if(n)switch(n.constructor){case Number:s=n===1/0?"; expires=Fri, 31 Dec 9999 23:59:59 GMT":"; max-age="+n;break;case String:s="; expires="+n;break;case Date:s="; expires="+n.toUTCString()}return document.cookie=encodeURIComponent(e)+"="+encodeURIComponent(o)+s+(r?"; domain="+r:"")+(t?"; path="+t:"")+(c?"; secure":""),!0},removeItem:function(e,o,n){return this.hasItem(e)?(document.cookie=encodeURIComponent(e)+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT"+(n?"; domain="+n:"")+(o?"; path="+o:""),!0):!1},hasItem:function(e){return!e||/^(?:expires|max\-age|path|domain|secure)$/i.test(e)?!1:new RegExp("(?:^|;\\s*)"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=").test(document.cookie)},keys:function(){for(var e=document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g,"").split(/\s*(?:\=[^;]*)?;\s*/),o=e.length,n=0;o>n;n++)e[n]=decodeURIComponent(e[n]);return e}};"undefined"!=typeof module&&"undefined"!=typeof module.exports&&(module.exports=docCookies);
-
-console.log('end of utils.js');

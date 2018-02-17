@@ -1,11 +1,10 @@
 "use strict";
-console.log('start of doc.js');
 
 /******************************************************************/
 /*********************Document and attachments*********************/
 /******************************************************************/
 (function (g, $, Quill) {
-	console.log('doc.js init');
+
 	var	$abDoc /*doc container*/, $editor, $drop_zone, $clip_icon, $clip_input, $files_wrap, $files_message;
 
 	// function creates object (calls abDoc.init is constructor)
@@ -876,4 +875,3 @@ console.log('start of doc.js');
 
 	
 }(window, jQuery, Quill));  //pass external dependencies just for convenience, in case their names change outside later
-console.log('end of doc.js');

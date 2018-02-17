@@ -1,5 +1,4 @@
 "use strict";
-console.log('start of auth.js');
 
 /******************************************************************/
 /***************************Authorization**************************/
@@ -11,7 +10,7 @@ console.log('start of auth.js');
 //TODO store account confirmation pending status in local storage + ExpiredCodeException
 
 (function (g, $) {
-	console.log('auth.js init');
+
     var $username;
     var $modal, $mtitle, $mbody, $mfooter;
     var $alert_container, $alert;
@@ -22,7 +21,6 @@ console.log('start of auth.js');
     //userData object
     //responsible for holding user data and syncing with identity pool dataset
     var userData = function(tmpUsername, tmpEmail) {
-		console.log('userData', tmpUsername, tmpEmail);
         var self = this;
 
         self.get = function(key){
@@ -108,7 +106,6 @@ console.log('start of auth.js');
 
 	// function creates object (calls abAuth.init - constructor)
 	var abAuth = function () {
-		console.log('abAuth');
 		return new abAuth.init();
 	};
 
@@ -118,7 +115,6 @@ console.log('start of auth.js');
         //-----core functions-----
         //returns current auth status: true or false
         isAuthorized: function(){
-			console.log('abAuth.isAuthorized');
             var self = this;
             switch(self.userType){
                 case 'cognito':
@@ -142,7 +138,6 @@ console.log('start of auth.js');
         //updates AWS.credentials
         //sets identity in federated identity pool
         loggedIn: function(providerName, idToken) {
-			console.log('abAuth.loggedIn');
             console.log('Auth.js: loggedIn called');
             var self = this;
 
@@ -217,7 +212,6 @@ console.log('start of auth.js');
 
         //signUp new user in cognito user pool, returns promise
         signUp: function(username, email, password) {
-			console.log('abAuth.signUp');
             var self = this;
             return new Promise (function(resolve, reject){
                 var attributeList = [];
@@ -244,11 +238,10 @@ console.log('start of auth.js');
         //signIn user in cognito user pool, returns promise
         //username can be undefined, that means sign in current cognitoUser
         signIn: function(username, password) {
-			console.log('abAuth.signIn');
             console.log("Auth.js: signIn called");
             var self = this;
             return new Promise (function(resolve, reject){
-                console.log('auth.js promise 1');
+                
                 if(username === undefined){
                     username = self.cognitoUser.getUsername();
                 } else {
@@ -268,20 +261,17 @@ console.log('start of auth.js');
                     onSuccess: function (session) {
                         self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
                             .then(
-                                function(){
-									console.log('auth.js promise 1 resolve');
+                                function(){ 
                                     self.userType = 'cognito';
                                     self.updateNavUsername();
                                     resolve(); 
                                 },
                                 function(error){ 
-									console.log('auth.js promise 1 reject 1');
                                     reject(error); 
                                 }
                             );
                     },
                     onFailure: function(error) {
-						console.log('auth.js promise 1 reject 2');
                         reject(error);
                     }
                 });
@@ -290,7 +280,6 @@ console.log('start of auth.js');
 
         //confirm user registration in cognito user pool
         confirmRegistration: function(code) {
-			console.log('abAuth.confirmRegistration');
             var self = this;
             return new Promise (function(resolve, reject){
                 self.cognitoUser.confirmRegistration(code, true, function(error, result) {
@@ -302,7 +291,6 @@ console.log('start of auth.js');
 
         //start forgot password flow (cognito user pool)
         forgotPassword: function(username) {
-			console.log('abAuth.forgotPassword');
             var self = this;
             return new Promise (function(resolve, reject){
                 self.cognitoUser = new CISP.CognitoUser({
@@ -319,7 +307,6 @@ console.log('start of auth.js');
 
         //reset forgotten password (cognito user pool)
         resetPassword: function(verificationCode, newPassword) {
-			console.log('abAuth.resetPassword');
             var self = this;
             return new Promise (function(resolve, reject){
                 self.cognitoUser.confirmPassword(
@@ -345,7 +332,6 @@ console.log('start of auth.js');
 
         //sign out user & reload page
         signOut: function() {
-			console.log('abAuth.signOut');
             var self = this;
 
             new Promise(function(resolve, reject) {
@@ -383,7 +369,6 @@ console.log('start of auth.js');
 
         //-----events handlers-----
         signUpHandler: function(e){
-			console.log('abAuth.signUpHandler');
             var self = this;
 
             e.preventDefault();
@@ -429,7 +414,6 @@ console.log('start of auth.js');
         },
                 
         confirmHandler: function(e){
-			console.log('abAuth.confirmHandler');
             var self = this;
 
             e.preventDefault();
@@ -456,7 +440,6 @@ console.log('start of auth.js');
         },
 
         signInHandler: function(e){
-			console.log('abAuth.signInHandler');
             var self = this;
 
             e.preventDefault();
@@ -484,7 +467,6 @@ console.log('start of auth.js');
         },
 
         forgotPasswordLinkHandler: function(e){
-			console.log('abAuth.forgotPasswordLinkHandler');
             var self = this;
 
             e.preventDefault();
@@ -511,7 +493,6 @@ console.log('start of auth.js');
         },
 
         resetPasswordHandler: function(e){
-			console.log('abAuth.resetPasswordHandler');
             var self = this;
 
             e.preventDefault();
@@ -552,7 +533,6 @@ console.log('start of auth.js');
 
         //-----UI functions-----
         updateNavUsername: function(){
-			console.log('abAuth.updateNavUsername');
             var self = this;
             if(self.isAuthorized()){
                 $('.authenticated-mode').removeClass('hidden');
@@ -571,7 +551,6 @@ console.log('start of auth.js');
         },
 
         showAlert: function(code, alert_class){
-			console.log('abAuth.showAlert');
             var self = this;
             if(alert_class === undefined){
                 alert_class = 'alert-danger';
@@ -587,7 +566,6 @@ console.log('start of auth.js');
         },
 
         showGoogleHintsOrSignIn: function(forceSignIn){
-			console.log('abAuth.showGoogleHintsOrSignIn');
             var self = this;
 
             if(g.googleyolo === undefined){
@@ -634,7 +612,6 @@ console.log('start of auth.js');
         },
 
         getInputHTML: function(type, params){
-			console.log('abAuth.getInputHTML', type, params);
             params = $.extend({
                     type: '',
                     id: '',
@@ -657,7 +634,6 @@ console.log('start of auth.js');
         },
 
         initModal: function(){
-			console.log('abAuth.initModal');
             var self = this;
 
             $modal = $(
@@ -716,7 +692,6 @@ console.log('start of auth.js');
         },
 
         showModal: function(type){
-			console.log('abAuth.showModal');
             var self = this;
 
             if($modal === undefined){
@@ -833,12 +808,10 @@ console.log('start of auth.js');
 
 	//** constructor **/
 	abAuth.init = function() {
-		console.log('abAuth.init');
         var self = this;
 
         //main auth promise
         self.promise = new Promise(function(resolve, reject){
-			console.log('auth.js promise 2');
             $username = $('#username');
 
             self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
@@ -861,7 +834,6 @@ console.log('start of auth.js');
             //tries to get user object from local storage
             var cognitoUser = self.userPool.getCurrentUser();
             if (cognitoUser === null) {
-				console.log('auth.js promise 2 resolve 1');
                 console.log('Auth.js: Current cognitoUser is null!');
                 resolve(0);
             } else {
@@ -877,15 +849,12 @@ console.log('start of auth.js');
                         console.log('Auth.js: Already authorized by cognito! Signing in...');
                         self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
                             .then(function(){ 
-								console.log('auth.js promise 2 resolve 2');
                                 resolve(1); 
                             })
                             .catch(function(error){ 
-								console.log('auth.js promise 2 reject 1');
                                 reject(error); 
                             });
                     } else {
-						console.log('auth.js promise 2 resolve 3');
                         resolve(0);
                     }
                 });                
@@ -894,10 +863,10 @@ console.log('start of auth.js');
         }).then(function(authorized){
 
            return new Promise(function(resolve, reject){
-				console.log('auth.js promise 3');
+
                 if(authorized){ //already authorized by cognito
-					console.log('auth.js promise 3 resolve 1');
-                    self.updateNavUsername();
+
+                   self.updateNavUsername();
                     resolve();
 
                 } else { //try to authorize using Google sign in service
@@ -905,7 +874,6 @@ console.log('start of auth.js');
                     self.googleClientId = "1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com";
 
                     var authPromise = new Promise(function(resolve, reject){
-						console.log('auth.js promise 4');
                         gapi.load(
                             'auth2', 
                             {
@@ -915,26 +883,22 @@ console.log('start of auth.js');
                                         scope: 'profile email'
                                     }).then(
                                         function(){
-											console.log('auth.js promise 4 resolve 1');
                                             console.log('Auth.js: self.googleAuth ready.');
                                             self.googleAuth = gapi.auth2.getAuthInstance();
                                             resolve();
                                         },
                                         function(error){
-											console.log('auth.js promise 4 reject 1');
                                             console.log('Auth.js: self.googleAuth init failed!', error);
                                             reject();
                                         }
                                     );
                                 },
                                 onerror: function() {
-									console.log('auth.js promise 4 reject 2');
                                     console.log('Auth.js: gapi.auth2 failed to load!');
                                     reject();
                                 },
                                 timeout: 5000, // 5 seconds.
                                 ontimeout: function() {
-									console.log('auth.js promise 4 reject 3');
                                     console.log('Auth.js: gapi.auth2 failed could not load in a timely manner!');
                                     reject();
                                 }
@@ -1024,4 +988,3 @@ console.log('start of auth.js');
 	$.fn.abAuth = abAuth;
 
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later
-console.log('end of auth.js');
