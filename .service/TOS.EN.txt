@@ -1,0 +1,92 @@
+1. Subject of the Agreement
+1.1. The Limited Liability Company "INNOVATION" (Administration) provides user of the information and telecommunications network Internet (User) ability to use the Service under the terms and conditions defined in this User Agreement (the Agreement). Only individuals who have reached the age of 14 may use the service.
+1.2. The possibility of using the Service is provided by the Administration to User free of charge.
+
+2. General Provisions
+2.1. The agreement is a public offer in accordance with article 437 of the Civil code of the Russian Federation. Use of the Service, including each access to the pages of the Site by any means, means full and unconditional acceptance of the Agreement by the User.
+2.2. The agreement regulates the rights and obligations of Users and the Administration, as well as relations with third parties whose rights and interests may be affected as a result of User actions.
+2.3. The current version of the Agreement is available online at https://ab-doc.com/user_agreement. This Agreement may be amended by the Administration without special notice by publishing a new version hereof at the above URL. The new version hereof shall come into force upon its online publishing unless otherwise set forth by such a new version hereof.
+2.4. Any User, who does not agree with the terms of the current version of the Agreement in full or in part, is obliged to stop any use of the Service.
+2.5. Violation of the terms of the Agreement by the User may result in termination of access to the Account or removal of the account of such User, as well as the complete or partial removal of Content or restriction of access to it without prior notice.
+
+3. Terms
+Authorization - the process of analysis of Authentication Details entered by The user by the software part of the Service, as a result of which the user is granted access to the Account.
+Account — a User account that contains the Authentication Details and other data provided by the User while using the Service.
+Authentication Details - unique means of user identification (login and password) used for Authorization.
+Document Tree - the structure of the User's documents, their content, attached files.
+Content — User information within the Service, including information specified during the process of Registration, information placed in the Document Tree.
+Registration — User's actions to create an Account according to the procedure established by the Administration. During the Registration process, the User must specify the Authentication Details.
+Website — a website in the information and telecommunications network Internet identified by its domain name ab-doc.com.
+Service - service AB-DOC which allows User to maintain the Document Tree, place records, attach files and use other functionality offered by the Administration.
+
+4. Account Registration
+4.1. A number of functions of the Service, including Document Tree maintenance, will be available to the User after Registration.
+4.2. For Registration, the User provides the information in accordance with the registration form. If the Administration has reason to believe that the information provided by the User is not reliable and up-to-date, the Administration has the right at its discretion to terminate access to the User's Account or delete the Account.
+4.3. After filling in the Registration form, the User must confirm the Registration by activating it according to the instructions sent by the Administration to the e-mail address specified by the User during Registration (Registration address).
+4.4. The administration has the right at its discretion to prohibit the use of certain logins, as well as to establish requirements for login and password (number of characters, valid characters, etc.). In case of detection of the use of words (letter combinations) as logins, which can be regarded as affecting the rights and legitimate interests of the Administration and/or third parties, the Administration has the right at its discretion to delete The User's Account or restrict access to it.
+4.5. The User is responsible for the security (guessing attacks resistance) of selected Authentication Details, and their confidentiality.
+4.6. The User is responsible for all actions performed using the Authentication Details of the User. All actions performed after Authorization using the User's Authentication Details shall be deemed to be performed by the User himself/herself, except for the cases when the User has previously notified the Administration about the possibility of unauthorized access and/or any violation (suspicion of violation) of the confidentiality of his/her Authentication Details in the manner provided for by the Agreement.
+4.7. The User is responsible for possible loss or distortion of data, as well as other consequences of any nature that may occur due to the User's violation of the provisions of the Agreement.
+4.8. The User can also access additional functions of the Service, using his/her Google account (Third Party's Account) for Authorization. The functionality available through a Third Party's Account may be limited in comparison to the functionality of the Account.
+
+5. User Details
+5.1. Technical data transmitted to the Service by the User's software, as well as other data transmitted by the User to the Service, will be available to the Administration and can be used at its own discretion legally.
+5.2. The User's Document Tree information will be available to other Users. The User may at any time delete and/or correct the contents of the Document Tree using the application interface.
+5.3. The Administration draws attention to the fact that the use of the Service, including Registration, does not require the provision of information on the basis of which it is possible to directly or indirectly identify a particular individual, in connection with which the relationship associated with the Service, Registration and information provided in the Registration process, are not regulated by the provisions of the Federal law of the Russian Federation № 152-ФЗ.
+
+6. Account Termination
+6.1. Termination Of The User's Account
+6.1.1. The User has the right to send a request to delete the Account to the e-mail address support@erp-lab.com. The request must be sent from the e-mail address specified during Account registration. The request will be processed within a week.
+6.1.2. After processing the request, the account deletion function will be activated. As a result, access to the Account and all Content will be blocked for all for a period of 1 year.
+6.1.3. After 1 year, all data of the User, and all Content posted using the Account will be deleted, and the login Account will be available to other Users. From that moment on, it is impossible to restore the Account, as well as any information related to it.
+6.2. The Administration draws the User's attention that in accordance with part 3 of Art. 10.1 of the Federal Act of the Russian Federation № 149-ФЗ the Administration is obliged, regardless of the will of the User to store and provide on legitimate requests of authorities:
+6.2.1. any information related to receipt, transfer, delivery and/or processing of voice information, written texts, images, sounds, video and other electronic messages of Users and information on Users who performed the above actions, within one year upon performing such actions.
+
+7. Document Tree
+7.1. The User has the right to manage his/her Document Tree, add documents and files to his/her Tree.
+7.2. Using the functionality of the Service, the User, subject to the requirements of the Agreement and applicable law, defines the Content.
+7.3. The user who created the document Tree is responsible for the Document Tree and the Content contained therein.
+
+8. Content
+8.1. By posting Content, User:
+8.1.1. Guarantees the Administration that the Content and terms of it's appearance on the Service meets all the requirements of applicable law, the User has received all the necessary rights and permissions to post the Content;
+8.1.2. With regard to the Content that results from intellectual activity, provides the Administration with a non-exclusive (simple) license to use the Content for the purposes of providing the Service by reproducing the Content, as well as bringing the Content to the public attention, for the entire period of posting the Content on the service.
+8.1.3. Undertakes to mark Content that is not permissible under the legislation of the Russian Federation for distribution among children (0-18 years) as "adult material".
+8.2. User is prohibited from:
+8.2.1. to register as a User a legal entity;
+8.2.2. to register as a User on behalf of another person;
+8.2.3. to mislead Users as to his/her identity and relationships with other individuals;
+8.2.4. to perform any actions aimed at disrupting the normal functioning of the Service;
+8.2.5. use automatic scripts (bots, crawlers, etc.) without special permission of the Administration to collect information from the Service and/or interact with the Service;
+8.2.6. place advertising and/or political agitation, unless otherwise specifically established by a separate agreement between the User and the Administration;
+8.2.7. perform other actions that violate the laws of the Russian Federation and/or other applicable laws, including the law of the user's place of residence.
+8.3. All claims related to the Content shall be submitted via e-mail support@erp-lab.com.
+
+9. Rights and Obligations of the Administration
+9.1. The Administration shall endeavour to ensure providing of the Service and its prompt restoration in the event of technical failures and outages.
+9.2. The Administration shall not verify the correctness of the information provided by User during the Registration; however, in some circumstances it reserves the right to request User to confirm such an information. Failure to confirm the information may be considered as provision of incorrect information and have the consequences specified in clause 4.2 hereof.
+9.3. The Administration shall not verify the compliance of Content and/or Users’ actions with the terms and conditions hereof and with the applicable laws; however, it reserves the right at its own discretion or upon the request received from the competent authority and/or the substantiated request by another entity without User’s prior notice take measures specified in clause 2.5 hereof.
+9.4. In case of request of from a competent authority, the Administration may be obliged to provide the information about User or related to User.
+9.5. The Administration has the right to restrict the User's access to any of the functions of the Service, as well as to limit or prohibit the use of APIs, placing links to third-party resources, and take other actions aimed at protecting the Service from the impact of factors that pose a real or potential threat to Users, the normal operation of the Service and the policy of the Administration. The administration shall implement these measures at its sole discretion and shall not be liable for any negative consequences of such measures for the User or third parties.
+9.6. The Administration has the right, at it's discretion and without prior notice to the User, to supplement, reduce or otherwise change the functionality of the Service and the procedure for its provision.
+
+10. Liability
+10.1. The User is responsible for violation of the terms of the Agreement, including the requirements for Registration and placement of Content, as well as for the violation of the User's applicable law, including the legislation of the Russian Federation and the law of the User's place of residence;
+10.2. The Administration is not responsible for temporary failures and interruptions in the work of the Service, caused by their unavailability and/or loss of information. The Administration shall not be liable for any damage to any equipment, computer programs or information caused or related to the use of the Service, including damage caused by a change in the Service in accordance with clause 9.6 of the Agreement.
+10.3. Please note that in accordance with the Russian Federation Act No. 2300-1 dated February 7, 1992, the provisions of the act relating to consumer protection do not apply to the relationship of the Administration and the Users as the Service is provided free of charge.
+
+11. Advertising
+11.1. Unless otherwise specifically established by a separate agreement between the User and the Administration, the Administration may, without further notice and without any compensation to the User, place advertisings on the Service.
+11.2. The Administration has the right at any time to change the way, type and quantity of advertising placed on the Service.
+11.3. The User’s participation in campaigns and events advertised within the Service, as well as User’s purchasing of any products, work or services shall create rights and obligations only between User and the entity selling the respective product, work or service or holding such campaign or event.
+11.4. If User places any advertising Content on the Service (or promises to place such Content), this does not create any obligations of the Administration.
+11.5. The Administration may send to User information related to the Service as well as third-party advertising using the email address provided by User.
+
+12. Miscellaneous
+12.1. The following addresses shall be used to send legally significant communications:
+    1. for the Administration:
+        1. in respect of communications related to Content: support@erp-lab.com,
+        2. regarding other communications: office 806, bldg. 4, Savelkinsky Proezd, Zelenograd, Moscow, 124482.
+    2. for User's Registration address.
+12.2. All disputes arising out of this Agreement and/or related to the Service and Content may be resolved in Court after the Parties have taken steps to settle the dispute by negotiation, 30 calendar days upon the date when the claim (request) was sent to the addresses defined in clause 12.1 hereof.
+12.3. If the dispute is not resolved by the time defined in clause 12.2 hereof it may be resolved by the Court in the Administration’s location.
