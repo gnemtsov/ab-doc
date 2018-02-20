@@ -478,18 +478,33 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					self.readOnly = false,
 					self.updatePath();
 
-					if (!self._staticPages[doc]) {
-						$container.prepend($big_preloader);            
-						$.get('/' + doc + '/' + LANG + '.html', function(data){
-							self._staticPages[doc] = data;
+					var staticPageLoadedPromise = new Promise( function(resolve, reject) {
+						if (!self._staticPages[doc]) {
+							$container.prepend($big_preloader);            
+							$.get('/' + doc + '/' + LANG + '.html', function(data){
+								self._staticPages[doc] = data;
+								$big_preloader.remove();
+								resolve(data);
+							}).fail( function() {
+								reject();
+							});
+						} else {
+							resolve(self._staticPages[doc]);
+						}
+					});
+					staticPageLoadedPromise
+						.then( function(data) {
 							$static_page.html(data);
-							$big_preloader.remove();
 							$static_page.show();
+							// Set window title to #top-header if it's found
+							var $top_header = $static_page.find('#top-header');
+							if ($top_header) {
+								document.title = $top_header.text();
+							}
+						})
+						.catch( function() {
+							abUtils.onError();
 						});
-					} else {
-						$static_page.html(self._staticPages[doc]);
-						$static_page.show();
-					}	
                     break;
     
                 default: //empty or equals GUID
