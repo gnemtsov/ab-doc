@@ -369,11 +369,6 @@ ul.tmpTargetzTree {
 	width: 40px;
 }
 
-/*#ztree:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
-    /* temporarly disabled. it adds horizontal scroll, when it's on the right size of page.*/
-    /*transition: all 0.3s ease 0.0s;*/
-}
-
 #toggleButton {
     cursor: pointer;
     position: relative;
@@ -504,7 +499,6 @@ ul.tmpTargetzTree {
 #editor pre{
     margin-top: 0px !important;
     margin-bottom: 1em !important;
-    /*background-color: #505558 !important;*/
     font-size: 14px !important;
     line-height: 150% !important;
 }

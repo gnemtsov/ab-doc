@@ -964,8 +964,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		});
 
 		$(document).mouseup(function(event) {
-			//event.preventDefault();
-			
 			splitterDragging = false;
 		});
 		$(document).on('touchcancel touchend', function(event) {
