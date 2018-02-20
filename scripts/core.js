@@ -293,8 +293,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		userUsedSpacePending: 0, // Size of uploads in progress.
 										// It is changed every time upload is started, finished or aborted.
 										// It is NOT erased after calculating userUsedSpace
-		//TODO maxUsedSpace should be taken from cognito attribute custom:space. It will be 500Mb for free accounts.
-		maxUsedSpace: 500 * 1024 * 1024, // 500 Mb
+		//TODO maxUsedSpace should be taken from cognito attribute custom:space. It will be 1Gb for free accounts.
+		maxUsedSpace: 1024 * 1024 * 1024, // 1 Gb
 		userUsedSpaceChanged: false,
 
 		// GUI-only
