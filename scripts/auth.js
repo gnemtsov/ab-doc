@@ -91,7 +91,7 @@
                     self.cognitoSyncDataset = dataset;
                     if(tmpUsername !== undefined && tmpEmail !== undefined){
                         self.put('account-type', 'free');
-                        self.put('space-limit', '500');
+                        self.put('space-limit', '1000');
                         self.put('username', tmpUsername);
                         self.put('email', tmpEmail);
                     }
