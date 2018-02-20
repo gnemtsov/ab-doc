@@ -260,6 +260,10 @@ a.navbar-brand img{
     margin-right: 3px;
 }
 
+.ztree li a.level0 span.button.ico_docu {
+    background-position: inherit;
+    background-image:url("../img/icons/home-opened.svg"); *background-image:url("../img/icons/home-opened.svg");
+}
 .ztree li a.level0 span.button.ico_open {
     background-position: inherit;
     background-image:url("../img/icons/home-opened.svg"); *background-image:url("../img/icons/home-opened.svg");
