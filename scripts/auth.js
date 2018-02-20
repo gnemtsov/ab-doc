@@ -14,7 +14,7 @@
     var $username;
     var $modal, $mtitle, $mbody, $mfooter;
     var $alert_container, $alert;
-    var $form, $submit, $forget_link;
+    var $form, $submit, $forget_link, $google_link;
 
     var CISP = AWSCognito.CognitoIdentityServiceProvider;
 
@@ -677,6 +677,7 @@
             };
 
             $forget_link = $('<a href="#">'+g.abUtils.translatorData['forgotPassword'][g.LANG]+'</a>');
+            $google_link = $('<a href="#" class="link-google">'+g.abUtils.translatorData['loginWithGoogle'][g.LANG]+'</a>');
 
             //modal common events handlers (used for all modal types)
             $modal.on('shown.bs.modal', function() {
@@ -734,6 +735,9 @@
                     );                    
                     $submit.text( g.abUtils.translatorData['signUp'][g.LANG] );
                     $submit.on('click', self.signUpHandler.bind(self));
+                    if(self.googleAuth !== undefined){
+                        $mfooter.append($google_link);
+                    }
                     $mfooter.append($submit);
                     break;
 
