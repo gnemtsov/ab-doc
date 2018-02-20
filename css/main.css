@@ -32,7 +32,7 @@ button, select {
  /*   position: relative;*/
 }
 
-#welcome, #about, #app{
+#welcome, #static-page, #app{
     display: none;
 }
 
@@ -41,8 +41,8 @@ button, select {
     margin-top: 10rem;
 }
 
-/* about */
-#about {
+/* static-page */
+#static-page {
     position: absolute;
     left: 0px;
     right: 0px;
@@ -54,7 +54,7 @@ button, select {
     margin-top: 4rem;
     margin-bottom: 3rem;    
 }
-#about p {
+#static-page p {
     margin-bottom: 2rem;
 }
 span.about-block-border{
@@ -75,6 +75,28 @@ span.about-block-border{
     width: 100%;
 }
 
+#static-page {
+	overflow: hidden;
+	overflow-y: auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 992px){
+    #static-page {
+        padding: 0 10rem;
+    }
+}
+@media (max-width: 992px){
+    #top-header {
+        font-size: 3rem;
+    }
+}
+
+/* user agreement list */
+.user-agreement ol { counter-reset: item; }
+.user-agreement li { display: block; }
+.user-agreement li:before { content: counters(item, ".") ". "; counter-increment: item; }
+.user-agreement h5 { display: inline-block; margin-top: 1rem;}
 
 /*---------------------------------------------------------*/
 /*-------------------------navbar--------------------------*/
@@ -348,11 +370,6 @@ ul.tmpTargetzTree {
 	width: 40px;
 }
 
-/*#ztree:not(.ab-dragging), #splitter:not(.ab-dragging), #document:not(.ab-dragging),*/ #toggleButton {
-    /* temporarly disabled. it adds horizontal scroll, when it's on the right size of page.*/
-    /*transition: all 0.3s ease 0.0s;*/
-}
-
 #toggleButton {
     cursor: pointer;
     position: relative;
@@ -483,7 +500,6 @@ ul.tmpTargetzTree {
 #editor pre{
     margin-top: 0px !important;
     margin-bottom: 1em !important;
-    /*background-color: #505558 !important;*/
     font-size: 14px !important;
     line-height: 150% !important;
 }
