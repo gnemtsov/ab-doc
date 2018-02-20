@@ -718,7 +718,7 @@
 					}
 				};
 
-				$editor.html(html_sanitize(html, function(url){return url;}));
+				$editor.html( html_sanitize(html, function(url){return url;}) );
 				self.editor = new Quill('#editor', editor_options);
 				var length = self.editor.getLength();
 				if (self.editor.getText(length - 2, 2) === '\n\n') {
