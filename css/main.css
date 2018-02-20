@@ -714,7 +714,7 @@ padding-left: 6px;
 }
 #dropzone.superhighlighted {
     width: 300px;
-    height: 150px;
+    min-height: 150px;
     background-color: #ffe7d3;
 /*    background-color: #ffdcbe;*/
     border: 2px dashed #000000;		
