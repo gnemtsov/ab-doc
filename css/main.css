@@ -32,7 +32,7 @@ button, select {
  /*   position: relative;*/
 }
 
-#welcome, #about, #app{
+#welcome, #static-page, #app{
     display: none;
 }
 
@@ -41,8 +41,8 @@ button, select {
     margin-top: 10rem;
 }
 
-/* about */
-#about {
+/* static-page */
+#static-page {
     position: absolute;
     left: 0px;
     right: 0px;
@@ -54,7 +54,7 @@ button, select {
     margin-top: 4rem;
     margin-bottom: 3rem;    
 }
-#about p {
+#static-page p {
     margin-bottom: 2rem;
 }
 span.about-block-border{
