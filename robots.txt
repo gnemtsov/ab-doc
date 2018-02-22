@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Allow: /eu-west-1_a01c087d-a71d-401c-a599-0b8bbacd99e5/78b6b09b-0b25-4f91-8154-f27f1ccb06fe
+
