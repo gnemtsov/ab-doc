@@ -665,6 +665,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             resolve(1);
         };                        
     });
+	
 
     //---------core globals--------
 
