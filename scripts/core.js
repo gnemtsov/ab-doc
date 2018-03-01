@@ -498,7 +498,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					staticPageLoadedPromise
 						.then( function(data) {
 							$static_page.html(data);
+							console.log('inserting static page');
 							$static_page.show();
+							console.log('showing static page');
 							// Set window title to #top-header if it's found
 							var $top_header = $static_page.find('#top-header');
 							if ($top_header) {
@@ -815,12 +817,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             abAuth.signOut();
         });
 
-        // About click
-        $('body').on('click', 'a.link-about', function (e) {
-            e.preventDefault();
-            ROUTER.open('about');
-        });
-        
         // About click
         $('body').on('click', 'a.link-about', function (e) {
             e.preventDefault();

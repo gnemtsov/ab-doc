@@ -2,6 +2,8 @@
 "use strict";
 
 (function (g, $) {
+	console.log('about.js');
+	
 	abUtils.listS3Files('')
 		.then( function(files) {
 			// TODO: 
@@ -20,7 +22,7 @@
 			
 			var $topTreesDiv = $('#top-trees'),
 				topTreesChildren = [],
-				topTreesSizes = [];
+				topTreesSizes = []; // helper array
 			
 			trees.forEach( function(tree) {
 				var params = {
@@ -33,14 +35,33 @@
 						var name = tree.owner,
 							size = numberOfSubNodes(treeJson[0]);
 						
-						var newTreeHtml = '<div>' + name + ' | ' + size + '</div>';
+						// ignore empty trees
+						if (size === 0) {
+							return;
+						}
+						
+						var $newTree = $('<div>' + name + ' | ' + size + '</div>');
 						var pos = topTreesSizes.findIndex( function(s) {
 							return size > s;
 						});
+						
 						if (pos > -1) {
 							topTreesSizes.splice(pos, 0, size);
 						} else {
 							topTreesSizes.push(size);
+						}
+						
+						if (topTreesSizes.length === 1) { 
+							$topTreesDiv.append($newTree);
+							topTreesChildren.push($newTree);
+						} else {
+							if (pos > -1) {
+								topTreesChildren[pos].before($newTree);
+								topTreesChildren.splice(pos, 0, $newTree);
+							} else {
+								$topTreesDiv.append($newTree);
+								topTreesChildren.push($newTree);
+							}
 						}
 						
 						console.log(topTreesSizes);
