@@ -4,6 +4,8 @@
 (function (g, $) {
 	console.log('about.js');
 	
+	var MAX_TREES = 15;
+	
 	abUtils.listS3Files('')
 		.then( function(files) {
 			// TODO: 
@@ -20,9 +22,8 @@
 			
 			console.log(trees);
 			
-			var $topTreesDiv = $('#top-trees'),
-				topTreesChildren = [],
-				topTreesSizes = []; // helper array
+			var $topTreesUl = $('#top-trees'),
+				topTrees = []; // {$tree, size}
 			
 			trees.forEach( function(tree) {
 				var params = {
@@ -40,31 +41,42 @@
 							return;
 						}
 						
-						var $newTree = $('<div>' + name + ' | ' + size + '</div>');
-						var pos = topTreesSizes.findIndex( function(s) {
-							return size > s;
+						var $newTree = $('<li class="list-group-item">' + name + ' | ' + size + '</li>');
+						var pos = topTrees.findIndex( function(t) {
+							return size > t.size;
 						});
 						
-						if (pos > -1) {
-							topTreesSizes.splice(pos, 0, size);
-						} else {
-							topTreesSizes.push(size);
-						}
-						
-						if (topTreesSizes.length === 1) { 
-							$topTreesDiv.append($newTree);
-							topTreesChildren.push($newTree);
+						if (topTrees.length === 0) { 
+							$topTreesUl.append($newTree);
+							topTrees.push({
+								$tree: $newTree,
+								size: size
+							});
 						} else {
 							if (pos > -1) {
-								topTreesChildren[pos].before($newTree);
-								topTreesChildren.splice(pos, 0, $newTree);
+								// Head or somewhere in the middle of list
+								topTrees[pos].$tree.before($newTree);
+								topTrees.splice(pos, 0, {
+									$tree: $newTree,
+									size: size
+								});
+								// keeping top <MAX_TREES> elements
+								if (topTrees.length > MAX_TREES) {
+									topTrees.pop().$tree.remove();
+								}
 							} else {
-								$topTreesDiv.append($newTree);
-								topTreesChildren.push($newTree);
+								// End of list
+								if (topTrees.length < MAX_TREES) {
+									$topTreesUl.append($newTree);
+									topTrees.push({
+										$tree: $newTree,
+										size: size
+									});
+								}
 							}
 						}
 						
-						console.log(topTreesSizes);
+						console.log(topTrees);
 					});
 			});
 		});
