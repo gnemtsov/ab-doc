@@ -41,7 +41,11 @@
 							return;
 						}
 						
-						var $newTree = $('<li class="list-group-item">' + name + ' | ' + size + '</li>');
+						var $newTree = $(
+							'<li class="list-group-item">' +
+								'<a href="/' + name + '">' + size + '</a>' +
+							'</li>'
+						);
 						var pos = topTrees.findIndex( function(t) {
 							return size > t.size;
 						});
