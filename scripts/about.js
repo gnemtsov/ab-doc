@@ -33,19 +33,28 @@
 				s3.getObject(params).promise()
 					.then( function(obj) {
 						var treeJson = JSON.parse(obj.Body.toString('utf-8'));
-						var name = tree.owner,
-							size = numberOfSubNodes(treeJson[0]);
+						var size = numberOfSubNodes(treeJson[0]);
 						
 						// ignore empty trees
 						if (size === 0) {
 							return;
 						}
 						
+						var href = '/' + tree.owner.replace(':','_') + '/' + treeJson[0].id;
+						// security measure.
+						// treeJson[0].id could contain " and malicious html after it
+						href = href.split('"')[0];
+						
 						var $newTree = $(
 							'<li class="list-group-item">' +
-								'<a href="/' + name + '">' + size + '</a>' +
+								'<a href="' + href + '">' + size + '</a>' +
 							'</li>'
 						);
+						$newTree.on('click', function(event) {
+							event.preventDefault();
+							ROUTER.setOwner(tree.owner).open(treeJson[0].id);
+						});
+						
 						var pos = topTrees.findIndex( function(t) {
 							return size > t.size;
 						});
