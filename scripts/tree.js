@@ -6,6 +6,10 @@
 //TOTHINK first click only selects node, second click opens|closes folder
 
 (function (g, $) {
+	//auth
+    var abAuth = $.fn.abAuth();
+	
+	
 	//----------- abTree object--------------//
 	var	$abTree /*tree UL*/;
 
@@ -442,8 +446,13 @@
 				// attach touch handlers
 				attachTouchToMouseListeners($abTree, 12, 0);
 
-				if(!self.readOnly){ //init timer if not readOnly
-
+				if(!self.readOnly){ 
+					// write username to the head of user's tree when it's loaded
+					if (abAuth.userData) {
+						self.tree.getNodes()[0].ab_username = abAuth.userData.get('username');
+					}
+					
+					//init timer if not readOnly
 					TIMERS.set(function () {
 						if(ACTIVITY.get('tree modify') === 'pending'){
 
@@ -466,6 +475,10 @@
 								data = all_nodes.map(f);
 							} else {
 								data = [];
+							}
+							
+							if (all_nodes[0].ab_username) {
+								data[0].ab_username = all_nodes[0].ab_username;
 							}
 														
 							var params = {

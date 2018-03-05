@@ -39,6 +39,10 @@
 						if (size === 0) {
 							return;
 						}
+						// ignore unnamed trees
+						if (!treeJson[0].ab_username) {
+							return;
+						}
 						
 						var href = '/' + tree.owner.replace(':','_') + '/' + treeJson[0].id;
 						// security measure.
@@ -47,7 +51,7 @@
 						
 						var $newTree = $(
 							'<li class="list-group-item">' +
-								'<a href="' + href + '">' + size + '</a>' +
+								'<a href="' + href + '">' + treeJson[0].ab_username + '</a>' +
 							'</li>'
 						);
 						$newTree.on('click', function(event) {

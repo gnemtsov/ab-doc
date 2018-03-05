@@ -149,7 +149,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		// If we need to listen to this event globally,
 		// we modify listener
 		if ( abGlobalListener.__proto__._registeredEventTypes.indexOf(type) > -1 ) {
-			console.log('Adding listener', arguments);
+			//console.log('Adding listener', arguments);
 			var listener = arguments[1],
 				newListener = function(event) {
 					// send event to global listeners
@@ -170,7 +170,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				};
 			arguments[1] = newListener;
 		} else {
-			console.log('Ignoring listener', arguments);
+			//console.log('Ignoring listener', arguments);
 		}
 		// Now do what addEventListener was supposed to do
 		oldAddEventListener.apply(this, arguments);
