@@ -4,7 +4,7 @@
 (function (g, $) {
 	console.log('about.js');
 	
-	var MAX_TREES = 15;
+	var MAX_TREES = 10;
 	
 	abUtils.listS3Files('')
 		.then( function(files) {
@@ -92,8 +92,6 @@
 								}
 							}
 						}
-						
-						console.log(topTrees);
 					});
 			});
 		});

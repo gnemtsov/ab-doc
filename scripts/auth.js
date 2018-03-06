@@ -150,8 +150,7 @@
                     if(error){
                         reject(error)
                     } else {
-						// I hope it's ok to store userData in prototype to make it accessible from outside
-                        self.__proto__.userData = new userData(self.tmpUsername, self.tmpEmail);
+                        self.userData = new userData(self.tmpUsername, self.tmpEmail);
                         self.userData.promise.then(
                             function(){
                                 delete self.tmpUsername;

@@ -556,8 +556,13 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
                         var params = {
                             ownerid: self.owner,
-                            readOnly: self.readOnly
+                            readOnly: self.readOnly,
                         };
+
+                        // TODO start here tomorrow. (last message in telegram)
+                        if (!self.readOnly) {
+							params.ownerName = abAuth.userData.get('username');
+						}
                         abTree = $abTree.abTree(params);
                     }
 
