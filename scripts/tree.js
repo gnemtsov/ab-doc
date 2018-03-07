@@ -405,6 +405,9 @@
 				if(!self.zNodes[0].name.length){
 					self.zNodes[0].name = g.abUtils.translatorData['rootName'][LANG];
 				}
+				if (self.zNodes[0].ab_username) {
+					self.ownerName = self.zNodes[0].ab_username;
+				}
 
 				self.zSettings = {
 					view: {

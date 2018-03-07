@@ -181,6 +181,10 @@ var abUtils = {
 			"ru": "Ок",
 			"en": "Ok"
 		},
+		"owner": {
+			"ru": "Владелец: ",
+			"en": "Owner: "
+		},
 		"password": {
 			"ru": "Пароль",
 			"en": "Password"

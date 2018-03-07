@@ -423,6 +423,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                 this.readOnly = false;
                 $('.readonly-mode').addClass('hidden');
                 $('.edit-mode').removeClass('hidden');
+                $('.owner').addClass('hidden');
             }
             
 			//USED SPACE TIMER
@@ -559,7 +560,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                             readOnly: self.readOnly,
                         };
 
-                        // TODO start here tomorrow. (last message in telegram)
                         if (!self.readOnly) {
 							params.ownerName = abAuth.userData.get('username');
 						}
@@ -605,6 +605,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                                 abTree.selectNode(docNODE);
                                 $selectedDoc[0].innerHTML = docNODE.name;
                                 document.title = docNODE.name;
+                                
+                                if (self.readOnly && abTree.ownerName) {
+									$('.owner')
+										.removeClass('hidden')
+										.html(abUtils.translatorData['owner'][LANG] + abTree.ownerName);
+								}
 
                                 var params = {
                                     ownerid: self.owner,
