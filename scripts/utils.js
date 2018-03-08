@@ -254,8 +254,22 @@ var abUtils = {
 			"en": "Unknown username"
 		},    
 		"welcomeMessage": {
-			"ru": "Чтобы работать с документами нужно <a class=\"link-sign-in\" href=\"#\">войти</a> или <a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
-			"en": "Please <a class=\"link-sign-in\" href=\"#\">log in</a> or <a class=\"link-sign-up\" href=\"#\">create account</a> to start working."
+			"ru": 
+				"<h1 class=\"display-3\">AB-DOC</h1>\
+				Приложение позволяет создавать документы онлайн и систематизировать их хранение в виде дерева. \
+				<a class=\"link-about\" href=\"/about\">Подробнее</a>.\
+				Чтобы работать с документами нужно\
+				<a class=\"link-sign-in\" href=\"#\">войти</a> \
+				или \
+				<a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
+			"en":
+				"<h1 class=\"display-3\">AB-DOC</h1>\
+				With our app you can create documents online and systemize them as a tree. \
+				<a class=\"link-about\" href=\"/about\">Learn more</a>.\
+				Please <a class=\"link-sign-in\" href=\"#\">log in</a> \
+				or \
+				<a class=\"link-sign-up\" href=\"#\">create account</a> \
+				to start working."
 		},
 		"yes": {
 			"ru": "да",
