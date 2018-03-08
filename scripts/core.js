@@ -596,8 +596,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 								}, 1500);
                             } else {
                                 abTree.selectNode(docNODE);
-                                $selectedDoc[0].innerHTML = docNODE.name;
-                                document.title = docNODE.name;
+                                var title = docNODE.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                $selectedDoc[0].innerHTML = title;
+                                document.title = title;
 
                                 var params = {
                                     ownerid: self.owner,

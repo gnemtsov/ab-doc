@@ -345,8 +345,9 @@
 		console.log('Tree.js: on rename');		
 		if (isCancel) {
 			if (self.selectedNode.tId === treeNode.tId) {
-				$('#selectedDoc').html(treeNode.name);
-				document.title = treeNode.name;
+				var title = treeNode.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+				$('#selectedDoc').html(title);
+				document.title = title;
 			}
 		} else {
 			ACTIVITY.push('tree modify', 'pending');			
@@ -374,8 +375,9 @@
 
 		$abTree.on('input', 'input', function() {
 			if($(this).attr('id') === self.selectedNode.tId + '_input'){
-				$('#selectedDoc').text($(this).val());
-				document.title = $(this).val();
+				var title = $(this).val().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+				$('#selectedDoc').text(title);
+				document.title = title;
 			}
 		});
 
