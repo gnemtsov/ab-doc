@@ -609,7 +609,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                                 if (self.readOnly && abTree.ownerName) {
 									$('.owner')
 										.removeClass('hidden')
-										.html(abUtils.translatorData['owner'][LANG] + abTree.ownerName);
+										.html(abUtils.translatorData['owner'][LANG] + abTree.ownerName.replace('<', '&lt;').replace('>', '&gt'));
 								}
 
                                 var params = {
