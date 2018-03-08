@@ -376,7 +376,7 @@
 		$abTree.on('input', 'input', function() {
 			if($(this).attr('id') === self.selectedNode.tId + '_input'){
 				var title = $(this).val().replace(/</g, '&lt;').replace(/>/g, '&gt;');
-				$('#selectedDoc').text(title);
+				$('#selectedDoc').html(title);
 				document.title = $(this).val();
 			}
 		});
