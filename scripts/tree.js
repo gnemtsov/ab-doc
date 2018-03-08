@@ -347,7 +347,7 @@
 			if (self.selectedNode.tId === treeNode.tId) {
 				var title = treeNode.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 				$('#selectedDoc').html(title);
-				document.title = title;
+				document.title = treeNode.name;
 			}
 		} else {
 			ACTIVITY.push('tree modify', 'pending');			
@@ -377,7 +377,7 @@
 			if($(this).attr('id') === self.selectedNode.tId + '_input'){
 				var title = $(this).val().replace(/</g, '&lt;').replace(/>/g, '&gt;');
 				$('#selectedDoc').text(title);
-				document.title = title;
+				document.title = $(this).val();
 			}
 		});
 
