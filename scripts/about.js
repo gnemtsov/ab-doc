@@ -51,7 +51,7 @@
 						
 						var $newTree = $(
 							'<li class="list-group-item">' +
-								'<a href="' + href + '">' + treeJson[0].ab_username.replace('<', '&lt;').replace('>', '&gt') + '</a>' +
+								'<a href="' + href + '">' + treeJson[0].ab_username.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</a>' +
 							'</li>'
 						);
 						$newTree.on('click', function(event) {
