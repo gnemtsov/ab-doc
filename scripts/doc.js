@@ -38,6 +38,7 @@
 			$files_wrap.empty();
 			self.files.forEach( function(file) {
 				if(!file.n && !file.e){
+					file.name = file.name.replace('<', '&lt;').replace('>', '&gt');
 					var name_parts = file.name.split('.');
 					if (name_parts.length > 1) {
 						file.e = '.' + name_parts.pop(); // removes extension from s
