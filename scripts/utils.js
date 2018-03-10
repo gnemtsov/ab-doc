@@ -109,6 +109,17 @@ var abUtils = {
 			"ru": "Удаление",
 			"en": "Delete"
 		},
+		"docs": {
+			"ru": function(c){
+				if((c > 4 && c < 21) || c % 10 > 4 || c % 10 === 0) return 'документов';
+				if(c % 10 === 1) return 'документ';
+				return 'документа';
+			},
+			"en": function(c){
+				if(c > 1) return 'docs';
+				return 'doc';
+			},
+		},
 		"document": {
 			"ru": "Документ",
 			"en": "Document"
@@ -255,21 +266,21 @@ var abUtils = {
 		},    
 		"welcomeMessage": {
 			"ru": 
-				"<h1 class=\"display-3\">AB-DOC</h1>\
-				Приложение позволяет создавать документы онлайн и систематизировать их хранение в виде дерева. \
-				<a class=\"link-about\" href=\"/about\">Подробнее</a>.\
-				Чтобы работать с документами нужно\
+				"<h2 class=\"display-3\">AB-DOC</h2>\
+				<p class=\"welcome-explain\">Cоздавайте документы онлайн и систематизируйте их в виде дерева.\
+				<a class=\"link-about\" href=\"/about\">О проекте.</a></p>\
+				<p class=\"welcome-invite\">Чтобы начать, нужно\
 				<a class=\"link-sign-in\" href=\"#\">войти</a> \
 				или \
-				<a class=\"link-sign-up\" href=\"#\">создать учетную запись</a>.",
+				<a class=\"link-sign-up\" href=\"#\">создать учетную запись</a></p>",
 			"en":
 				"<h1 class=\"display-3\">AB-DOC</h1>\
-				With our app you can create documents online and systemize them as a tree. \
-				<a class=\"link-about\" href=\"/about\">Learn more</a>.\
-				Please <a class=\"link-sign-in\" href=\"#\">log in</a> \
+				<p class=\"welcome-explain\">Create documents online and arrange them in a tree. \
+				<a class=\"link-about\" href=\"/about\">About</a>.</p>\
+				<p class=\"welcome-invite\">Please <a class=\"link-sign-in\" href=\"#\">log in</a> \
 				or \
 				<a class=\"link-sign-up\" href=\"#\">create account</a> \
-				to start working."
+				to start working</p>"
 		},
 		"yes": {
 			"ru": "да",

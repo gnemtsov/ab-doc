@@ -38,7 +38,17 @@ button, select {
 
 /* welcome */
 #welcome {
-    margin-top: 10rem;
+    margin-top: 5rem;
+}
+
+#welcome p.welcome-explain{
+    margin-top: 2rem;
+}
+
+#welcome p.welcome-invite{
+    margin-top: 4rem;
+    background-color: #e0e0e0;
+    padding: 1.5rem 0 2rem 0;
 }
 
 /* static-page */
@@ -97,6 +107,14 @@ span.about-block-border{
 .user-agreement li { display: block; }
 .user-agreement li:before { content: counters(item, ".") ". "; counter-increment: item; }
 .user-agreement h5 { display: inline-block; margin-top: 1rem;}
+
+
+.about-subheader{
+    margin-bottom: 1.2rem;
+}
+.docs-count{
+    color: #8b8989;
+}
 
 /*---------------------------------------------------------*/
 /*-------------------------navbar--------------------------*/

@@ -4,7 +4,10 @@
 (function (g, $) {
 	console.log('about.js');
 	
-	var MAX_TREES = 10;
+	var $topTreesUl = $('#top-trees'),
+		MAX_TREES = 10;
+
+	$topTreesUl.before( $small_preloader );
 	
 	abUtils.listS3Files('')
 		.then( function(files) {
@@ -22,8 +25,8 @@
 			
 			console.log(trees);
 			
-			var $topTreesUl = $('#top-trees'),
-				topTrees = []; // {$tree, size}
+			var topTrees = []; // {$tree, size}
+
 			
 			trees.forEach( function(tree) {
 				var params = {
@@ -52,6 +55,7 @@
 						var $newTree = $(
 							'<li class="list-group-item">' +
 								'<a href="' + href + '">' + treeJson[0].ab_username.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</a>' +
+								', <span class="docs-count">' + size + ' ' + abUtils.translatorData['docs'][LANG](size) + '</span>' +
 							'</li>'
 						);
 						$newTree.on('click', function(event) {
@@ -63,7 +67,8 @@
 							return size > t.size;
 						});
 						
-						if (topTrees.length === 0) { 
+						if (topTrees.length === 0) {
+							$small_preloader.remove();
 							$topTreesUl.append($newTree);
 							topTrees.push({
 								$tree: $newTree,
