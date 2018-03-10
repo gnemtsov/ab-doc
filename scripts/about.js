@@ -44,7 +44,7 @@
 						}
 						// ignore unnamed trees
 						if (!treeJson[0].ab_username) {
-							return;
+							treeJson[0].ab_username = 'Incognito';
 						}
 						
 						var href = '/' + tree.owner.replace(':','_') + '/' + treeJson[0].id;
