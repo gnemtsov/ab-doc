@@ -218,7 +218,6 @@ a.navbar-brand img{
 /*---------------------------------------------------------*/
 
 #ztree {
-    overflow: hidden;
     text-overflow: ellipsis;
     position: absolute;
     left: 0px;
