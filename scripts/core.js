@@ -603,7 +603,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 								}, 1500);
                             } else {
                                 abTree.selectNode(docNODE);
-                                $selectedDoc[0].innerHTML = docNODE.name;
+                                var title = docNODE.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                $selectedDoc[0].innerHTML = title;
                                 document.title = docNODE.name;
                                 
                                 if (self.readOnly && abTree.ownerName) {
