@@ -196,7 +196,7 @@
 
 					if (!self.imgMoving) {
 						e.preventDefault();
-
+						
 						if(typeof file === 'undefined'){ //original drop event
 							$drop_zone.removeClass('highlighted superhighlighted');							
 							files = e.originalEvent.dataTransfer.files; //set files
@@ -224,7 +224,7 @@
 						} else { //handler was triggered from paste event
 							var files = [file];
 						}
-
+						
 						var non_image_files = new Array();
 						$.each(files, function (i, file) {
 							if (!g.INDICATOR.canUpload(file.size)) { // exit if we don't have enough space
@@ -277,11 +277,12 @@
 							}
 
 						});
-
+						
 						//upload other files as attachments
 						if(non_image_files.length > 0){
 							$drop_zone.triggerHandler('drop', [non_image_files]);                    
 						}
+						
 					} else {
 						self.imgMoving = false;
 					}
@@ -388,7 +389,9 @@
 							files = e.originalEvent.dataTransfer.files;
 						} 
 						$drop_zone.removeClass('highlighted superhighlighted');
-						$drop_zone.addClass('used');
+						if (files.length > 0) {
+							$drop_zone.addClass('used');
+						}
 	
 						$.each(files, function (i, file) {
 
