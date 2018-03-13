@@ -36,7 +36,7 @@
 				s3.getObject(params).promise()
 					.then( function(obj) {
 						var treeJson = JSON.parse(obj.Body.toString('utf-8'));
-						var size = numberOfSubNodes(treeJson[0]);
+						var size = 1 + numberOfSubNodes(treeJson[0]);
 						
 						// ignore empty trees
 						if (size === 0) {

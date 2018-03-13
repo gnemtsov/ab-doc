@@ -43,7 +43,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 	// Attaches touch-events listeners on element
 	// and converts them to mouse-events
 	// 
-	g.attachTouchToMouseListeners = function(element, moveRadius, waitBeforeMove) {
+	g.attachTouchToMouseListeners = function(element, moveRadius, delay) {
 		var downX = 0, downY = 0,
 			lastTouchstart = 0;
 		element.on('touchstart touchmove touchend touchcancel', function(event) {
@@ -77,11 +77,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						ok = false;
 					}
 				}
-				// do not call mousemove until some time after touchstart
-				// to prevent drag and drop (optional)
-				if (waitBeforeMove) {
-					ok = ok && (Date.now() - lastTouchstart >= waitBeforeMove);
-				}
+			}
+			
+			// do not call mousemove until some time after touchstart
+			// to prevent drag and drop (optional)
+			if (waitBeforeMove) {
+				ok = ok && (Date.now() - lastTouchstart >= waitBeforeMove);
 			}
 
 			if (ok) {
@@ -102,9 +103,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						.elementFromPoint(first.clientX, first.clientY)
 						.dispatchEvent(simulatedEvent);
 				});
+				event.preventDefault();
 			}
-
-			event.preventDefault();
 		});
 	}
 	

@@ -446,7 +446,7 @@
 				self.selectedNode = self.tree.getNodes()[0];
 				
 				// attach touch handlers
-				attachTouchToMouseListeners($abTree, 12, 0);
+				attachTouchToMouseListeners($abTree, 12, 1000);
 
 				if(!self.readOnly){ 
 					
