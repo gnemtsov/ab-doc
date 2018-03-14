@@ -64,14 +64,14 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			{
 				case 'touchstart':  types = ['mousedown']; break;
 				case 'touchmove':   types = ['mousemove']; break;        
-				case 'touchend':    types = ['mouseup', 'click'];   break;
+				case 'touchend':    types = ['mouseup'];   break;
 				case 'touchcancel': types = ['mouseup'];   break;
 				default:            return;
 			}
 			
 			if (event.type === 'touchstart') {
-				downX = moveX = first.clientX;
-				downY = moveY = first.clientY;
+				downX = first.clientX;
+				downY = first.clientY;
 				lastTouchstart = Date.now();
 				mode = 0;
 			}
@@ -99,15 +99,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			// convert if:
 			//   (mode === 0) and (touchend or touchcancel)
 			//   (mode === 1) and touchmove
-			//   (mode === 2) and !(touchend or touchcancel)
-			if (
-				((mode === 0) && (['touchend', 'touchcancel'].indexOf(event.type) > -1)) ||
-				(mode === 1) ||
-				((mode === 2) && (['touchend', 'touchcancel'].indexOf(event.type) < 0))
-			) {
-				if ((mode === 1) && (['touchend', 'touchcancel'].indexOf(event.type) > -1)) {
-					types = ['mouseup'];
-				}
+			//   (mode === 2)
+			if (!(mode === 2 && event.type === 'touchmove')) {
 				types.forEach( function (type) {
 					// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
 					//                screenX, screenY, clientX, clientY, ctrlKey, 
@@ -126,12 +119,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						.dispatchEvent(simulatedEvent);
 				});
 			}
-			
-			if (['touchend', 'touchcancel'].indexOf(event.type) > -1) {
-				mode = 0;
-			}
-			
 			event.preventDefault();
+			
+			/*if (['touchend', 'touchcancel'].indexOf(event.type) > -1) {
+				mode = 0;
+			}*/
 		});
 	}
 	
