@@ -41,17 +41,24 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
 (function (g, $) {
 	// Attaches touch-events listeners on element
-	// and converts them to mouse-events
-	// 
-	g.attachTouchToMouseListeners = function(element, moveRadius, waitBeforeMove) {
-		var downX = 0, downY = 0,
+	// and converts them to mouse-events.
+	// Conversion starts after holding a touch withing "moveRadius" for "delay" ms
+	// Before that no mouse events are created.
+	// After that touch events are .preventDafault() and mouse events are fired
+	// This method is primarily used for enabling drag and drop on ztree on touch devices
+	// and allowing scrolling at the same time.
+	g.attachTouchToMouseListeners = function(element, scrollElement, moveRadius, delay) {
+		var downX = 0, downY = 0, moveX = 0, moveY = 0,
 			lastTouchstart = 0;
+		var mode = 0; // 0 - waiting, 1 - converting, 2 - not converting
 		element.on('touchstart touchmove touchend touchcancel', function(event) {
-			console.log('touch event!', event);
+			//console.log('touch event!', event);
 			
 			var touches = event.changedTouches,
 				first = touches[0],
 				types = [];
+				
+			var fireDelayedMouseDown = false;
 				
 			switch(event.type)
 			{
@@ -63,28 +70,36 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			}
 			
 			if (event.type === 'touchstart') {
-				downX = first.clientX;
-				downY = first.clientY;
+				downX = moveX = first.clientX;
+				downY = moveY = first.clientY;
 				lastTouchstart = Date.now();
+				mode = 0;
 			}
 			
-			var ok = true; // ok - will call mouseevent
 			if (event.type === 'touchmove') {
-				// do not call mousemove if moved not too far
-				// to prevent drag and drop (optional)
-				if (moveRadius) {
-					if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY) < moveRadius)) {
-						ok = false;
+				if (mode === 0) {
+					var dt = Date.now() - lastTouchstart;
+					if (dt >= delay) {
+						mode = 1;
+						types.push('mousedown');
+					} else {
+						if ((Math.abs(first.clientX - downX) > moveRadius) || (Math.abs(first.clientY - downY) > moveRadius)) {
+							mode = 2;
+						}
 					}
 				}
-				// do not call mousemove until some time after touchstart
-				// to prevent drag and drop (optional)
-				if (waitBeforeMove) {
-					ok = ok && (Date.now() - lastTouchstart >= waitBeforeMove);
+				if (mode === 2) {
+					scrollElement.scrollLeft(scrollElement.scrollLeft() - (first.clientX - moveX));
+					scrollElement.scrollTop(scrollElement.scrollTop() - (first.clientY - moveY));
 				}
+				moveX = first.clientX;
+				moveY = first.clientY;
 			}
 
-			if (ok) {
+			// convert if:
+			//   (mode === 0) and (touchend or touchcancel)
+			//   (mode === 1) and touchmove
+			if (mode === 1 || ((mode === 0) && (['touchend', 'touchcancel'].indexOf(event.type) > -1))) {
 				types.forEach( function (type) {
 					// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
 					//                screenX, screenY, clientX, clientY, ctrlKey, 
@@ -103,8 +118,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						.dispatchEvent(simulatedEvent);
 				});
 			}
-
 			event.preventDefault();
+			
+			/*if (['touchend', 'touchcancel'].indexOf(event.type) > -1) {
+				mode = 0;
+			}*/
 		});
 	}
 	
@@ -1030,7 +1048,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			$(document).on('touchmove', function(event) {});
 			$(document).on('touchstart', function(event) {});
 			
-			abGlobalListener.addListener('touchstart', function(event) {
+			/*abGlobalListener.addListener('touchstart', function(event) {
 				if (!isSmallDevice) {
 					return;
 				}
@@ -1072,7 +1090,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					updateMode();
 					finishedSwiping = true;
 				}
-			});
+			});*/
 		}
 
         // Update columns' sizes, use current mode
