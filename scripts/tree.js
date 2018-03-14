@@ -93,6 +93,7 @@
 		}
 	}
 
+	var _lastExpand = Date.now();
 	abTree.prototype.beforeClick = function (treeId, treeNode, clickFlag) {
 		var self = this;
 		
@@ -114,7 +115,10 @@
 		
 		// expand the node
 		if (ok) {
-			self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
+			if (Date.now() - _lastExpand > 350) {
+				self.tree.expandNode(treeNode, !treeNode.open, false, true, true);
+				_lastExpand = Date.now();
+			}
 		}
 		
 		//automatically switch to doc-solo on second click/touch for small devices
@@ -416,7 +420,8 @@
 						selectedMulti: true,
 						addHoverDom: self.readOnly ? false : self.addHoverDom.bind(self),
 						removeHoverDom: self.removeHoverDom.bind(self),
-						showLine: false
+						showLine: false,
+						dblClickExpand: false
 					},
 					edit: {
 						enable: !self.readOnly,
