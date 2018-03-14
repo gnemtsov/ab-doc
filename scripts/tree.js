@@ -446,7 +446,7 @@
 				self.selectedNode = self.tree.getNodes()[0];
 				
 				// attach touch handlers
-				attachTouchToMouseListeners($abTree, $('#ztree'), 16, 100);
+				attachTouchToMouseListeners($abTree, $('#ztree'), 8, 250);
 
 				if(!self.readOnly){ 
 					

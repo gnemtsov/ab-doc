@@ -64,14 +64,14 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			{
 				case 'touchstart':  types = ['mousedown']; break;
 				case 'touchmove':   types = ['mousemove']; break;        
-				case 'touchend':    types = ['mouseup'];   break;
+				case 'touchend':    types = ['mouseup', 'click'];   break;
 				case 'touchcancel': types = ['mouseup'];   break;
 				default:            return;
 			}
 			
 			if (event.type === 'touchstart') {
-				downX = first.clientX;
-				downY = first.clientY;
+				downX = moveX = first.clientX;
+				downY = moveY = first.clientY;
 				lastTouchstart = Date.now();
 				mode = 0;
 			}
@@ -83,7 +83,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						mode = 1;
 						types.push('mousedown');
 					} else {
-						if ((Math.abs(first.clientX - downX) < moveRadius) && (Math.abs(first.clientY - downY) < moveRadius)) {
+						if ((Math.abs(first.clientX - downX) > moveRadius) || (Math.abs(first.clientY - downY) > moveRadius)) {
 							mode = 2;
 						}
 					}
@@ -99,8 +99,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			// convert if:
 			//   (mode === 0) and (touchend or touchcancel)
 			//   (mode === 1) and touchmove
-			//   (mode === 2)
-			if (!(mode === 2 && event.type === 'touchmove')) {
+			if (mode === 1 || ((mode === 0) && (['touchend', 'touchcancel'].indexOf(event.type) > -1))) {
 				types.forEach( function (type) {
 					// initMouseEvent(type, canBubble, cancelable, view, clickCount, 
 					//                screenX, screenY, clientX, clientY, ctrlKey, 
