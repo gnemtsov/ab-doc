@@ -218,14 +218,15 @@ a.navbar-brand img{
 /*---------------------------------------------------------*/
 
 #ztree {
-    text-overflow: ellipsis;
     position: absolute;
     left: 0px;
     width: 25%;
     top: 0px;
     bottom: 0px;
-    overflow-y: auto;
     padding: 30px 20px 20px 10px;
+    text-overflow: ellipsis;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 #ztree.ab-closed {
     padding: 0px;
