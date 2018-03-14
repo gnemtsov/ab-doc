@@ -28,6 +28,7 @@
 		var ok = true;
 		nodes.forEach(function(x, i, arr) {
 			// We can't drag head of the tree
+			console.log('no drag');
 			if (x.head === true) {
 				ok = false;
 			}
@@ -382,12 +383,50 @@
 			}
 		});
 
-		var params = {
+		/*var params = {
 			Bucket: STORAGE_BUCKET,
 			Key: self.treeKey
-		}
-		self.promise = s3.getObject(params).promise()
-			.then( function(data) {
+		}*/
+		var myPromise = Promise.resolve([{"ab-username": "Test", "name":"roor","id": "test", "children":[
+			{"name":"aa","id":"2","children":[]},
+			{"name":"aa","id":"3","children":[]},
+			{"name":"aa","id":"4","children":[]},
+			{"name":"aa","id":"5","children":[]},
+			{"name":"aa","id":"6","children":[]},
+			{"name":"aa","id":"7","children":[]},
+			{"name":"aa","id":"8","children":[]},
+			{"name":"aa","id":"9","children":[]},
+			{"name":"aa","id":"10","children":[]},
+			{"name":"aa","id":"11","children":[]},
+			{"name":"aa","id":"12","children":[]},
+			{"name":"aa","id":"13","children":[]},
+			{"name":"aa","id":"14","children":[]},
+			{"name":"aa","id":"15","children":[]},
+			{"name":"aa","id":"16","children":[]},
+			{"name":"aa","id":"17","children":[]},
+			{"name":"aa","id":"18","children":[]},
+			{"name":"aa","id":"19","children":[]},
+			{"name":"aa","id":"20","children":[]},
+			{"name":"aa","id":"21","children":[]},
+			{"name":"aa","id":"22","children":[]},
+			{"name":"aa","id":"23","children":[]},
+			{"name":"aa","id":"24","children":[]},
+			{"name":"aa","id":"25","children":[]},
+			{"name":"aa","id":"26","children":[]},
+			{"name":"aa","id":"27","children":[]},
+			{"name":"aa","id":"28","children":[]},
+			{"name":"aa","id":"29","children":[]},
+			{"name":"aa","id":"30","children":[]},
+			{"name":"aa","id":"31","children":[]},
+			{"name":"aa","id":"32","children":[]},
+			{"name":"aa","id":"33","children":[]},
+			{"name":"aa","id":"34","children":[]},
+			{"name":"aa","id":"35","children":[]},
+			{"name":"aa","id":"36","children":[]},
+			{"name":"aa","id":"37","children":[]}
+		]}])
+		self.promise = myPromise//s3.getObject(params).promise()
+			/*.then( function(data) {
 				return JSON.parse(data.Body.toString('utf-8'));
 			})
 			.catch( function(error) {
@@ -398,7 +437,7 @@
 					abUtils.onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}
-			})
+			})*/
 			.then( function(zNodes) {
 				self.zNodes = zNodes;
 				self.rootGUID = self.zNodes[0].id;
@@ -488,7 +527,7 @@
 							};
 
 							Promise.all([ 
-								s3.putObject(params).promise(), 
+								//s3.putObject(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })
 							]).then(function(){
 								ACTIVITY.flush('tree modify');

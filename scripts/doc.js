@@ -654,7 +654,7 @@
 			Bucket: STORAGE_BUCKET,
 			Key: self.path + '/index.html'
 		}
-		self.promise1 = s3.getObject(params).promise()
+		self.promise1 = /*s3.getObject(params).promise()
 			.then( function(data) {
 				return data.Body.toString('utf-8');
 			})
@@ -673,7 +673,8 @@
 					throw 'fatal';
 				}
 				return '';
-			})
+			})*/
+			Promise.resolve("<p>test<p><h1>test2<h1>")
 			.then( function(html) {
 
 				//quill config

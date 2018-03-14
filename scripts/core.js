@@ -415,7 +415,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             }
 
             //set readOnly
-            if(!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
+            if(false){//!abAuth.isAuthorized() || this.owner !== abAuth.credentials.identityId){
                 this.readOnly = true;
                 $('.readonly-mode').removeClass('hidden');
                 $('.edit-mode').addClass('hidden');
