@@ -296,7 +296,7 @@
 			
 			ACTIVITY.push('tree modify', 'pending');
 		});
-		var message = abUtils.translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name + "</strong>" + abUtils.translatorData["deleteQuestion2"][LANG];
+		var message = abUtils.translatorData["deleteQuestion1"][LANG] + " <strong>" + treeNode.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') + "</strong>" + abUtils.translatorData["deleteQuestion2"][LANG];
 		if (treeNode.isParent) {
 			message += abUtils.translatorData["deleteQuestion3"][LANG];
 		}
