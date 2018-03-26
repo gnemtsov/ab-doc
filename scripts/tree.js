@@ -151,8 +151,9 @@
 			return;
 		}
 		
+		var addStr = "";
 		if (!self.readOnly) {
-			var addStr = "<span class='button add' id='" + treeNode.tId
+			addStr += "<span class='button add' id='" + treeNode.tId
 			+ "_add' title='add node' onfocus='this.blur();'></span>";
 		
 			addStr += "<span class='button edit' id='" + treeNode.tId
@@ -162,9 +163,12 @@
 				addStr += "<span class='button remove' id='" + treeNode.tId
 					+ "_remove' title='remove' treenode_remove=''></span>";		
 			}
-				
-			sObj.after(addStr);
 		}
+		if (treeNode.head) {
+			addStr += "<span class='button collapse' id='" + treeNode.tId
+				+ "_collapse' title='collapse'></span>";
+		}
+		sObj.after(addStr);
 		
 		// Add new item
 		var btnAdd = $('#' + treeNode.tId + '_add');
@@ -219,13 +223,25 @@
 				return false;
 			});
 			btnRename.on('mousedown mouseup', function(){});
-		}	
+		}
+		
+		// Collapse child nodes
+		var btnCollapse = $('#' + treeNode.tId + '_collapse');
+		if (btnCollapse) {
+			btnCollapse.on('click', function() {
+				treeNode.children.forEach( function(childNode) {
+					ROUTER.open(self.tree.getNodes()[0].id);
+					self.tree.expandNode(childNode, false);
+				});
+			});
+		}
 	};
 
 	abTree.prototype.removeHoverDom = function(treeId, treeNode) {
 		$('#' + treeNode.tId + '_add').off().remove();
 		$('#' + treeNode.tId + '_remove').off().remove();
 		$('#' + treeNode.tId + '_edit').off().remove();
+		$('#' + treeNode.tId + '_collapse').off().remove();
 	};
 
 	abTree.prototype.buildPath = function(treeNode) {
@@ -418,7 +434,7 @@
 				self.zSettings = {
 					view: {
 						selectedMulti: true,
-						addHoverDom: self.readOnly ? false : self.addHoverDom.bind(self),
+						addHoverDom: self.addHoverDom.bind(self),
 						removeHoverDom: self.removeHoverDom.bind(self),
 						showLine: false,
 						dblClickExpand: false

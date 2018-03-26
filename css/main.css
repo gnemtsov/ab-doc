@@ -346,6 +346,10 @@ a.navbar-brand img{
     background-position: inherit;
     background-image:url("../img/icons/trash.svg"); *background-image:url("../img/icons/trash.svg");
 }
+.ztree li span.button.collapse {
+    background-position: inherit;
+    background-image:url("../img/icons/minus.svg"); *background-image:url("../img/icons/minus.svg");
+}
 
 /*dragging*/
 span.tmpzTreeMove_arrow { 
