@@ -527,7 +527,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 							}
 						})
 						.catch( function() {
-							abUtils.onError();
+							NOTIFYER.onError();
 						});
                     break;
     
@@ -614,7 +614,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
                             var docNODE = abTree.tree.getNodesByParam('id', self.doc)[0];
                             if(docNODE === undefined){
-                                abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
+                                NOTIFYER.onWarning(abUtils.translatorData["no guids found"][LANG]);
                                 $big_preloader.remove();
                                 setTimeout(function() {
 									location.href = "/";
@@ -777,7 +777,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                 ROUTER.setOwner(owner).open(doc);            
             },
             function(error){
-                abUtils.onError(error.code);
+                NOTIFYER.onError(error.code);
                 if (PRODUCTION) {
 					setTimeout(function() {
 						abAuth.signOut();
@@ -1153,4 +1153,67 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         }
 
     });
+    
+    // Errors handler
+    g.NOTIFYER = {
+		add: function(msg) {
+			
+		},
+		
+		popover: function(c) {
+			/*$('nav').popover({
+				content: c,
+				container: 'nav',
+				animation: true,
+				placement: 'bottom',
+				trigger: 'manual',
+				template: '\
+					<div class="popover bg-danger" role="tooltip">\
+						<div class="popover-body text-light"></div>\
+					</div>'
+			});*/
+			var $pop = $('<div class="notifyer-message text-light bg-danger">' + c + '</div>');
+			$('.notifyer-container').prepend($pop);
+			setTimeout( function() {
+				$pop.fadeOut(500, function() {
+					//this.remove();
+				});
+			}, 2000);
+		},
+		
+		onError: function(err) {
+			if (err) {
+				console.log("Error!", err);
+			}
+			
+			var message = this.translatorData['somethingWentWrong'][LANG];
+			if(this.translatorData[err] !== undefined && this.translatorData[err][LANG] !== undefined) {
+				message = this.translatorData[err][LANG];
+			}
+		
+			this.popover(message);
+			$('nav').popover('show');
+			setTimeout(function() {
+				$('nav').popover('hide');
+			}, 5000000);
+		},
+
+		onFatalError: function(err, msg) {
+			if (err) {
+				console.log("Fatal error!", err);
+			}
+
+			this.popover(this.translatorData[msg][LANG]);
+			$('nav').popover('show');
+		},    
+
+		onWarning: function(msg) {
+			this.popover(msg);
+			$('nav').popover('hide');
+			$('nav').popover('show');
+			setTimeout(function() {
+				$('nav').popover('hide');
+			}, 4000000);
+		}
+	};
 }(window, jQuery));  //pass external dependencies just for convenience, in case their names change outside later

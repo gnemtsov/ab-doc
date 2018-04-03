@@ -1020,3 +1020,23 @@ margin: 10rem auto 0 auto;
     }
 
 }
+
+/*---------------------------------------------------------*/
+/*--------------------------notifyer-----------------------*/
+/*---------------------------------------------------------*/
+
+.notifyer-container {
+	position: absolute;
+	
+	left: 50%;
+	top: 100%;
+	
+	width: 25%;
+	margin-left: -12.5%;
+}
+
+.notifyer-message {
+	border-radius: 0.25em;
+	padding: 1em;
+	margin: 0.25em;
+}

@@ -557,55 +557,6 @@ var abUtils = {
 
 	capitalizeFirstLetter: function(string) {
 		return string.charAt(0).toUpperCase() + string.slice(1);
-	},
-
-	onError: function(err) {
-		if (err) {
-			console.log("Error!", err);
-		}
-		
-		var message = this.translatorData['somethingWentWrong'][LANG];
-		if(this.translatorData[err] !== undefined && this.translatorData[err][LANG] !== undefined) {
-			message = this.translatorData[err][LANG];
-		}
-	
-		this.errorPopover(message);
-		$('nav').popover('show');
-		setTimeout(function() {
-			$('nav').popover('hide');
-		}, 5000);
-	},
-
-	onFatalError: function(err, msg) {
-		if (err) {
-			console.log("Fatal error!", err);
-		}
-
-		this.errorPopover(this.translatorData[msg][LANG]);
-		$('nav').popover('show');
-	},    
-
-	onWarning: function(msg) {
-		this.errorPopover(msg);
-		$('nav').popover('hide');
-		$('nav').popover('show');
-		setTimeout(function() {
-			$('nav').popover('hide');
-		}, 4000);
-	},
-
-	errorPopover: function(c) {
-		$('nav').popover({
-			content: c,
-			container: 'nav',
-			animation: true,
-			placement: 'bottom',
-			trigger: 'manual',
-			template: '\
-				<div class="popover bg-danger" role="tooltip">\
-					<div class="popover-body text-light"></div>\
-				</div>'
-		});
 	}
 };
 

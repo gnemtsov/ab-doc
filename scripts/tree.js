@@ -279,7 +279,7 @@
 						g.INDICATOR.userUsedSpaceChanged = true;
 					})
 					.catch( function(err) {
-						abUtils.onError(err);
+						NOTIFYER.onError(err);
 					});
 			};
 			f(treeNode);
@@ -399,7 +399,7 @@
 					self.virgin = true;
 					return [{id: abUtils.GetGUID(), name: g.abUtils.translatorData['rootName'][LANG]}];
 				} else {
-					abUtils.onFatalError(error, 'couldNotLoadTree');
+					NOTIFYER.onFatalError(error, 'couldNotLoadTree');
 					throw error;
 				}
 			})
@@ -498,7 +498,7 @@
 							]).then(function(){
 								ACTIVITY.flush('tree modify');
 							}).catch(function(){
-								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
+								g.NOTIFYER.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 							});
 
 						}

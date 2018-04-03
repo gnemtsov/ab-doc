@@ -229,7 +229,7 @@
 						var non_image_files = new Array();
 						$.each(files, function (i, file) {
 							if (!g.INDICATOR.canUpload(file.size)) { // exit if we don't have enough space
-								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
+								NOTIFYER.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}	
 
@@ -250,7 +250,7 @@
 									ACL: 'public-read'
 								}).send(function(err, data) {
 									if(err) {
-										abUtils.onError(err);
+										NOTIFYER.onError(err);
 										self.editor.enable();
 									} else {
 										var delta = new Delta();
@@ -397,7 +397,7 @@
 						$.each(files, function (i, file) {
 
 							if (!g.INDICATOR.canUpload(file.size)) {
-								abUtils.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
+								NOTIFYER.onWarning(g.abUtils.translatorData['noSpace'][g.LANG]);
 								return;
 							}
 
@@ -441,7 +441,7 @@
 							upload.send(function(err, data) {
 								if(err) {
 									if (err.name !== 'RequestAbortedError') {
-										abUtils.onError(err);
+										NOTIFYER.onError(err);
 									}
 								} 
 								else {
@@ -450,7 +450,7 @@
 										Prefix: data.Key
 									};
 									s3.listObjectsV2(params, function(err, data) {
-										if (err) { abUtils.onError(err); } 
+										if (err) { NOTIFYER.onError(err); } 
 										else {
 											file_obj.modified = data.Contents[0].LastModified;
 											self.updateFilesList();
@@ -540,7 +540,7 @@
 					Key: self.files[file_index].key
 				};
 				s3.deleteObject(params, function (err, data) {
-					if (err) { abUtils.onError(err); } 
+					if (err) { NOTIFYER.onError(err); } 
 					else {
 						g.INDICATOR.updateUsedSpaceDelta(-self.files[file_index].size);
 						$file.fadeOut(800, function() {
@@ -660,7 +660,7 @@
 			})
 			.catch( function(error) {
 				if (error.code !== 'NoSuchKey') {
-					abUtils.onFatalError(error, 'couldNotLoadDoc');
+					NOTIFYER.onFatalError(error, 'couldNotLoadDoc');
 					throw 'fatal';
 				} else if(self.docGUID === self.rootGUID) {
 					return $.get('/root/' + g.LANG + '.html');				
@@ -759,7 +759,7 @@
 							]).then(function(){
 								ACTIVITY.flush('doc modify');
 							}).catch(function(){
-								g.abUtils.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
+								g.NOTIFYER.onWarning(g.abUtils.translatorData['couldNotSave'][g.LANG]);
 							});
 						}
 					}, 3000, 'doc');
@@ -802,7 +802,7 @@
 									});
 								},
 								function(error) { 
-									abUtils.onError(error); 
+									NOTIFYER.onError(error); 
 									throw error;
 								}
 							)
