@@ -460,10 +460,10 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             var self = this;
             console.log('ROUTER: owner = <' + self.owner + '>; doc = <' + doc + '>.');
 
-            switch(doc){    
+            switch(doc) {    
                 case 'welcome': //welcome
                 
-                    if(abAuth.isAuthorized()){                        
+                    if(abAuth.isAuthorized()) {                        
                         return self.open();
                     }
 
@@ -484,7 +484,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					   ACTIVITY.get('doc modify') === 'pending' ||
 					   ACTIVITY.get('doc embed drop') === 'saving'                    
 					) {
-						if(confirm(abUtils.translatorData['changesPending'][LANG])){
+						if(confirm(abUtils.translatorData['changesPending'][LANG])) {
 							ACTIVITY.drop('tree modify')
 									.drop('doc modify')
 									.drop('doc embed drop');
@@ -536,7 +536,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     if(ACTIVITY.get('doc modify') === 'pending' ||
                        ACTIVITY.get('doc embed drop') === 'saving'                    
                     ){
-                        if(confirm(abUtils.translatorData['changesPending'][LANG])){
+                        if(confirm(abUtils.translatorData['changesPending'][LANG])) {
                             ACTIVITY.drop('doc modify')
                                     .drop('doc embed drop');
                         } else {
@@ -556,7 +556,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     //- + + (7)
                     //- - - (impossible)
 
-                    if((!self.owner || !doc) && self.readOnly){ //(4, 6, 7)
+                    if((!self.owner || !doc) && self.readOnly) { //(4, 6, 7)
                         return self.open('welcome');
                     }                    
  
@@ -584,86 +584,83 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                         abTree = $abTree.abTree(params);
                     }
 
-                    abTree.promise.then( //tree is ready, load doc
-                        function(){
+					// Following code used to be loaded after abAuth.promise
+					// Now trying to load it before promise is finished 
+					if(doc === undefined || doc === '') { //2
+						self.doc = abTree.rootGUID;                        
+					} else {
+						self.doc = doc;
+					}
+					self.updatePath();
+					
+					if(!full_reload){
+						if(abDoc.docGUID === self.doc) { //just show and exit, if doc has been already loaded
+							if(!$app.is(":visible")) {
+								$container.children().hide();
+								$app.show();
+								$abDoc.show();
+							}                                        
+							return;
+						} else { //prepare UI for doc loading and show preloader
+							if($app.is(":visible")) {
+								$abDoc.hide();
+								$document.append($big_preloader);
+							} else {
+								$container.children().hide();
+							}
+						}
+					}
 
-                            if(doc === undefined || doc === ''){ //2
-                                self.doc = abTree.rootGUID;                        
-                            } else {
-                                self.doc = doc;
-                            }
-                            self.updatePath();
-                            
-                            if(!full_reload){
-                                if(abDoc.docGUID === self.doc){ //just show and exit, if doc has been already loaded
-                                    if(!$app.is(":visible")){
-                                        $container.children().hide();
-                                        $app.show();
-                                        $abDoc.show();
-                                    }                                        
-                                    return;
-                                } else { //prepare UI for doc loading and show preloader
-                                    if($app.is(":visible")){
-                                        $abDoc.hide();
-                                        $document.append($big_preloader);
-                                    } else {
-                                        $container.children().hide();
-                                    }
-                                }
-                            }
+					var docNODE = abTree.tree.getNodesByParam('id', self.doc)[0];
+					if(docNODE === undefined) {
+						abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
+						$big_preloader.remove();
+						setTimeout(function() {
+							// Do not reload page before abAuth decides if we are authorized or not
+							g.abAuth.promise.then( function() {
+								location.href = "/";
+							});
+						}, 1500);
+					} else {
+						g.STORAGE.setItem('ab-owner', self.owner);
+						g.STORAGE.setItem('ab-doc', self.doc);
+						
+						abTree.selectNode(docNODE);
+						var title = docNODE.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+						$selectedDoc[0].innerHTML = title;
+						document.title = docNODE.name;
+						
+						if (self.readOnly && abTree.ownerName) {
+							$('.owner')
+								.removeClass('hidden')
+								.html(abUtils.translatorData['owner'][LANG] + abTree.ownerName.replace('<', '&lt;').replace('>', '&gt'));
+						}
 
-                            var docNODE = abTree.tree.getNodesByParam('id', self.doc)[0];
-                            if(docNODE === undefined){
-                                abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
-                                $big_preloader.remove();
-                                setTimeout(function() {
-									g.abAuth.promise.then( function() {
-										location.href = "/";
-									});
-								}, 1500);
-                            } else {
-								g.STORAGE.setItem('ab-owner', self.owner);
-								g.STORAGE.setItem('ab-doc', self.doc);
-								
-                                abTree.selectNode(docNODE);
-                                var title = docNODE.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                                $selectedDoc[0].innerHTML = title;
-                                document.title = docNODE.name;
-                                
-                                if (self.readOnly && abTree.ownerName) {
-									$('.owner')
-										.removeClass('hidden')
-										.html(abUtils.translatorData['owner'][LANG] + abTree.ownerName.replace('<', '&lt;').replace('>', '&gt'));
-								}
-
-                                var params = {
-                                    ownerid: self.owner,
-                                    rootGUID: abTree.rootGUID,
-                                    docGUID: self.doc,
-                                    readOnly: self.readOnly
-                                };
-                                abDoc = $abDoc.abDoc(params);
-                                abDoc.promise.then( //doc is ready, show!
-                                    function(){
-                                        $big_preloader.remove();
-                                        $app.show();
-                                        $abDoc.show();
-                                    }
-                                );
-                            }                    
-                        }
-                    );
-
+						var params = {
+							ownerid: self.owner,
+							rootGUID: abTree.rootGUID,
+							docGUID: self.doc,
+							readOnly: self.readOnly
+						};
+						abDoc = $abDoc.abDoc(params);
+						abDoc.promise.then( //doc is ready, show!
+							function(){
+								$big_preloader.remove();
+								$app.show();
+								$abDoc.show();
+							}
+						);
+					}                    
             }
         },
 
-        updatePath: function(){
+        updatePath: function() {
             var self = this,
                 parts = [];
-            if(self.owner !== undefined){
+            if(self.owner !== undefined) {
                 parts.push(self.owner.replace(':','_'));
             }
-            if(self.doc !== undefined){
+            if(self.doc !== undefined) {
                 parts.push(self.doc);
             }
             var new_path = '/' + parts.join('/');
@@ -795,7 +792,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
         abAuth.promise.then(
             function(){
-                console.log('Core.js: abAuth promise finished.');           
+                console.log('Core.js: abAuth promise finished.');
+                ROUTER.setOwner(owner).open(doc);         
             },
             function(error){
                 abUtils.onError(error.code);
