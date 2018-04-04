@@ -111,7 +111,6 @@
 
 	//** object prototype **//
 	abAuth.prototype = {
-
         //-----core functions-----
         //returns current auth status: true or false
         isAuthorized: function(){

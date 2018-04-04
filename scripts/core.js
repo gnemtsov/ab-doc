@@ -420,7 +420,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         doc: void(0),
         readOnly: false,
 
-        setOwner: function(owner){
+        setOwner: function(owner) {
             //set owner
             if(owner === undefined || owner === ''){
                 if (abAuth.isAuthorized()) {
@@ -458,7 +458,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
         open: function(doc){
             var self = this;
-            console.log('ROUTER: owner = <'+self.owner+'>; doc = <'+doc+'>.');
+            console.log('ROUTER: owner = <' + self.owner + '>; doc = <' + doc + '>.');
 
             switch(doc){    
                 case 'welcome': //welcome
@@ -617,9 +617,14 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                                 abUtils.onWarning(abUtils.translatorData["no guids found"][LANG]);
                                 $big_preloader.remove();
                                 setTimeout(function() {
-									location.href = "/";
+									g.abAuth.promise.then( function() {
+										location.href = "/";
+									});
 								}, 1500);
                             } else {
+								g.STORAGE.setItem('ab-owner', self.owner);
+								g.STORAGE.setItem('ab-doc', self.doc);
+								
                                 abTree.selectNode(docNODE);
                                 var title = docNODE.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                                 $selectedDoc[0].innerHTML = title;
@@ -668,6 +673,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         }
 
     };
+    
+    // Should be used instead of Local Storage.
+    // It equals to Local Storage now. In the future it will be set to custom storage on devices without LSO
+    // TODO: replace localStorage use with g.STORAGE everywhere 
+    g.STORAGE = window.localStorage;
 
     window.onpopstate = function(event) { //revert ROUTER state when back|forward click
 		console.log('onpopstate', event);
@@ -751,7 +761,17 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         //define owner and doc from pathname
         var path = window.location.pathname.split('/'),
             owner, doc;
-        for(var i=0; i<path.length; i++) {
+            
+        // new version
+        // I think it's easier to understand:
+        if (path[0]) {
+			owner = path[0];
+		}
+		if (path[1]) {
+			doc = path[1];
+		}
+        // old version
+        /*for(var i=0; i<path.length; i++) {
             if (path[i]){
                 if(!owner){
                     owner = path[i];
@@ -760,21 +780,22 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                 doc = path[i];
                 break;
             }
-        }
-        if(owner && !doc){ //if only owner found, consider it as doc
+        }*/
+        if (!owner) { // if owner is not found (and doc is not found) try to load it from storage
+			owner = g.STORAGE.getItem('ab-owner');
+			doc = g.STORAGE.getItem('ab-doc');
+		} else if (owner && !doc) { //if only owner found, consider it as doc
             doc = owner;
             owner = void(0);
         }
 
-        if(owner !== undefined){
+        if (owner) {
             owner = owner.replace('_',':');
         }
 
         abAuth.promise.then(
             function(){
-                console.log('Core.js: abAuth promise finished.');
-                s3 = new AWS.S3();
-                ROUTER.setOwner(owner).open(doc);            
+                console.log('Core.js: abAuth promise finished.');           
             },
             function(error){
                 abUtils.onError(error.code);
@@ -785,7 +806,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				}
             }
         );
-
+        
+        s3 = new AWS.S3();
+        ROUTER.setOwner(owner).open(doc);
 
         //translations
         //if no translation found, regresses to English
