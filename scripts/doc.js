@@ -654,7 +654,7 @@
 			Bucket: STORAGE_BUCKET,
 			Key: self.path + '/index.html'
 		}
-		self.promise1 = s3.getObject(params).promise()
+		var htmlPromise = s3.getObject(params).promise()
 			.then( function(data) {
 				return data.Body.toString('utf-8');
 			})
@@ -776,7 +776,7 @@
 			Bucket: STORAGE_BUCKET,
 			Prefix: self.path + '/attachments/'
 		  };
-		self.promise2 = s3.listObjectsV2(params).promise()
+		var filesPromise = s3.listObjectsV2(params).promise()
 		  	.then(
 				function(data){
 					var headers = new Array();
@@ -822,7 +822,7 @@
 
 		//set object promise, resolved when both doc and files are resolved
 		//both return nothing (are resolved with value undefined) and it is just fine		
-		self.promise = Promise.all([self.promise1, self.promise2]);
+		self.promise = Promise.all([htmlPromise, filesPromise]);
 		
 	}
 

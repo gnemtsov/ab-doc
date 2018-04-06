@@ -456,7 +456,45 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             return this;
         },
 
-        open: function(doc){
+		open: function (doc) {
+			var self = this;
+			console.log('ROUTER: owner = <' + self.owner + '>; doc = <' + doc + '>.');
+			
+			switch (doc) {
+				case 'welcome':
+				
+					if (abAuth.isAuthorized()) {
+						// If authorized, then go to 'default' case.
+						return self.open();
+					}
+
+                    self.owner = undefined;
+                    self.doc = 'welcome';
+                    self.readOnly = false;
+                    self.updatePath(); // Update path in browser
+
+					// Hide everything inside main-container, show welcome
+					$container.children().hide();
+                    $welcome.show();
+                    break;
+				
+				default: // empty or GUID
+					// This is what we do when we have unsaved changes
+                    if(ACTIVITY.get('doc modify') === 'pending' ||
+                       ACTIVITY.get('doc embed drop') === 'saving'                    
+                    ) {
+                        if(confirm(abUtils.translatorData['changesPending'][LANG])) {
+                            ACTIVITY.drop('doc modify')
+                                    .drop('doc embed drop');
+                        } else {
+                            return;
+                        }
+                    }					
+					
+			}
+		},
+
+        /*open: function(doc){
             var self = this;
             console.log('ROUTER: owner = <' + self.owner + '>; doc = <' + doc + '>.');
 
@@ -532,10 +570,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     break;
     
                 default: //empty or equals GUID
+					// Rewriting this section!
+					// abTree and abDoc are promises. Use it.
 
                     if(ACTIVITY.get('doc modify') === 'pending' ||
                        ACTIVITY.get('doc embed drop') === 'saving'                    
-                    ){
+                    ) {
                         if(confirm(abUtils.translatorData['changesPending'][LANG])) {
                             ACTIVITY.drop('doc modify')
                                     .drop('doc embed drop');
@@ -652,7 +692,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						);
 					}                    
             }
-        },
+        },*/
 
         updatePath: function() {
             var self = this,
