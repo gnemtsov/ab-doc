@@ -614,7 +614,7 @@
 		$.extend(self, params);
 
 		//-------------prepare document template--------------//
-		if($abDoc instanceof $){
+		if ($abDoc instanceof $) {
 			$(self.docContainer).off().empty(); //empty and remove also unbind old event handlers
 			$editor.remove();
 			$drop_zone.remove();

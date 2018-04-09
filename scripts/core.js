@@ -477,7 +477,63 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					$container.children().hide();
                     $welcome.show();
                     break;
-				
+
+
+                case 'about': //about
+                case 'current_version':
+                case 'user_agreement':
+					if(ACTIVITY.get('tree modify') === 'pending' || 
+					   ACTIVITY.get('doc modify') === 'pending' ||
+					   ACTIVITY.get('doc embed drop') === 'saving'                    
+					) {
+						if(confirm(abUtils.translatorData['changesPending'][LANG])) {
+							ACTIVITY.drop('tree modify')
+									.drop('doc modify')
+									.drop('doc embed drop');
+						} else {
+							return;
+						}
+					}
+
+					$container.children().hide();
+
+					self.owner = undefined;
+					self.doc = doc;
+					self.readOnly = false,
+					self.updatePath();
+
+					var staticPageLoadedPromise = new Promise( function(resolve, reject) {
+						if (!self._staticPages[doc]) {
+							$container.prepend($big_preloader);            
+							$.get('/' + doc + '/' + LANG + '.html', function(data){
+								self._staticPages[doc] = data;
+								$big_preloader.remove();
+								resolve(data);
+							}).fail( function() {
+								reject();
+							});
+						} else {
+							resolve(self._staticPages[doc]);
+						}
+					});
+					staticPageLoadedPromise
+						.then( function(data) {
+							$static_page.html(data);
+							console.log('inserting static page');
+							$static_page.show();
+							console.log('showing static page');
+							// Set window title to #top-header if it's found
+							var $top_header = $static_page.find('#top-header');
+							if ($top_header) {
+								document.title = $top_header.text();
+							}
+						})
+						.catch( function() {
+							abUtils.onError();
+						});
+                    break;
+
+
 				default: // empty or GUID
 					// This is what we do when we have unsaved changes
                     if(ACTIVITY.get('doc modify') === 'pending' ||
@@ -491,6 +547,86 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                         }
                     }					
 					
+                    //in brackets won't go!
+                    //impossible: owner not set and readOnly=false
+                    //owner doc readOnly
+                    //+ + + 1
+                    //+ - - 2
+                    //- + - (impossible)
+                    //- - + (4)
+                    //+ + - 5
+                    //+ - + (6)
+                    //- + + (7)
+                    //- - - (impossible)
+
+                    if((!self.owner || !doc) && self.readOnly) { //(4, 6, 7)
+                        return self.open('welcome');
+                    }
+                    
+                    //full app reload if abTree has not been defined already or owner/readOnly has changed
+                    var full_reload = false;
+                    if (abTree === undefined || abTree.ownerid !== self.owner || abTree.readOnly !== self.readOnly) {
+                        $container.children().not('.big-preloader').hide();
+                        if (!$container.find('.big-preloader').length) {
+                            $container.prepend($big_preloader); //show main preloader
+                        }
+
+						full_reload = true;
+						
+                        if (abAuth.isAuthorized() && this.owner === abAuth.credentials.identityId) {
+                            g.INDICATOR.updateUsedSpace(abAuth.credentials.identityId);
+                        }
+
+                        var params = {
+                            ownerid: self.owner,
+                            readOnly: self.readOnly,
+                        };
+
+                        if (!self.readOnly) {
+							params.ownerName = abAuth.userData.get('username');
+						}
+                        abTree = $abTree.abTree(params);
+                        return;
+                    }
+					
+					// docPromise is used to get doc id from 'doc' parameter, g.STORAGE, or from abTree.
+					// None of the following promises should reject. 
+					var docPromise = Promise.race([
+						new Promise( function(resolve, reject) {
+							console.log(doc);
+							if (doc) {
+								resolve(doc);
+							}
+						}),
+						new Promise( function(resolve, reject) {
+							var doc = g.STORAGE.getItem('ab-root-doc');
+							if (doc) {
+								resolve(doc);
+							}
+						}),
+						abTree.promise.then( function() {
+							return abTree.rootGUID;
+						})
+					]);
+					docPromise.then( function(doc) {
+						self.doc = doc;
+						self.updatePath();
+                    
+						var params = {
+							ownerid: self.owner,
+							rootGUID: abTree.rootGUID,
+							docGUID: self.doc,
+							readOnly: self.readOnly
+						};
+						abDoc = $abDoc.abDoc(params);
+						abDoc.promise.then( //doc is ready, show!
+							function(){
+								$big_preloader.remove();
+								$app.show();
+								$abDoc.show();
+							}
+						);
+					});
 			}
 		},
 
