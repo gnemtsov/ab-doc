@@ -593,7 +593,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 							params.ownerName = abAuth.userData.get('username');
 						}
                         abTree = $abTree.abTree(params);
-                        return;
                     }
 					
 					// docPromise is used to get doc id from 'doc' parameter, g.STORAGE, or from abTree.
@@ -615,10 +614,13 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 							}
 						}),
 						new Promise( function(resolve, reject) {
-							
+							setTimeout( function() {
+								reject("Waiting for too long");
+							}, 2000);
 						})
 					]);
-					docPromise.then( function(doc) {
+					docPromise
+					.then( function(doc) {
 						console.log('docPromise', doc);
 						
 						self.doc = doc;
@@ -638,6 +640,10 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 								$abDoc.show();
 							}
 						);
+					})
+					.catch( function(err) {
+						console.log('Error: ', err);
+						abUtils.onError(err);
 					});
 			}
 		},
