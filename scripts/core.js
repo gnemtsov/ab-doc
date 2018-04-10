@@ -465,6 +465,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				
 					if (abAuth.isAuthorized()) {
 						// If authorized, then go to 'default' case.
+						console.log('redirecting to /');
+						self.setOwner();
 						return self.open();
 					}
 
@@ -547,6 +549,10 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                         }
                     }					
 					
+					if (!self.owner) {
+						self.owner = g.STORAGE.getItem('ab-owner');
+					}
+					
                     //in brackets won't go!
                     //impossible: owner not set and readOnly=false
                     //owner doc readOnly
@@ -560,6 +566,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     //- - - (impossible)
 
                     if((!self.owner || !doc) && self.readOnly) { //(4, 6, 7)
+						console.log('redirecting to /welcome');
                         return self.open('welcome');
                     }
                     
@@ -590,7 +597,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     }
 					
 					// docPromise is used to get doc id from 'doc' parameter, g.STORAGE, or from abTree.
-					// None of the following promises should reject. 
+					// Reject after waiting for 10 seconds.
 					var docPromise = Promise.race([
 						new Promise( function(resolve, reject) {
 							console.log(doc);
@@ -598,17 +605,22 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 								resolve(doc);
 							}
 						}),
+						abTree.promise.then( function() {
+							return abTree.rootGUID;
+						}),
 						new Promise( function(resolve, reject) {
 							var doc = g.STORAGE.getItem('ab-root-doc');
 							if (doc) {
 								resolve(doc);
 							}
 						}),
-						abTree.promise.then( function() {
-							return abTree.rootGUID;
+						new Promise( function(resolve, reject) {
+							
 						})
 					]);
 					docPromise.then( function(doc) {
+						console.log('docPromise', doc);
+						
 						self.doc = doc;
 						self.updatePath();
                     
@@ -967,7 +979,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         }
 
         abAuth.promise.then(
-            function(){
+            function() {
                 console.log('Core.js: abAuth promise finished.');
                 ROUTER.setOwner(owner).open(doc);         
             },
@@ -1244,50 +1256,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 				finishedSwiping = false;
 			$(document).on('touchmove', function(event) {});
 			$(document).on('touchstart', function(event) {});
-			
-			/*abGlobalListener.addListener('touchstart', function(event) {
-				if (!isSmallDevice) {
-					return;
-				}
-				
-				var touch = event.targetTouches[0];
-				finishedSwiping = false;
-				startX = touch.clientX;
-				startY = touch.clientY;
-				startT = Date.now();
-				console.log('Starting swipe', startX, startY, startT);
-			});
-
-			abGlobalListener.addListener('touchmove', function(event) {
-				if (!isSmallDevice) {
-					return;
-				}
-				
-				var touch = event.targetTouches[0];
-				var x = touch.clientX,
-					y = touch.clientY,
-					dx = x - startX,
-					dy = y - startY,
-					dt = Date.now() - startT;
-					
-				console.log('swiping ', dx, dy, dt);
-					
-				if (!finishedSwiping && 
-					Math.abs(dx) > 100 && Math.abs(dy) < 25 && 
-					dt < 1000) {
-					if ((dx < 0) && (g.COLUMNS_MODE === 'tree')) {
-						g.COLUMNS_MODE = 'document';
-					}
-					if ((dx > 0) && (g.COLUMNS_MODE === 'document')) {
-						g.COLUMNS_MODE = 'tree';
-					}
-					
-					console.log('finished swiping');
-										
-					updateMode();
-					finishedSwiping = true;
-				}
-			});*/
 		}
 
         // Update columns' sizes, use current mode
