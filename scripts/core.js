@@ -425,8 +425,10 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             if(owner === undefined || owner === ''){
                 if (abAuth.isAuthorized()) {
                     this.owner = abAuth.credentials.identityId;
+                    g.STORAGE.setItem('ab-owner', this.owner);
                 } else {
-                    this.owner = void(0);
+					var ownerFromStorage = g.STORAGE.getItem('ab-owner');
+                    this.owner = ownerFromStorage ? ownerFromStorage : void(0);
                 }
             } else {
                 this.owner = owner;
@@ -462,11 +464,11 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			
 			switch (doc) {
 				case 'welcome':
-				
-					if (abAuth.isAuthorized()) {
-						// If authorized, then go to 'default' case.
+					self.setOwner();
+					if (this.owner) {
+						// If has owner, then go to 'default' case.
 						console.log('redirecting to /');
-						self.setOwner();
+						
 						return self.open();
 					}
 
@@ -565,10 +567,10 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                     //- + + (7)
                     //- - - (impossible)
 
-                    if((!self.owner || !doc) && self.readOnly) { //(4, 6, 7)
+                    /*if((!self.owner || !doc) && self.readOnly) { //(4, 6, 7)
 						console.log('redirecting to /welcome');
                         return self.open('welcome');
-                    }
+                    }*/
                     
                     //full app reload if abTree has not been defined already or owner/readOnly has changed
                     var full_reload = false;
@@ -599,7 +601,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 					// Reject after waiting for 10 seconds.
 					var docPromise = Promise.race([
 						new Promise( function(resolve, reject) {
-							console.log(doc);
 							if (doc) {
 								resolve(doc);
 							}
@@ -633,13 +634,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 							readOnly: self.readOnly
 						};
 						abDoc = $abDoc.abDoc(params);
-						abDoc.promise.then( //doc is ready, show!
-							function(){
-								$big_preloader.remove();
-								$app.show();
-								$abDoc.show();
-							}
-						);
+						return abDoc.promise;
+					})
+					.then( function(){ //doc is ready, show!
+						$big_preloader.remove();
+						$app.show();
+						$abDoc.show();
 					})
 					.catch( function(err) {
 						console.log('Error: ', err);
@@ -999,6 +999,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             }
         );
         
+        console.log('AWS.config.credentials before creating s3', AWS.config.credentials);
         s3 = new AWS.S3();
         ROUTER.setOwner(owner).open(doc);
 
