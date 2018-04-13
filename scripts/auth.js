@@ -816,26 +816,27 @@
 	abAuth.init = function() {
         var self = this;
 
+		self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
+		self.GoogleProviderName = 'accounts.google.com';
+		self.IdentityPoolId = 'eu-west-1:e6ca203a-aead-49ba-a7e3-5c3c02cb1cf6';
+		self.UserPoolId = 'eu-west-1_dtgGGP4kG';
+		self.ClientId = '1eflaa2k69bgebikbnak5jg0ac';
+		self.poolData = {
+			UserPoolId : self.UserPoolId,
+			ClientId : self.ClientId
+		};
+
+		self.userPool = new CISP.CognitoUserPool( self.poolData );
+		self.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId: self.IdentityPoolId
+		});
+
+		AWS.config.credentials = self.credentials;
+		console.log("AWS.config.credentials", AWS.config.credentials);
+
         //main auth promise
         self.promise = new Promise(function(resolve, reject){
             $username = $('#username');
-
-            self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
-            self.GoogleProviderName = 'accounts.google.com';
-            self.IdentityPoolId = 'eu-west-1:e6ca203a-aead-49ba-a7e3-5c3c02cb1cf6';
-            self.UserPoolId = 'eu-west-1_dtgGGP4kG';
-            self.ClientId = '1eflaa2k69bgebikbnak5jg0ac';
-            self.poolData = {
-                UserPoolId : self.UserPoolId,
-                ClientId : self.ClientId
-            };
-
-            self.userPool = new CISP.CognitoUserPool( self.poolData );
-            self.credentials = new AWS.CognitoIdentityCredentials({
-                IdentityPoolId: self.IdentityPoolId
-            });
-
-            AWS.config.credentials = self.credentials;
 
             //tries to get user object from local storage
             var cognitoUser = self.userPool.getCurrentUser();

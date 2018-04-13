@@ -458,6 +458,32 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             return this;
         },
 
+		openPath(path) {
+			var owner, doc;
+			path = path.split('/');
+			
+			// new version
+			// I think it's easier to understand:
+			if (path[0]) {
+				owner = path[0];
+			}
+			if (path[1]) {
+				doc = path[1];
+			}
+
+			if (!owner) { // if owner is not found (and doc is not found) try to load it from storage
+				owner = g.STORAGE.getItem('ab-owner');
+				doc = g.STORAGE.getItem('ab-doc');
+			} else if (owner && !doc) { //if only owner found, consider it as doc
+				doc = owner;
+				owner = void(0);
+			}
+
+			if (owner) {
+				owner = owner.replace('_',':');
+			}
+		},
+
 		open: function (doc) {
 			var self = this;
 			console.log('ROUTER: owner = <' + self.owner + '>; doc = <' + doc + '>.');
@@ -551,8 +577,13 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                         }
                     }					
 					
+					// If owner is not set, trying to load it from STORAGE
 					if (!self.owner) {
 						self.owner = g.STORAGE.getItem('ab-owner');
+					}
+					// If it wasn't set in 
+					if (!self.owner) {
+						return self.open('welcome');
 					}
 					
                     //in brackets won't go!
@@ -586,12 +617,13 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
                             g.INDICATOR.updateUsedSpace(abAuth.credentials.identityId);
                         }
 
+						console.log(self.owner);
                         var params = {
                             ownerid: self.owner,
                             readOnly: self.readOnly,
                         };
 
-                        if (!self.readOnly) {
+                        if (!self.readOnly && abAuth.isAuthorized()) {
 							params.ownerName = abAuth.userData.get('username');
 						}
                         abTree = $abTree.abTree(params);
@@ -627,6 +659,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						self.doc = doc;
 						self.updatePath();
                     
+						console.log(self.owner);
 						var params = {
 							ownerid: self.owner,
 							rootGUID: abTree.rootGUID,
@@ -948,42 +981,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         if (isSmallDevice) {
             $('body').addClass('small-device');
         }
-
-        //define owner and doc from pathname
-        var path = window.location.pathname.split('/'),
-            owner, doc;
-            
-        // new version
-        // I think it's easier to understand:
-        if (path[0]) {
-			owner = path[0];
-		}
-		if (path[1]) {
-			doc = path[1];
-		}
-        // old version
-        /*for(var i=0; i<path.length; i++) {
-            if (path[i]){
-                if(!owner){
-                    owner = path[i];
-                    continue;
-                }
-                doc = path[i];
-                break;
-            }
-        }*/
-        if (!owner) { // if owner is not found (and doc is not found) try to load it from storage
-			owner = g.STORAGE.getItem('ab-owner');
-			doc = g.STORAGE.getItem('ab-doc');
-		} else if (owner && !doc) { //if only owner found, consider it as doc
-            doc = owner;
-            owner = void(0);
-        }
-
-        if (owner) {
-            owner = owner.replace('_',':');
-        }
-
+        
         abAuth.promise.then(
             function() {
                 console.log('Core.js: abAuth promise finished.');
@@ -1001,7 +999,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         
         console.log('AWS.config.credentials before creating s3', AWS.config.credentials);
         s3 = new AWS.S3();
-        ROUTER.setOwner(owner).open(doc);
+        ROUTER.openPath(window.location.pathname);
 
         //translations
         //if no translation found, regresses to English
