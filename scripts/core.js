@@ -459,17 +459,21 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         },
 
 		openPath(path) {
+			var self = this;
+			
 			var owner, doc;
 			path = path.split('/');
 			
 			// new version
 			// I think it's easier to understand:
-			if (path[0]) {
-				owner = path[0];
-			}
 			if (path[1]) {
-				doc = path[1];
+				owner = path[1];
 			}
+			if (path[2]) {
+				doc = path[2];
+			}
+
+			console.log("ROUTER.openPath owner = " + owner + " doc = " + doc);
 
 			if (!owner) { // if owner is not found (and doc is not found) try to load it from storage
 				owner = g.STORAGE.getItem('ab-owner');
@@ -482,6 +486,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 			if (owner) {
 				owner = owner.replace('_',':');
 			}
+			
+			self.setOwner(owner).open(doc);
 		},
 
 		open: function (doc) {
@@ -984,8 +990,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         
         abAuth.promise.then(
             function() {
-                console.log('Core.js: abAuth promise finished.');
-                ROUTER.setOwner(owner).open(doc);         
+                console.log('Core.js: abAuth promise finished.');        
             },
             function(error){
                 abUtils.onError(error.code);
