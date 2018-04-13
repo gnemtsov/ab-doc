@@ -477,7 +477,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
 			if (!owner) { // if owner is not found (and doc is not found) try to load it from storage
 				owner = g.STORAGE.getItem('ab-owner');
-				doc = g.STORAGE.getItem('ab-doc');
+				doc = g.STORAGE.getItem('ab-root-doc');
 			} else if (owner && !doc) { //if only owner found, consider it as doc
 				doc = owner;
 				owner = void(0);
