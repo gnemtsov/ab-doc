@@ -831,7 +831,10 @@
 			IdentityPoolId: self.IdentityPoolId
 		});
 
-		AWS.config.credentials = self.credentials;
+		var temporaryCredentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId: self.IdentityPoolId
+		});
+		AWS.config.credentials = temporaryCredentials;
 		console.log("AWS.config.credentials", AWS.config.credentials);
 
         //main auth promise
@@ -985,7 +988,11 @@
                 
             });
 
-        });
+        })
+        .then( function() {
+			AWS.config.credentials = self.credentials;
+			console.log("AWS.config.credentials", AWS.config.credentials);
+		});
           
 	}
 
