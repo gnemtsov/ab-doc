@@ -386,6 +386,7 @@
 			}
 		});
 
+		console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 		var params = {
 			Bucket: STORAGE_BUCKET,
 			Key: self.treeKey
@@ -482,7 +483,10 @@
 							} else {
 								data = [];
 							}
-														
+								
+								
+							console.log('AWS.config.credentials when using s3', AWS.config.credentials);
+													
 							var params = {
 								Bucket: STORAGE_BUCKET,
 								Key: self.treeKey,

@@ -330,6 +330,7 @@ var abUtils = {
 			})
 			.then(
 				function(params) {
+					console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 					return s3.deleteObjects(params).promise();
 				},
 				function(err) {
@@ -359,12 +360,14 @@ var abUtils = {
 				// It starts objects loading from S3
 				// Then this function is only used as a callback in s3.listObjects
 				if (!data) {
+					console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 					s3.listObjectsV2(params, f);
 					return;
 				}
 				
 				files = files.concat(data.Contents);
 				if (data.isTruncated) {
+					console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 					params.Marker = data.NextMarker;
 					s3.listObjectsV2(params, f);
 				} else {

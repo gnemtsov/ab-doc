@@ -828,171 +828,186 @@
 
 		self.userPool = new CISP.CognitoUserPool( self.poolData );
 		self.credentials = new AWS.CognitoIdentityCredentials({
-			IdentityPoolId: self.IdentityPoolId
+			IdentityPoolId: self.IdentityPoolId,
+			IdentityId: null
 		});
 
 		var temporaryCredentials = new AWS.CognitoIdentityCredentials({
-			IdentityPoolId: self.IdentityPoolId
+			IdentityPoolId: self.IdentityPoolId,
+			IdentityId: null
 		});
 		AWS.config.credentials = temporaryCredentials;
+		AWS.config.credentials.clearCachedId();
 		console.log("AWS.config.credentials", AWS.config.credentials);
+		console.log("AWS.config.region", AWS.config.region);
 
         //main auth promise
-        self.promise = new Promise(function(resolve, reject){
-            $username = $('#username');
-
-            //tries to get user object from local storage
-            var cognitoUser = self.userPool.getCurrentUser();
-            if (cognitoUser === null) {
-                console.log('Auth.js: Current cognitoUser is null!');
-                resolve(0);
-            } else {
-                self.userType = 'cognito';
-                self.cognitoUser = cognitoUser;
-                //looks for session in variable
-                //if not found, looks in local storage
-                //if not found, tries to obtain session using refreshToken
-                self.cognitoUser.getSession(function(error, session) {
-                    if (error) {
-                        reject(error);
-                    } else if(session.isValid()){
-                        console.log('Auth.js: Already authorized by cognito! Signing in...');
-                        self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
-                            .then(function(){ 
-                                resolve(1); 
-                            })
-                            .catch(function(error){ 
-                                reject(error); 
-                            });
-                    } else {
-                        resolve(0);
-                    }
-                });                
-            }
-
-        }).then(function(authorized){
-
-           return new Promise(function(resolve, reject){
-
-                if(authorized){ //already authorized by cognito
-
-                   self.updateNavUsername();
-                    resolve();
-
-                } else { //try to authorize using Google sign in service
-                    
-                    self.googleClientId = "1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com";
-
-                    var authPromise = new Promise(function(resolve, reject){
-                        gapi.load(
-                            'auth2', 
-                            {
-                                callback: function() {
-                                    gapi.auth2.init({
-                                        client_id: self.googleClientId,
-                                        scope: 'profile email'
-                                    }).then(
-                                        function(){
-                                            console.log('Auth.js: self.googleAuth ready.');
-                                            self.googleAuth = gapi.auth2.getAuthInstance();
-                                            resolve();
-                                        },
-                                        function(error){
-                                            console.log('Auth.js: self.googleAuth init failed!', error);
-                                            reject();
-                                        }
-                                    );
-                                },
-                                onerror: function() {
-                                    console.log('Auth.js: gapi.auth2 failed to load!');
-                                    reject();
-                                },
-                                timeout: 5000, // 5 seconds.
-                                ontimeout: function() {
-                                    console.log('Auth.js: gapi.auth2 failed could not load in a timely manner!');
-                                    reject();
-                                }
-                            }
-                        );
-                    });
-
-                    Promise.all([authPromise, g.yoloPromise]).then(function(){ //auth and yolo ready, let's rock!
-
-                        if(self.googleAuth.isSignedIn.get()){
-
-                            console.log('Auth.js: Already authorized by Google! Signing in...');
-                            self.userType = 'google';
-                            self.googleUser = self.googleAuth.currentUser.get();                            
-                            var credential = self.googleUser.getAuthResponse(true);
-                            self.loggedIn( self.GoogleProviderName, credential.id_token )
-                                .then( function(){
-                                    self.updateNavUsername();
-                                    resolve();
-                                });
-
-                        } else {
-
-                            console.log('Auth.js: Using Google one tap service!');
-                            self.googleAuthParams = {
-                                supportedAuthMethods: [ "https://accounts.google.com" ],
-                                supportedIdTokenProviders: [{
-                                    uri: "https://accounts.google.com",
-                                    clientId: self.googleClientId
-                                }]
-                            };
-
-                            if( g.localStorage.getItem('abNoGoogleRetrieve') === '1' ){ 
-                                console.log('Auth.js: Google retrieve switched off, just show hints!');
-                                self.showGoogleHintsOrSignIn(0);
-                                self.updateNavUsername();
-                                self.initModal();
-                                resolve();
-                            } else {
-                                g.googleyolo
-                                    .retrieve(self.googleAuthParams)
-                                    .then(function(credential) {
-                                        console.log('Auth.js: Google credentails retrieved! Signing in...');
-                                        return self.googleAuth.signIn();
-                                    })
-                                    .then(function(user){
-                                        self.userType = 'google';
-                                        self.googleUser = user;
-                                        return self.loggedIn( self.GoogleProviderName, user.getAuthResponse().id_token );
-                                    })
-                                    .then( function(){
-                                        self.updateNavUsername();
-                                        resolve();
-                                    })
-                                    .catch(function(error){ //google auth using retreive failed, init auth modal & show google hints
-                                    if (error.type === 'noCredentialsAvailable') {
-                                            console.log('Auth.js: Google credentails not retrieved, show hints!');
-                                            self.showGoogleHintsOrSignIn(0);
-                                        } else {
-                                            console.log(error);
-                                        }
-                                        self.updateNavUsername();
-                                        self.initModal();
-                                        resolve();
-                                    });
-                            }
-                        }
-
-                    })
-                    .catch(function(){ //even if google auth services failed resolve Auth promise!
-                        self.updateNavUsername();
-                        self.initModal();
-                        resolve();  
-                    });
-
-                }
-                
-            });
-
-        })
-        .then( function() {
-			AWS.config.credentials = self.credentials;
-			console.log("AWS.config.credentials", AWS.config.credentials);
+        self.promise = new Promise( function (resolve, reject) {
+			setTimeout( function() {
+				resolve(1);
+			}, 60000);
 		});
+        self.promise = AWS.config.credentials.getPromise()
+			.catch( function(err) {
+				console.log("Got credentials. Error:", err);
+				return 0;
+			})
+			.then( function() {
+				return new Promise(function(resolve, reject){
+					$username = $('#username');
+
+					//tries to get user object from local storage
+					var cognitoUser = self.userPool.getCurrentUser();
+					if (cognitoUser === null) {
+						console.log('Auth.js: Current cognitoUser is null!');
+						resolve(0);
+					} else {
+						self.userType = 'cognito';
+						self.cognitoUser = cognitoUser;
+						//looks for session in variable
+						//if not found, looks in local storage
+						//if not found, tries to obtain session using refreshToken
+						self.cognitoUser.getSession(function(error, session) {
+							if (error) {
+								reject(error);
+							} else if(session.isValid()){
+								console.log('Auth.js: Already authorized by cognito! Signing in...');
+								self.loggedIn( self.CognitoProviderName, session.getIdToken().getJwtToken() )
+									.then(function(){ 
+										resolve(1); 
+									})
+									.catch(function(error){ 
+										reject(error); 
+									});
+							} else {
+								resolve(0);
+							}
+						});                
+					}
+				});
+			}).then(function(authorized){
+
+			   return new Promise(function(resolve, reject){
+
+					if(authorized){ //already authorized by cognito
+
+					   self.updateNavUsername();
+						resolve();
+
+					} else { //try to authorize using Google sign in service
+						
+						self.googleClientId = "1010406543475-vd7rc1gcevq3er1v3fuf9raf5fipmefg.apps.googleusercontent.com";
+
+						var authPromise = new Promise(function(resolve, reject){
+							gapi.load(
+								'auth2', 
+								{
+									callback: function() {
+										gapi.auth2.init({
+											client_id: self.googleClientId,
+											scope: 'profile email'
+										}).then(
+											function(){
+												console.log('Auth.js: self.googleAuth ready.');
+												self.googleAuth = gapi.auth2.getAuthInstance();
+												resolve();
+											},
+											function(error){
+												console.log('Auth.js: self.googleAuth init failed!', error);
+												reject();
+											}
+										);
+									},
+									onerror: function() {
+										console.log('Auth.js: gapi.auth2 failed to load!');
+										reject();
+									},
+									timeout: 5000, // 5 seconds.
+									ontimeout: function() {
+										console.log('Auth.js: gapi.auth2 failed could not load in a timely manner!');
+										reject();
+									}
+								}
+							);
+						});
+
+						Promise.all([authPromise, g.yoloPromise]).then(function(){ //auth and yolo ready, let's rock!
+
+							if(self.googleAuth.isSignedIn.get()){
+
+								console.log('Auth.js: Already authorized by Google! Signing in...');
+								self.userType = 'google';
+								self.googleUser = self.googleAuth.currentUser.get();                            
+								var credential = self.googleUser.getAuthResponse(true);
+								self.loggedIn( self.GoogleProviderName, credential.id_token )
+									.then( function(){
+										self.updateNavUsername();
+										resolve();
+									});
+
+							} else {
+
+								console.log('Auth.js: Using Google one tap service!');
+								self.googleAuthParams = {
+									supportedAuthMethods: [ "https://accounts.google.com" ],
+									supportedIdTokenProviders: [{
+										uri: "https://accounts.google.com",
+										clientId: self.googleClientId
+									}]
+								};
+
+								if( g.localStorage.getItem('abNoGoogleRetrieve') === '1' ){ 
+									console.log('Auth.js: Google retrieve switched off, just show hints!');
+									self.showGoogleHintsOrSignIn(0);
+									self.updateNavUsername();
+									self.initModal();
+									resolve();
+								} else {
+									g.googleyolo
+										.retrieve(self.googleAuthParams)
+										.then(function(credential) {
+											console.log('Auth.js: Google credentails retrieved! Signing in...');
+											return self.googleAuth.signIn();
+										})
+										.then(function(user){
+											self.userType = 'google';
+											self.googleUser = user;
+											return self.loggedIn( self.GoogleProviderName, user.getAuthResponse().id_token );
+										})
+										.then( function(){
+											self.updateNavUsername();
+											resolve();
+										})
+										.catch(function(error){ //google auth using retreive failed, init auth modal & show google hints
+										if (error.type === 'noCredentialsAvailable') {
+												console.log('Auth.js: Google credentails not retrieved, show hints!');
+												self.showGoogleHintsOrSignIn(0);
+											} else {
+												console.log(error);
+											}
+											self.updateNavUsername();
+											self.initModal();
+											resolve();
+										});
+								}
+							}
+
+						})
+						.catch(function(){ //even if google auth services failed resolve Auth promise!
+							self.updateNavUsername();
+							self.initModal();
+							resolve();  
+						});
+
+					}
+					
+				});
+
+			})
+			.then( function() {
+				AWS.config.credentials = self.credentials;
+				console.log("AWS.config.credentials", AWS.config.credentials);
+			});
           
 	}
 

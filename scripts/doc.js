@@ -238,7 +238,8 @@
 								self.editor.disable();
 								ACTIVITY.push('doc embed drop', 'saving');
 								self.editor.insertEmbed(index_obj.value, 'image', '/img/ab-doc-preloader-nano.gif', 'silent');
-																
+															
+								console.log('AWS.config.credentials when using s3', AWS.config.credentials);	
 								//upload pic to S3
 								var picGUID = abUtils.GetGUID();
 								s3.upload({
@@ -445,6 +446,7 @@
 									}
 								} 
 								else {
+									console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 									var params = {
 										Bucket: data.Bucket, 
 										Prefix: data.Key
@@ -535,6 +537,7 @@
 				$file.find('.file-question')
 					 .html('<div class="small-preloader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
+				console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 				var params = {
 					Bucket: STORAGE_BUCKET, 
 					Key: self.files[file_index].key
@@ -753,6 +756,7 @@
 								ContentDisposition: abUtils.GetContentDisposition('index.html'),
 								ACL: 'public-read'
 							};
+							console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 							Promise.all([ 
 								s3.upload(params).promise(), 
 								new Promise(function(res, rej) { setTimeout(res, 800); })
@@ -771,6 +775,7 @@
 
 
 		//---------load attachments list from S3-------------//
+		console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 		self.files = new Array();
 		var params = {
 			Bucket: STORAGE_BUCKET,
@@ -781,6 +786,7 @@
 				function(data){
 					var headers = new Array();
 					data.Contents.forEach( function(file) {
+						console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 						var params = {
 							Bucket: STORAGE_BUCKET, 
 							Key: file.Key

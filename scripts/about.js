@@ -29,6 +29,7 @@
 
 			
 			trees.forEach( function(tree) {
+				console.log('AWS.config.credentials when using s3', AWS.config.credentials);
 				var params = {
 					Bucket: STORAGE_BUCKET,
 					Key: tree.key

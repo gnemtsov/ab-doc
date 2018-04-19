@@ -990,7 +990,8 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
         
         abAuth.promise.then(
             function() {
-                console.log('Core.js: abAuth promise finished.');        
+                console.log('Core.js: abAuth promise finished.'); 
+                s3 = new AWS.S3();      
             },
             function(error){
                 abUtils.onError(error.code);
@@ -1002,7 +1003,6 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             }
         );
         
-        console.log('AWS.config.credentials before creating s3', AWS.config.credentials);
         s3 = new AWS.S3();
         ROUTER.openPath(window.location.pathname);
 
