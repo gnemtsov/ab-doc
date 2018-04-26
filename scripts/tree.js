@@ -370,6 +370,7 @@
 
 	//** constructor **/
 	abTree.init = function(params) {
+		console.log('abTree.init');
 		var self = this;
 		$.extend(self, params);
 
@@ -391,6 +392,7 @@
 			Bucket: STORAGE_BUCKET,
 			Key: self.treeKey
 		}
+		console.log('Loading tree.json.......');
 		self.promise = s3.getObject(params).promise()
 			.then( function(data) {
 				return JSON.parse(data.Body.toString('utf-8'));
@@ -405,6 +407,8 @@
 				}
 			})
 			.then( function(zNodes) {
+				console.log("Loaded tree.json");
+				
 				self.zNodes = zNodes;
 				self.rootGUID = self.zNodes[0].id;
 				self.zNodes[0].head = true;

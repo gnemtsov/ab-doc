@@ -19,6 +19,20 @@ if (location.hostname === 'ab-doc.com') { //PROD
         AWS_CDN_ENDPOINT = "https://s3-eu-west-1.amazonaws.com/ab-doc-storage-dev/",
         STORAGE_BUCKET = "ab-doc-storage-dev";
 
+	var lastTime = (new Date()).getTime();
+	var startTime = lastTime;
+	var oldConsoleLog = console.log;
+	console.log = function() {
+		var now = (new Date()).getTime();
+		//oldConsoleLog("========== Console.log: BEGIN ==========");
+		for (var i=0; i < arguments.length; i++) {
+			oldConsoleLog("    ", arguments[i]);
+		}
+		//oldConsoleLog("Called at ", now, "ms");
+		oldConsoleLog(now - lastTime, "ms since last log;", now - startTime, "ms since start");
+		//oldConsoleLog("========== Console.log: END   ==========");
+		lastTime = now;
+	}
 }
 
 //------App globals------
@@ -492,7 +506,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
 		open: function (doc) {
 			var self = this;
-			console.log('ROUTER: owner = <' + self.owner + '>; doc = <' + doc + '>.');
+			console.log('ROUTER.open: owner = <' + self.owner + '>; doc = <' + doc + '>.');
 			
 			switch (doc) {
 				case 'welcome':
@@ -655,7 +669,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 						new Promise( function(resolve, reject) {
 							setTimeout( function() {
 								reject("Waiting for too long");
-							}, 2000);
+							}, 16000);
 						})
 					]);
 					docPromise
@@ -943,6 +957,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
     //auth
     var abAuth = $.fn.abAuth();
+    g.abAuth = abAuth; // Temporary
     
     //global listener
     var abGlobalListener = $.fn.abGlobalListener();
@@ -960,6 +975,7 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 
     //------Document ready!------//
     $(document).ready( function() {
+		console.log("document.ready");
 		
         $nav = $('nav'); //navbar
         $update = $('#update');
@@ -1003,7 +1019,9 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
             }
         );
         
+        console.log('creating s3');
         s3 = new AWS.S3();
+        console.log('calling ROUTER.openPath from document.ready');
         ROUTER.openPath(window.location.pathname);
 
         //translations
@@ -1259,14 +1277,12 @@ var $small_preloader = $('<div class="small-preloader"><div class="bounce1"></di
 		// Testing!
 		// Swiping
 		// TODO: move it to utils
-		{
-			var startX = 0, 
-				startY = 0,
-				startT = 0,
-				finishedSwiping = false;
-			$(document).on('touchmove', function(event) {});
-			$(document).on('touchstart', function(event) {});
-		}
+		var startX = 0, 
+			startY = 0,
+			startT = 0,
+			finishedSwiping = false;
+		$(document).on('touchmove', function(event) {});
+		$(document).on('touchstart', function(event) {});
 
         // Update columns' sizes, use current mode
         // Returns true on success, false on wrong mode value

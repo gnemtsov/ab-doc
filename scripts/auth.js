@@ -21,6 +21,7 @@
     //userData object
     //responsible for holding user data and syncing with identity pool dataset
     var userData = function(tmpUsername, tmpEmail) {
+		console.log('Auth.js: userData(', tmpUsername, ',', tmpEmail, ')');
         var self = this;
 
         self.get = function(key){
@@ -532,11 +533,13 @@
 
         //-----UI functions-----
         updateNavUsername: function(){
+			console.log('Auth.js: updateNavUsername');
             var self = this;
             if(self.isAuthorized()){
                 $('.authenticated-mode').removeClass('hidden');
                 $('.unauthenticated-mode').addClass('hidden');
                 $username.text(self.userData.get('username'));
+                console.log("Username:", self.userData.get('username'));
             } else {
                 $('.authenticated-mode').addClass('hidden');
 
@@ -814,6 +817,7 @@
 
 	//** constructor **/
 	abAuth.init = function() {
+		console.log('abAuth.init');
         var self = this;
 
 		self.CognitoProviderName = 'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dtgGGP4kG';
@@ -826,12 +830,14 @@
 			ClientId : self.ClientId
 		};
 
+		console.log('creating userPool');
 		self.userPool = new CISP.CognitoUserPool( self.poolData );
 		self.credentials = new AWS.CognitoIdentityCredentials({
 			IdentityPoolId: self.IdentityPoolId,
 			IdentityId: null
 		});
 
+		console.log('creating CognitoIdentityCredentials');
 		var temporaryCredentials = new AWS.CognitoIdentityCredentials({
 			IdentityPoolId: self.IdentityPoolId,
 			IdentityId: null
@@ -842,6 +848,7 @@
 		console.log("AWS.config.region", AWS.config.region);
 
         //main auth promise
+        console.log('starting promise');
         self.promise = new Promise( function (resolve, reject) {
 			setTimeout( function() {
 				resolve(1);
@@ -891,7 +898,7 @@
 
 					if(authorized){ //already authorized by cognito
 
-					   self.updateNavUsername();
+						self.updateNavUsername();
 						resolve();
 
 					} else { //try to authorize using Google sign in service
