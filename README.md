@@ -1,15 +1,6 @@
-# AB-DOC #
+# AB-DOC
 
-## Правила работы с репозиторием ##
+AB-DOC is a serverless UI to AWS S3, written in JavaScript (jQuery). AB‑DOC allows you to create documents online and organize them in tree structure. You can store your thoughts, information, you found in Internet, or whatever. All users' data is stored in Amazon S3 storage.
 
-* Содержимое ветви master всегда работоспособно (deployable). 
-* Начиная работу над чем-то новым, ответвляйте от ветви master новую ветвь, имя которой соответствует её предназначению (например, «new-oauth2-scopes»).
-* Каждому коммиту давайте осмысленное название на английском языке. Название коммита должно начинаться с указания номера задачи в AB-TASKS: "task#.."
-* Закоммитив в эту ветвь локально, отправляйте регулярно свою работу и в одноимённую ветвь на сервере.
-* Когда вам понадобится отзыв, или помощь, или когда вы сочтёте ветвь готовой ко слиянию, отправьте запрос на слияние (pull request).
-* После того, как кто-то другой просмотрел и одобрил фичу, можете слить вашу ветвь в ветвь master. Если у вас нет на это прав, то ее сольет тот, кто одобрил фичу.
-* После того, как ветвь master пополнилась новым кодом, можно немедленно внедрить его на продакшн и следует сделать это!
-
-![developer_and_cat.png](https://bitbucket.org/repo/AEkoKd/images/3042563856-developer_and_cat.png)
-
-Wish you happy coding! :)
+Small explainer video
+[![Small explainer video](https://embedwistia-a.akamaihd.net/deliveries/3126ad355a09f782f175de9fdcb4e11a92bc081f.jpg)](https://ab-doc.com/about?wvideo=9ln0pqy7qq)
